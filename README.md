@@ -1,15 +1,15 @@
 # 🎵 trackboxd — a letterboxd for Spotify
 
-**Spotboxd** is a web-only music companion app that brings the film-buff culture of Letterboxd to Spotify listeners. It lets users **rate**, **review**, and **annotate** songs, albums, and playlists — building a social layer on top of the Spotify experience.
+**trackboxd** is a web-only music companion app that brings the film-buff culture of Letterboxd to Spotify listeners. It lets users **rate**, **review**, and **annotate** songs, albums, and playlists — building a social layer on top of the Spotify experience.
 
-You log in with your Spotify account, explore your music history, write timestamped thoughts on tracks (like SoundCloud comments), rate albums like Pitchfork, and create custom playlists that live on both Spotboxd and Spotify.
+You log in with your Spotify account, explore your music history, write timestamped thoughts on tracks (like SoundCloud comments), rate albums like Pitchfork, and create custom playlists that live on both trackboxd and Spotify.
 
 ---
 
 ## 📌 Core Idea
 
 Spotify is for listening.  
-**Spotboxd is for reacting.**  
+**trackboxd is for reacting.**  
 It gives you a home to express your taste, opinions, and deep takes on the music you love — while also seeing how others feel about the same tracks.
 
 ---
@@ -36,8 +36,8 @@ It gives you a home to express your taste, opinions, and deep takes on the music
 
 ### 📦 Playlist Import & Creation
 - Import all your existing **Spotify playlists**
-- Optionally **create new playlists** directly from Spotboxd
-- Playlists created on Spotboxd sync back to your Spotify account
+- Optionally **create new playlists** directly from trackboxd
+- Playlists created on trackboxd sync back to your Spotify account
 
 ### 🧑‍💻 User Profiles
 - Every user has a profile showing:
@@ -50,7 +50,7 @@ It gives you a home to express your taste, opinions, and deep takes on the music
 ## 🔄 Workflow
 
 1. **User logs in with Spotify** (OAuth)
-2. Spotboxd fetches:
+2. trackboxd fetches:
    - User profile
    - Saved tracks, albums, and playlists
 3. User can:
@@ -69,7 +69,7 @@ It gives you a home to express your taste, opinions, and deep takes on the music
 
 ## 💡 Vision
 
-Spotboxd aims to be the **social memory layer** for your music —  
+trackboxd aims to be the **social memory layer** for your music —  
 a space between the passive act of listening and the expressive act of sharing taste.
 
 It turns your Spotify account into something *alive* — not just a list of streams, but a reflection of your emotions, thoughts, and musical journey.
