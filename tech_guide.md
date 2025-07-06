@@ -1,7 +1,7 @@
 
 # 🧠 trackboxd — Technical Architecture
 
-This document outlines the full technical structure behind **Spotboxd**, a web-only application built to provide review, rating, and annotation capabilities on top of the Spotify platform.
+This document outlines the full technical structure behind **trackboxd**, a web-only application built to provide review, rating, and annotation capabilities on top of the Spotify platform.
 
 ---
 

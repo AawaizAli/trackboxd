@@ -1,0 +1,90 @@
+-- USERS: Authenticated via Spotify
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,                     -- Spotify ID
+  email TEXT UNIQUE,
+  name TEXT,
+  image_url TEXT,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- REVIEWS: For tracks, albums, playlists
+CREATE TABLE reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  item_type TEXT CHECK (item_type IN ('track', 'album', 'playlist')),
+  item_id TEXT NOT NULL,                  -- Spotify item ID
+  rating INTEGER CHECK (rating BETWEEN 1 AND 5),
+  text TEXT,
+  is_public BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- ANNOTATIONS: Timestamped comments on tracks
+CREATE TABLE annotations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  track_id TEXT NOT NULL,                 -- Spotify track ID
+  timestamp FLOAT CHECK (timestamp >= 0),
+  text TEXT,
+  is_public BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- ANNOTATION UPVOTES: Voting system
+CREATE TABLE annotation_upvotes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  annotation_id UUID REFERENCES annotations(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT now(),
+  UNIQUE (annotation_id, user_id)         -- Prevent double-voting
+);
+
+-- ANNOTATION COMMENTS: Threaded replies on annotations
+CREATE TABLE comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  annotation_id UUID REFERENCES annotations(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  text TEXT,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- USER PLAYLISTS: Imported or created via Spotboxd
+CREATE TABLE playlists (
+  id TEXT PRIMARY KEY,                    -- Spotify playlist ID
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT,
+  description TEXT,
+  is_public BOOLEAN DEFAULT true,         -- Optional for syncing control
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- FUTURE: Optional tagging system
+CREATE TABLE tags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT UNIQUE
+);
+
+CREATE TABLE review_tags (
+  review_id UUID REFERENCES reviews(id) ON DELETE CASCADE,
+  tag_id UUID REFERENCES tags(id) ON DELETE CASCADE,
+  PRIMARY KEY (review_id, tag_id)
+);
+
+-- FUTURE: Follows (social)
+CREATE TABLE follows (
+  follower_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  following_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT now(),
+  PRIMARY KEY (follower_id, following_id)
+);
+
+-- FUTURE: Activity Feed
+-- e.g. "User X reviewed Track Y"
+CREATE TABLE activity (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT REFERENCES users(id),
+  action TEXT, -- 'reviewed', 'annotated', 'commented'
+  item_type TEXT,
+  item_id TEXT,
+  timestamp TIMESTAMP DEFAULT now()
+);
