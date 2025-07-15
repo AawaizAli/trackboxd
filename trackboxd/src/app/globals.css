@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Backgrounds */
+  --background: #0C3B2E; /* Primary (Dark Green) */
+  --foreground: #1F2C24; /* Text Primary */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Primary Colors */
+  --primary: #0C3B2E; /* Dark Green */
+  --primary-soft: #6D9773; /* Sage (Primary Soft) */
+  --primary-foreground: #F9F9F9; /* Text On Dark */
+
+  /* Accent Colors */
+  --accent: #FFBA00; /* Golden Yellow */
+  --accent-foreground: #1F2C24; /* Text Primary */
+
+  /* Secondary Colors */
+  --secondary: #BB8A52; /* Warm Brown */
+  --secondary-foreground: #F9F9F9; /* Text On Dark */
+
+  /* Card & Input Background */
+  --card-bg: #F9F9F6; /* Off-White */
+  --input-bg: #F2F3EF; /* Light Grey for inputs */
+
+  /* Text Colors */
+  --text-primary: #1F2C24; /* Dark Text */
+  --text-on-dark: #F9F9F9; /* Light Text on Dark */
+  --text-muted: #A0A0A0; /* Muted Text */
+
+  /* Border & Divider */
+  --border: #D9D9D9; /* Subtle Divider/Border */
+  --avatar-ring: #FFBA00; /* Accent (Golden Yellow) for Avatar Ring */
+
+  /* Other Colors */
+  --input: #F2F3EF; /* Input background */
+  --ring: #FFBA00; /* Accent Ring */
+  --destructive: #FF0000; /* Destructive Color */
+  --destructive-foreground: #FFFFFF; /* Destructive Text */
+  --muted: #A0A0A0; /* Muted Text */
+  --muted-foreground: #666666; /* Muted Text for backgrounds */
+  --popover: #FFFFFF; /* Popover Background */
+  --popover-foreground: #1F2C24; /* Popover Text */
+
+  /* Card (default and foreground) */
+  --card: #FFFFFF; /* Default Card Background */
+  --card-foreground: #1F2C24; /* Card Text Color */
+
+  /* Sidebar */
+  --sidebar-background: #F9F9F6; /* Sidebar Background */
+  --sidebar-foreground: #1F2C24; /* Sidebar Foreground Text */
+  --sidebar-primary: #0C3B2E; /* Primary Sidebar Background */
+  --sidebar-primary-foreground: #F9F9F9; /* Sidebar Text */
+  --sidebar-accent: #FFBA00; /* Sidebar Accent */
+  --sidebar-accent-foreground: #1F2C24; /* Sidebar Accent Text */
+  --sidebar-border: #D9D9D9; /* Sidebar Border */
+  --sidebar-ring: #FFBA00; /* Sidebar Ring Color */
+
+  /* Radius */
+  --radius: 0.5rem; /* Border Radius */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0A2B1B; /* Dark Green */
+    --foreground: #F9F9F9; /* Light Text */
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
