@@ -3,6 +3,7 @@
 import React from 'react';
 import Header from '@/components/Header';
 import { Star, Heart, Play, Users, Calendar, TrendingUp } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 const DemoAuthenticatedPage = () => {
   // Sample data for demonstration
@@ -45,7 +46,6 @@ const DemoAuthenticatedPage = () => {
   return (
     <div className="min-h-screen bg-muted">
       <Header />
-      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-12">
@@ -169,9 +169,12 @@ const DemoAuthenticatedPage = () => {
                 </button>
               </div>
             </div>
+
+
           </div>
         </div>
       </main>
+      <Footer variant='light'/>
     </div>
   );
 };
