@@ -7,7 +7,7 @@ type FooterProps = {
 const Footer = ({ variant = "dark" }: FooterProps) => {
   const isDark = variant === "dark";
 
-  const bgColor = isDark ? "bg-[#0C3B2E]" : "bg-[#F9F9F9]";
+  const bgColor = isDark ? "bg-[#0C3B2E]" : "bg-[#FFFFE7]";
   const textColor = isDark ? "text-[#F9F9F9]/60" : "text-[#1F2C24]/60";
   const hoverColor = isDark ? "hover:text-[#FFBA00]" : "hover:text-[#6D9773]";
   const borderColor = isDark ? "border-[#F9F9F9]/10" : "border-[#D9D9D9]/50";

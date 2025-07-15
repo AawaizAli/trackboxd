@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Search, ChevronDown, Music, Users, Settings, LogOut, BookOpen, MessageSquare, FileText, Menu, X } from 'lucide-react';
 
@@ -44,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="bg-[#F9F9F6] border-b border-[#D9D9D9] sticky top-0 z-50">
+    <header className="bg-[#FFFFE7] border-b border-[#D9D9D9] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left - Logo and Title */}
@@ -118,7 +120,7 @@ const Header: React.FC<HeaderProps> = ({
                 />
                 
                 {/* Dropdown Content - FIXED POSITIONING */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-56 bg-[#F9F9F6] rounded-xl shadow-lg border border-[#D9D9D9] py-2 z-20">
+                <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-1/25 top-full mt-2 w-56 bg-[#FFFFF0] rounded-xl shadow-lg border border-[#D9D9D9] py-2 z-20">
                   {dropdownItems.map((item, index) => (
                     item.type === 'divider' ? (
                       <div key={index} className="h-px bg-[#D9D9D9] my-2" />
