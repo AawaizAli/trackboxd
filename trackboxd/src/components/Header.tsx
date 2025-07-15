@@ -110,23 +110,32 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-[#F9F9F6] rounded-xl shadow-lg border border-[#D9D9D9] py-2 z-20">
-                {dropdownItems.map((item, index) => (
-                  item.type === 'divider' ? (
-                    <div key={index} className="h-px bg-[#D9D9D9] my-2" />
-                  ) : (
-                    <a
-                      key={item.label}
-                      href={item.href}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#1F2C24] hover:bg-[#F2F3EF] transition-colors duration-200"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      {item.icon && <item.icon className="w-4 h-4 text-[#A0A0A0]" />}
-                      {item.label}
-                    </a>
-                  )
-                ))}
-              </div>
+              <>
+                {/* Backdrop for mobile */}
+                <div 
+                  className="fixed inset-0 z-10 md:hidden" 
+                  onClick={() => setIsDropdownOpen(false)}
+                />
+                
+                {/* Dropdown Content - FIXED POSITIONING */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-56 bg-[#F9F9F6] rounded-xl shadow-lg border border-[#D9D9D9] py-2 z-20">
+                  {dropdownItems.map((item, index) => (
+                    item.type === 'divider' ? (
+                      <div key={index} className="h-px bg-[#D9D9D9] my-2" />
+                    ) : (
+                      <a
+                        key={item.label}
+                        href={item.href}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#1F2C24] hover:bg-[#F2F3EF] transition-colors duration-200"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        {item.icon && <item.icon className="w-4 h-4 text-[#A0A0A0]" />}
+                        {item.label}
+                      </a>
+                    )
+                  ))}
+                </div>
+              </>
             )}
           </div>
 

@@ -1,182 +1,296 @@
 "use client";
 
-import React from 'react';
-import Header from '@/components/Header';
-import { Star, Heart, Play, Users, Calendar, TrendingUp } from 'lucide-react';
-import Footer from '@/components/Footer';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Heart, MessageCircle, Bookmark, Music, Album, List, Clock, Plus } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
-const DemoAuthenticatedPage = () => {
-  // Sample data for demonstration
-  const recentSongs = [
-    {
-      id: 1,
-      title: "Blinding Lights",
-      artist: "The Weeknd",
-      album: "After Hours",
-      rating: 4.5,
-      userRating: 5,
-      listenedDate: "2 hours ago"
-    },
-    {
-      id: 2,
-      title: "Good 4 U",
-      artist: "Olivia Rodrigo", 
-      album: "SOUR",
-      rating: 4.2,
-      userRating: 4,
-      listenedDate: "Yesterday"
-    },
-    {
-      id: 3,
-      title: "Levitating",
-      artist: "Dua Lipa",
-      album: "Future Nostalgia",
-      rating: 4.7,
-      userRating: 5,
-      listenedDate: "3 days ago"
+// Mock data
+const currentUser = {
+  name: "Iznah Waqar",
+  avatar: "/api/placeholder/40/40",
+  username: "iznauurr"
+};
+
+const recentActivity = [
+  {
+    id: 1,
+    type: "review",
+    itemType: "track",
+    title: "Blinding Lights",
+    artist: "The Weeknd",
+    rating: 4.5,
+    content: "An absolute masterpiece that captures the essence of 80s synthwave...",
+    timestamp: "2 hours ago",
+    likes: 12
+  },
+  {
+    id: 2,
+    type: "review",
+    itemType: "album",
+    title: "After Hours",
+    artist: "The Weeknd",
+    rating: 4.0,
+    content: "Solid album with great production values and emotional depth.",
+    timestamp: "1 day ago",
+    likes: 8
+  },
+  {
+    id: 3,
+    type: "save",
+    itemType: "playlist",
+    title: "Midnight Vibes",
+    creator: "Sarah Johnson",
+    tracks: 24,
+    timestamp: "3 hours ago"
+  },
+  {
+    id: 4,
+    type: "save",
+    itemType: "track",
+    title: "Save Your Tears",
+    artist: "The Weeknd",
+    timestamp: "5 hours ago"
+  },
+  {
+    id: 5,
+    type: "playlist",
+    title: "Road Trip Essentials",
+    tracks: 47,
+    followers: 23,
+    timestamp: "2 days ago"
+  }
+];
+
+const friendsActivity = [
+  {
+    id: 6,
+    user: { name: "Sarah Johnson", avatar: "/api/placeholder/40/40", username: "sarahj" },
+    type: "review",
+    itemType: "album",
+    title: "folklore",
+    artist: "Taylor Swift",
+    rating: 5.0,
+    content: "Every song tells a story. Pure poetry in musical form.",
+    timestamp: "1 hour ago",
+    likes: 34,
+    isHighlyUpvoted: true
+  },
+  {
+    id: 7,
+    user: { name: "Mike Rodriguez", avatar: "/api/placeholder/40/40", username: "mikerod" },
+    type: "review",
+    itemType: "track",
+    title: "Levitating",
+    artist: "Dua Lipa",
+    rating: 4.0,
+    content: "Perfect dance track for any occasion!",
+    timestamp: "4 hours ago",
+    likes: 16
+  },
+  {
+    id: 8,
+    user: { name: "Emma Davis", avatar: "/api/placeholder/40/40", username: "emmad" },
+    type: "save",
+    itemType: "playlist",
+    title: "Study Beats",
+    creator: "Lo-Fi Collective",
+    tracks: 89,
+    timestamp: "6 hours ago"
+  },
+  {
+    id: 9,
+    user: { name: "Jordan Kim", avatar: "/api/placeholder/40/40", username: "jordank" },
+    type: "annotation",
+    track: "Watermelon Sugar",
+    artist: "Harry Styles",
+    content: "This bridge section at 2:14 gives me chills every time 🎵",
+    timestamp: "2:14",
+    likes: 7,
+    timeAgo: "8 hours ago"
+  }
+];
+
+const ActivityCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <div className={`bg-[#F9F9F6] border border-[#D9D9D9] rounded-lg p-4 shadow-sm ${className}`}>
+    {children}
+  </div>
+);
+
+const RatingStars = ({ rating }: { rating: number }) => (
+  <div className="flex items-center gap-1">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <div key={star} className="relative">
+        <div className="w-4 h-4 text-[#D9D9D9]">★</div>
+        <div 
+          className="absolute top-0 left-0 w-4 h-4 text-[#FFBA00] overflow-hidden"
+          style={{ width: `${Math.max(0, Math.min(1, rating - star + 1)) * 100}%` }}
+        >
+          ★
+        </div>
+      </div>
+    ))}
+    <span className="text-sm text-[#1F2C24] ml-1">{rating}</span>
+  </div>
+);
+
+const UserAvatar = ({ user, size = "w-10 h-10" }: { user: any; size?: string }) => (
+  <div className={`${size} rounded-full ring-2 ring-[#FFBA00] overflow-hidden flex-shrink-0`}>
+    <Avatar className="w-full h-full">
+      <AvatarImage src={user.avatar} alt={user.name} />
+      <AvatarFallback className="bg-[#6D9773] text-[#F9F9F9]">
+        {user.name.split(' ').map((n: string) => n[0]).join('')}
+      </AvatarFallback>
+    </Avatar>
+  </div>
+);
+
+const ActivityItem = ({ activity, isCurrentUser = false }: { activity: any; isCurrentUser?: boolean }) => {
+  const renderContent = () => {
+    switch (activity.type) {
+      case 'review':
+        return (
+          <>
+            <div className="flex items-center gap-2 mb-1">
+              {!isCurrentUser && <UserAvatar user={activity.user} size="w-8 h-8" />}
+              <span className="text-sm text-[#A0A0A0]">
+                {isCurrentUser ? 'You reviewed' : `${activity.user.name} reviewed`}
+              </span>
+              {activity.itemType === 'track' && <Music className="w-4 h-4 text-[#FFBA00]" />}
+              {activity.itemType === 'album' && <Album className="w-4 h-4 text-[#FFBA00]" />}
+            </div>
+            <div className="mb-2">
+              <h4 className="font-medium text-[#1F2C24]">{activity.title}</h4>
+              <p className="text-sm text-[#A0A0A0]">by {activity.artist}</p>
+            </div>
+            <RatingStars rating={activity.rating} />
+            <p className="text-sm text-[#1F2C24] mt-2 line-clamp-2">{activity.content}</p>
+          </>
+        );
+      case 'save':
+        return (
+          <>
+            <div className="flex items-center gap-2 mb-1">
+              {!isCurrentUser && <UserAvatar user={activity.user} size="w-8 h-8" />}
+              <span className="text-sm text-[#A0A0A0]">
+                {isCurrentUser ? 'You saved' : `${activity.user.name} saved`}
+              </span>
+              {activity.itemType === 'playlist' && <List className="w-4 h-4 text-[#FFBA00]" />}
+              {activity.itemType === 'track' && <Music className="w-4 h-4 text-[#FFBA00]" />}
+            </div>
+            <div className="mb-2">
+              <h4 className="font-medium text-[#1F2C24]">{activity.title}</h4>
+              {activity.creator && <p className="text-sm text-[#A0A0A0]">by {activity.creator}</p>}
+              {activity.artist && <p className="text-sm text-[#A0A0A0]">by {activity.artist}</p>}
+              {activity.tracks && <p className="text-sm text-[#A0A0A0]">{activity.tracks} tracks</p>}
+            </div>
+          </>
+        );
+      case 'playlist':
+        return (
+          <>
+            <div className="flex items-center gap-2 mb-1">
+              <UserAvatar user={currentUser} size="w-8 h-8" />
+              <span className="text-sm text-[#A0A0A0]">You created playlist</span>
+              <List className="w-4 h-4 text-[#FFBA00]" />
+            </div>
+            <div className="mb-2">
+              <h4 className="font-medium text-[#1F2C24]">{activity.title}</h4>
+              <p className="text-sm text-[#A0A0A0]">{activity.tracks} tracks · {activity.followers} followers</p>
+            </div>
+          </>
+        );
+      case 'annotation':
+        return (
+          <>
+            <div className="flex items-center gap-2 mb-1">
+              <UserAvatar user={activity.user} size="w-8 h-8" />
+              <span className="text-sm text-[#A0A0A0]">{activity.user.name} annotated</span>
+              <Clock className="w-4 h-4 text-[#FFBA00]" />
+            </div>
+            <div className="mb-2">
+              <h4 className="font-medium text-[#1F2C24]">{activity.track}</h4>
+              <p className="text-sm text-[#A0A0A0]">by {activity.artist} · at {activity.timestamp}</p>
+            </div>
+            <p className="text-sm text-[#1F2C24] bg-[#F2F3EF] rounded p-2 mb-2">{activity.content}</p>
+          </>
+        );
+      default:
+        return null;
     }
-  ];
-
-  const trendingSongs = [
-    { title: "As It Was", artist: "Harry Styles", plays: "2.1M" },
-    { title: "Heat Waves", artist: "Glass Animals", plays: "1.8M" },
-    { title: "Anti-Hero", artist: "Taylor Swift", plays: "1.5M" }
-  ];
+  };
 
   return (
-    <div className="min-h-screen bg-muted">
-      <Header />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-text-primary mb-4">
-            Welcome back, Sarah! 🎵
-          </h1>
-          <p className="text-text-muted text-lg">
-            Here's what's been happening in your musical world.
-          </p>
+    <ActivityCard className="space-y-3">
+      {renderContent()}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-[#A0A0A0]">{activity.timestamp || activity.timeAgo}</span>
+        <div className="flex items-center gap-4">
+          {activity.likes !== undefined && (
+            <button className="flex items-center gap-1 text-sm text-[#A0A0A0] hover:text-[#6D9773]">
+              <Heart className="w-4 h-4" />
+              {activity.likes}
+            </button>
+          )}
+          <button className="flex items-center gap-1 text-sm text-[#A0A0A0] hover:text-[#6D9773]">
+            <MessageCircle className="w-4 h-4" />
+          </button>
+          {activity.type === 'save' && (
+            <button className="flex items-center gap-1 text-sm text-[#A0A0A0] hover:text-[#6D9773]">
+              <Bookmark className="w-4 h-4" />
+            </button>
+          )}
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Listens */}
-          <div className="lg:col-span-2">
-            <div className="bg-card-bg rounded-xl p-6 shadow-sm border border-border">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-semibold text-text-primary">Recent Listens</h2>
-                <button className="text-accent hover:text-accent/80 font-medium">
-                  View All
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                {recentSongs.map((song) => (
-                  <div key={song.id} className="flex items-center gap-4 p-4 rounded-lg hover:bg-muted transition-colors duration-200">
-                    {/* Album Art Placeholder */}
-                    <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center">
-                      <Play className="w-6 h-6 text-text-on-dark" />
-                    </div>
-                    
-                    {/* Song Info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-text-primary truncate">{song.title}</h3>
-                      <p className="text-text-muted">{song.artist}</p>
-                      <p className="text-sm text-text-muted">{song.album} • {song.listenedDate}</p>
-                    </div>
-                    
-                    {/* Rating */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`w-4 h-4 ${
-                              star <= song.userRating
-                                ? 'text-accent fill-accent'
-                                : 'text-text-muted'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <Heart className="w-5 h-5 text-text-muted hover:text-red-500 cursor-pointer transition-colors duration-200" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Stats */}
-            <div className="bg-card-bg rounded-xl p-6 shadow-sm border border-border">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">This Week</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Play className="w-4 h-4 text-accent" />
-                    <span className="text-text-primary">Songs played</span>
-                  </div>
-                  <span className="font-semibold text-text-primary">47</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-accent" />
-                    <span className="text-text-primary">Reviews written</span>
-                  </div>
-                  <span className="font-semibold text-text-primary">3</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-accent" />
-                    <span className="text-text-primary">Friends added</span>
-                  </div>
-                  <span className="font-semibold text-text-primary">2</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Trending */}
-            <div className="bg-card-bg rounded-xl p-6 shadow-sm border border-border">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-5 h-5 text-accent" />
-                <h3 className="text-lg font-semibold text-text-primary">Trending Now</h3>
-              </div>
-              <div className="space-y-3">
-                {trendingSongs.map((song, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-text-primary truncate">{song.title}</p>
-                      <p className="text-sm text-text-muted">{song.artist}</p>
-                    </div>
-                    <span className="text-xs text-text-muted ml-2">{song.plays}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-card-bg rounded-xl p-6 shadow-sm border border-border">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Quick Actions</h3>
-              <div className="space-y-2">
-                <button className="w-full text-left p-3 rounded-lg bg-primary text-text-on-dark hover:bg-primary/90 transition-colors duration-200">
-                  Add a song
-                </button>
-                <button className="w-full text-left p-3 rounded-lg border border-border hover:bg-muted transition-colors duration-200 text-text-primary">
-                  Create playlist
-                </button>
-                <button className="w-full text-left p-3 rounded-lg border border-border hover:bg-muted transition-colors duration-200 text-text-primary">
-                  Write review
-                </button>
-              </div>
-            </div>
-
-
-          </div>
+      </div>
+      {activity.isHighlyUpvoted && (
+        <div className="bg-[#FFBA00]/10 border border-[#FFBA00]/20 rounded-md p-2">
+          <span className="text-xs text-[#FFBA00] font-medium">🔥 Highly upvoted</span>
         </div>
-      </main>
-      <Footer variant='light'/>
-    </div>
+      )}
+    </ActivityCard>
   );
 };
 
-export default DemoAuthenticatedPage;
+export default function ActivityPage() {
+  return (
+    <div className="min-h-screen bg-[#0C3B2E]">
+      <Header/>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-[#F9F9F9] mb-2">Activity</h1>
+            <p className="text-[#F9F9F9]/70">Keep track of your music journey</p>
+          </div>
+          <button className="bg-[#FFBA00] text-[#1F2C24] px-6 py-3 rounded-lg font-bold hover:bg-[#FFBA00]/90 transition-colors flex items-center gap-2 shadow-md">
+            <Plus className="w-5 h-5" />
+            Log Activity
+          </button>
+        </div>
+
+        <div className="grid gap-8">
+          {/* Your Recent Activity */}
+          <div>
+            <h2 className="text-2xl font-semibold text-[#F9F9F9] mb-6">Your Recent Activity</h2>
+            <div className="space-y-4">
+              {recentActivity.map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} isCurrentUser={true} />
+              ))}
+            </div>
+          </div>
+
+          {/* Friends' Activity */}
+          <div>
+            <h2 className="text-2xl font-semibold text-[#F9F9F9] mb-6">Friends' Activity</h2>
+            <div className="space-y-4">
+              {friendsActivity.map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <Footer variant="dark"/>
+    </div>
+  );
+}
