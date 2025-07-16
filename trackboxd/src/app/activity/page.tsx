@@ -14,16 +14,15 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-// Mock data
-const currentUser = {
-    name: "Iznah Waqar",
-    avatar: "/api/placeholder/40/40",
-    username: "iznauurr",
-};
-
-const recentActivity = [
+// Mock data - combining both current user and friends activity
+const allActivity = [
     {
         id: 1,
+        user: {
+            name: "Iznah Waqar",
+            avatar: "/api/placeholder/40/40",
+            username: "iznauurr",
+        },
         type: "review",
         itemType: "track",
         title: "Blinding Lights",
@@ -33,47 +32,8 @@ const recentActivity = [
             "An absolute masterpiece that captures the essence of 80s synthwave...",
         timestamp: "2 hours ago",
         likes: 12,
+        isCurrentUser: true,
     },
-    {
-        id: 2,
-        type: "review",
-        itemType: "album",
-        title: "After Hours",
-        artist: "The Weeknd",
-        rating: 4.0,
-        content:
-            "Solid album with great production values and emotional depth.",
-        timestamp: "1 day ago",
-        likes: 8,
-    },
-    {
-        id: 3,
-        type: "save",
-        itemType: "playlist",
-        title: "Midnight Vibes",
-        creator: "Sarah Johnson",
-        tracks: 24,
-        timestamp: "3 hours ago",
-    },
-    {
-        id: 4,
-        type: "save",
-        itemType: "track",
-        title: "Save Your Tears",
-        artist: "The Weeknd",
-        timestamp: "5 hours ago",
-    },
-    {
-        id: 5,
-        type: "playlist",
-        title: "Road Trip Essentials",
-        tracks: 47,
-        followers: 23,
-        timestamp: "2 days ago",
-    },
-];
-
-const friendsActivity = [
     {
         id: 6,
         user: {
@@ -89,6 +49,25 @@ const friendsActivity = [
         content: "Every song tells a story. Pure poetry in musical form.",
         timestamp: "1 hour ago",
         likes: 34,
+        isCurrentUser: false,
+    },
+    {
+        id: 2,
+        user: {
+            name: "Iznah Waqar",
+            avatar: "/api/placeholder/40/40",
+            username: "iznauurr",
+        },
+        type: "review",
+        itemType: "album",
+        title: "After Hours",
+        artist: "The Weeknd",
+        rating: 4.0,
+        content:
+            "Solid album with great production values and emotional depth.",
+        timestamp: "1 day ago",
+        likes: 8,
+        isCurrentUser: true,
     },
     {
         id: 7,
@@ -105,6 +84,22 @@ const friendsActivity = [
         content: "Perfect dance track for any occasion!",
         timestamp: "4 hours ago",
         likes: 16,
+        isCurrentUser: false,
+    },
+    {
+        id: 3,
+        user: {
+            name: "Iznah Waqar",
+            avatar: "/api/placeholder/40/40",
+            username: "iznauurr",
+        },
+        type: "save",
+        itemType: "playlist",
+        title: "Midnight Vibes",
+        creator: "Sarah Johnson",
+        tracks: 24,
+        timestamp: "3 hours ago",
+        isCurrentUser: true,
     },
     {
         id: 8,
@@ -119,6 +114,21 @@ const friendsActivity = [
         creator: "Lo-Fi Collective",
         tracks: 89,
         timestamp: "6 hours ago",
+        isCurrentUser: false,
+    },
+    {
+        id: 4,
+        user: {
+            name: "Iznah Waqar",
+            avatar: "/api/placeholder/40/40",
+            username: "iznauurr",
+        },
+        type: "save",
+        itemType: "track",
+        title: "Save Your Tears",
+        artist: "The Weeknd",
+        timestamp: "5 hours ago",
+        isCurrentUser: true,
     },
     {
         id: 9,
@@ -134,8 +144,23 @@ const friendsActivity = [
         timestamp: "2:14",
         likes: 7,
         timeAgo: "8 hours ago",
+        isCurrentUser: false,
     },
-];
+    {
+        id: 5,
+        user: {
+            name: "Iznah Waqar",
+            avatar: "/api/placeholder/40/40",
+            username: "iznauurr",
+        },
+        type: "playlist",
+        title: "Road Trip Essentials",
+        tracks: 47,
+        followers: 23,
+        timestamp: "2 days ago",
+        isCurrentUser: true,
+    },
+].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
 const ActivityCard = ({
     children,
@@ -188,11 +213,9 @@ const UserAvatar = ({
 
 const ActivityItem = ({
     activity,
-    isCurrentUser = false,
     isLast = false,
 }: {
     activity: any;
-    isCurrentUser?: boolean;
     isLast?: boolean;
 }) => {
     const renderContent = () => {
@@ -201,14 +224,9 @@ const ActivityItem = ({
                 return (
                     <>
                         <div className="flex items-center gap-2 mb-1">
-                            {!isCurrentUser && (
-                                <UserAvatar
-                                    user={activity.user}
-                                    size="w-8 h-8"
-                                />
-                            )}
+                            <UserAvatar user={activity.user} size="w-8 h-8" />
                             <span className="text-sm text-[#A0A0A0]">
-                                {isCurrentUser
+                                {activity.isCurrentUser
                                     ? "You reviewed"
                                     : `${activity.user.name} reviewed`}
                             </span>
@@ -237,14 +255,9 @@ const ActivityItem = ({
                 return (
                     <>
                         <div className="flex items-center gap-2 mb-1">
-                            {!isCurrentUser && (
-                                <UserAvatar
-                                    user={activity.user}
-                                    size="w-8 h-8"
-                                />
-                            )}
+                            <UserAvatar user={activity.user} size="w-8 h-8" />
                             <span className="text-sm text-[#A0A0A0]">
-                                {isCurrentUser
+                                {activity.isCurrentUser
                                     ? "You liked"
                                     : `${activity.user.name} liked`}
                             </span>
@@ -281,7 +294,7 @@ const ActivityItem = ({
                 return (
                     <>
                         <div className="flex items-center gap-2 mb-1">
-                            <UserAvatar user={currentUser} size="w-8 h-8" />
+                            <UserAvatar user={activity.user} size="w-8 h-8" />
                             <span className="text-sm text-[#A0A0A0]">
                                 You created playlist
                             </span>
@@ -334,7 +347,7 @@ const ActivityItem = ({
                 style={{ height: isLast ? "2.5rem" : "100%" }}
             />
             {/* Timeline dot */}
-            {/* <div className="absolute left-0 top-0 transform -translate-x-1/2 w-3 h-3 rounded-full bg-[#FFBA00] border-2 border-[#F9F9F6]" /> */}
+            <div className="absolute left-0 top-0 transform -translate-x-2/5 w-3 h-3 rounded-full bg-[#FFBA00] border-2 border-[#F9F9F6]" />
 
             <ActivityCard className="space-y-1">
                 {renderContent()}
@@ -368,7 +381,7 @@ export default function ActivityPage() {
                             Activity
                         </h1>
                         <p className="text-[#0C3B2E]/70">
-                            Keep track of your music journey
+                            See what you and your friends have been listening to
                         </p>
                     </div>
                     <button className="bg-[#FFBA00] text-[#1F2C24] px-4 py-3 rounded-lg font-bold hover:bg-[#FFBA00]/90 transition-colors flex items-center gap-2 shadow-md">
@@ -377,36 +390,19 @@ export default function ActivityPage() {
                     </button>
                 </div>
 
-                <div className="grid gap-8">
-                    {/* Your Recent Activity */}
-                    <div>
-                        <h2 className="text-2xl font-semibold text-[#0C3B2E] mb-6">
-                            What you have been upto...
-                        </h2>
-                        <div className="space-y-0">
-                            {recentActivity.map((activity) => (
-                                <ActivityItem
-                                    key={activity.id}
-                                    activity={activity}
-                                    isCurrentUser={true}
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Friends' Activity */}
-                    <div>
-                        <h2 className="text-2xl font-semibold text-[#0C3B2E] mb-6">
-                            Friends' Activity
-                        </h2>
-                        <div className="space-y-0">
-                            {friendsActivity.map((activity) => (
-                                <ActivityItem
-                                    key={activity.id}
-                                    activity={activity}
-                                />
-                            ))}
-                        </div>
+                {/* Combined Activity Feed */}
+                <div>
+                    <h2 className="text-2xl font-semibold text-[#0C3B2E] mb-6">
+                        Recent Activity
+                    </h2>
+                    <div className="space-y-0">
+                        {allActivity.map((activity, index) => (
+                            <ActivityItem
+                                key={activity.id}
+                                activity={activity}
+                                isLast={index === allActivity.length - 1}
+                            />
+                        ))}
                     </div>
                 </div>
             </div>
