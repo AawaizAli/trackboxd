@@ -67,13 +67,13 @@ const Header: React.FC<HeaderProps> = ({
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                   item.active
                     ? 'bg-[#0C3B2E] text-[#F9F9F9]'
-                    : 'text-[#1F2C24] hover:bg-[#F2F3EF] hover:text-[#1F2C24]'
+                    : 'text-[#1F2C24] hover:bg-[#FFFFD5] hover:text-[#1F2C24]'
                 }`}
               >
                 {item.label}
               </a>
             ))}
-            <button className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#F2F3EF] transition-colors duration-200 ml-2">
+            <button className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 ml-2">
               <Search className="w-5 h-5" />
             </button>
           </nav>
@@ -82,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({
           <div className="hidden md:block relative">
             <button
               onClick={toggleDropdown}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#F2F3EF] transition-colors duration-200"
+              className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#FFFFD5] transition-colors duration-200"
             >
               {/* User Avatar */}
               <div className="relative">

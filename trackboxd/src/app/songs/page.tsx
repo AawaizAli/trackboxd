@@ -10,6 +10,14 @@ import {
     MessageCircle,
     Bookmark,
 } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+  } from "@/components/ui/dropdown-menu"
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -31,10 +39,10 @@ const Songs = () => {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [sortBy, setSortBy] = useState("Most Rated");
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedGenre, setSelectedGenre] = useState("All");
-    const [selectedMood, setSelectedMood] = useState("All");
-    const [selectedYear, setSelectedYear] = useState("All");
-    const [selectedRating, setSelectedRating] = useState("All Ratings");
+    const [selectedGenre, setSelectedGenre] = useState("Genre");
+    const [selectedMood, setSelectedMood] = useState("Mood");
+    const [selectedYear, setSelectedYear] = useState("Year");
+    const [selectedRating, setSelectedRating] = useState("Rating");
     // Mock data
     const tracks: Track[] = [
         {
@@ -251,12 +259,12 @@ const Songs = () => {
                             <span>{track.isSaved ? "Liked" : "Like"}</span>
                         </button>
 
-                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#F2F3EF] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
                             <Star className="w-3 h-3" />
                             <span>Review</span>
                         </button>
 
-                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#F2F3EF] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
                             <MessageCircle className="w-3 h-3" />
                             <span>Annotate</span>
                         </button>
@@ -272,127 +280,159 @@ const Songs = () => {
 
             <div className="max-w-5xl mx-auto px-4 py-8">
                 {/* Search and Filters */}
-                <div className="">
-                    <div className="flex flex-col lg:flex-row gap-4 mb-6">
+                <div className="mb-6">
+                    <div className="flex flex-col lg:flex-row gap-3 items-stretch">
                         {/* Filters - Left-aligned */}
-                        <div className="flex flex-wrap gap-4 flex-1">
+                        <div className="flex flex-wrap gap-3 flex-1">
                             {/* Genre Filter */}
-                            <div className="relative">
-                                <select
-                                    value={selectedGenre}
-                                    onChange={(e) =>
-                                        setSelectedGenre(e.target.value)
-                                    }
-                                    className="pl-10 pr-4 py-2 bg-[#F2F3EF] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] appearance-none">
-                                    {genres.map((genre) => (
-                                        <option key={genre} value={genre}>
-                                            {genre}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-4 w-4 text-[#A0A0A0]"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                                        />
-                                    </svg>
-                                </div>
+                            <div className="relative flex-1 min-w-[150px]">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
+                                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4 text-[#A0A0A0]"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <span className="truncate">
+                                            {selectedGenre || "Genre"}
+                                        </span>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="max-h-60 overflow-y-auto bg-[#FFFFF0] border border-[#D9D9D9]">
+                                        {genres.map((genre) => (
+                                            <DropdownMenuItem
+                                                key={genre}
+                                                className="hover:bg-[#FFFFF0] cursor-pointer"
+                                                onSelect={() =>
+                                                    setSelectedGenre(genre)
+                                                }>
+                                                {genre}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
 
                             {/* Mood Filter */}
-                            <div className="relative">
-                                <select
-                                    value={selectedMood}
-                                    onChange={(e) =>
-                                        setSelectedMood(e.target.value)
-                                    }
-                                    className="pl-10 pr-4 py-2 bg-[#F2F3EF] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] appearance-none">
-                                    {moods.map((mood) => (
-                                        <option key={mood} value={mood}>
-                                            {mood}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-4 w-4 text-[#A0A0A0]"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                        />
-                                    </svg>
-                                </div>
+                            <div className="relative flex-1 min-w-[150px]">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
+                                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4 text-[#A0A0A0]"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <span className="truncate">
+                                            {selectedMood || "Mood"}
+                                        </span>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="max-h-60 overflow-y-auto bg-[#FFFFF0] border border-[#D9D9D9]">
+                                        {moods.map((mood) => (
+                                            <DropdownMenuItem
+                                                key={mood}
+                                                className="hover:bg-[#FFFFF0] cursor-pointer"
+                                                onSelect={() =>
+                                                    setSelectedMood(mood)
+                                                }>
+                                                {mood}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
 
                             {/* Year Filter */}
-                            <div className="relative">
-                                <select
-                                    value={selectedYear}
-                                    onChange={(e) =>
-                                        setSelectedYear(e.target.value)
-                                    }
-                                    className="pl-10 pr-4 py-2 bg-[#F2F3EF] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] appearance-none">
-                                    {years.map((year) => (
-                                        <option key={year} value={year}>
-                                            {year}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-4 w-4 text-[#A0A0A0]"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                        />
-                                    </svg>
-                                </div>
+                            <div className="relative flex-1 min-w-[120px]">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
+                                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4 text-[#A0A0A0]"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <span className="truncate">
+                                            {selectedYear || "Year"}
+                                        </span>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="max-h-60 overflow-y-auto bg-[#FFFFF0] border border-[#D9D9D9]">
+                                        {years.map((year) => (
+                                            <DropdownMenuItem
+                                                key={year}
+                                                className="hover:bg-[#FFFFF0] cursor-pointer"
+                                                onSelect={() =>
+                                                    setSelectedYear(year)
+                                                }>
+                                                {year}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
 
                             {/* Rating Filter */}
-                            <div className="relative">
-                                <select
-                                    value={selectedRating}
-                                    onChange={(e) =>
-                                        setSelectedRating(e.target.value)
-                                    }
-                                    className="pl-10 pr-4 py-2 bg-[#F2F3EF] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] appearance-none">
-                                    <option value="All Ratings">
-                                        All Ratings
-                                    </option>
-                                    <option value="4+">4+ Stars</option>
-                                    <option value="3+">3+ Stars</option>
-                                    <option value="2+">2+ Stars</option>
-                                </select>
-                                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                                    <Star className="h-4 w-4 text-[#A0A0A0]" />
-                                </div>
+                            <div className="relative flex-1 min-w-[150px]">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
+                                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                                            <Star className="h-4 w-4 text-[#A0A0A0]" />
+                                        </div>
+                                        <span className="truncate">
+                                            {selectedRating || "Rating"}
+                                        </span>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="bg-[#FFFFF0] border border-[#D9D9D9]">
+                                        {[
+                                            "All Ratings",
+                                            "4+ Stars",
+                                            "3+ Stars",
+                                            "2+ Stars",
+                                        ].map((rating) => (
+                                            <DropdownMenuItem
+                                                key={rating}
+                                                className="hover:bg-[#FFFFF0] cursor-pointer"
+                                                onSelect={() =>
+                                                    setSelectedRating(rating)
+                                                }>
+                                                {rating}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         </div>
 
                         {/* Search - Right-aligned */}
-                        <div className="w-full lg:w-auto">
-                            <div className="relative">
+                        <div className="w-full lg:w-[320px]">
+                            <div className="relative h-full">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#A0A0A0] w-5 h-5" />
                                 <input
                                     type="text"
@@ -401,7 +441,7 @@ const Songs = () => {
                                     onChange={(e) =>
                                         setSearchTerm(e.target.value)
                                     }
-                                    className="w-full lg:w-80 pl-10 pr-4 py-3 bg-[#F2F3EF] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773]"
+                                    className="w-full h-full pl-10 pr-4 py-3 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773]"
                                 />
                             </div>
                         </div>
