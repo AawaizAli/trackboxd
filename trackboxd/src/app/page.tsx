@@ -3,6 +3,12 @@
 import React from 'react';
 import { Music, Star, List, Share2 } from 'lucide-react';
 import Footer from '@/components/Footer';
+import { signIn } from "next-auth/react";
+
+const LANDING_CALLBACK_URL =
+  process.env.NEXT_PUBLIC_BASE_URL
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}/activity`
+    : "/activity";
 
 const LandingPage = () => {
   return (
@@ -44,7 +50,10 @@ const LandingPage = () => {
           </p>
           
           {/* Spotify Login Button */}
-          <button className="inline-flex items-center gap-4 bg-gradient-to-r from-[#1DB954] to-[#1ED760] text-[#F9F9F9] font-semibold text-lg md:text-xl px-8 md:px-12 py-4 md:py-5 rounded-xl transition-all duration-300 shadow-lg group">
+          <button
+            className="inline-flex items-center gap-4 bg-gradient-to-r from-[#1DB954] to-[#1ED760] text-[#F9F9F9] font-semibold text-lg md:text-xl px-8 md:px-12 py-4 md:py-5 rounded-xl transition-all duration-300 shadow-lg group"
+            onClick={() => signIn("spotify", { callbackUrl: LANDING_CALLBACK_URL })}
+          >
             <svg 
               role="img" 
               viewBox="0 0 24 24" 
