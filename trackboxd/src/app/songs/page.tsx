@@ -66,7 +66,7 @@ const Songs = () => {
             title: "Blinding Lights",
             artist: "The Weeknd",
             album: "After Hours",
-            coverArt: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop",
+            coverArt: "https://i.scdn.co/image/ab67616d0000b27398ea0e689c91f8fea726d9bb",
             avgRating: 4.5,
             saveCount: 1247,
             genre: "Pop",
@@ -79,7 +79,7 @@ const Songs = () => {
             title: "Bohemian Rhapsody",
             artist: "Queen",
             album: "A Night at the Opera",
-            coverArt: "https://images.unsplash.com/photo-1515552726023-7125c8d07fb3?w=300&h=300&fit=crop",
+            coverArt: "https://upload.wikimedia.org/wikipedia/en/d/dc/Clairo_-_Charm.png",
             avgRating: 4.8,
             saveCount: 2156,
             genre: "Rock",
@@ -92,7 +92,7 @@ const Songs = () => {
             title: "Good 4 U",
             artist: "Olivia Rodrigo",
             album: "Sour",
-            coverArt: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&h=300&fit=crop",
+            coverArt: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Playboi_Carti_-_Music.png/960px-Playboi_Carti_-_Music.png",
             avgRating: 4.2,
             saveCount: 892,
             genre: "Pop",
@@ -105,7 +105,7 @@ const Songs = () => {
             title: "Heat Waves",
             artist: "Glass Animals",
             album: "Dreamland",
-            coverArt: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop",
+            coverArt: "https://upload.wikimedia.org/wikipedia/en/thumb/b/b2/Olivia_Rodrigo_-_SOUR.png/250px-Olivia_Rodrigo_-_SOUR.png",
             avgRating: 4.3,
             saveCount: 1543,
             genre: "Alternative",
@@ -118,7 +118,7 @@ const Songs = () => {
             title: "Levitating",
             artist: "Dua Lipa",
             album: "Future Nostalgia",
-            coverArt: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&h=300&fit=crop",
+            coverArt: "https://upload.wikimedia.org/wikipedia/en/c/c3/Tyler%2C_the_Creator_-_Flower_Boy.png",
             avgRating: 4.4,
             saveCount: 1876,
             genre: "Pop",
@@ -131,7 +131,7 @@ const Songs = () => {
             title: "Stay",
             artist: "The Kid LAROI & Justin Bieber",
             album: "F*ck Love 3",
-            coverArt: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop",
+            coverArt: "https://upload.wikimedia.org/wikipedia/en/5/51/Igor_-_Tyler%2C_the_Creator.jpg",
             avgRating: 4.1,
             saveCount: 967,
             genre: "Hip Hop",
@@ -423,7 +423,6 @@ const Songs = () => {
                     <div>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-[#0C3B2E]">Recently Reviewed</h2>
-                            <button className="text-sm text-[#6D9773] hover:text-[#5C8769]">View all</button>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             {recentlyReviewed.map((track) => (
@@ -436,7 +435,6 @@ const Songs = () => {
                     <div>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-[#0C3B2E]">Recently Annotated</h2>
-                            <button className="text-sm text-[#6D9773] hover:text-[#5C8769]">View all</button>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             {recentlyAnnotated.map((track) => (
@@ -450,7 +448,6 @@ const Songs = () => {
                 <div className="mb-8">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-2xl font-bold text-[#0C3B2E]">Popular Reviews This Week</h2>
-                        <button className="text-sm text-[#6D9773] hover:text-[#5C8769]">View all reviews</button>
                     </div>
                     <div className="space-y-4">
                         {reviews.map((review) => (
@@ -463,7 +460,6 @@ const Songs = () => {
                 <div className="mb-8">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-2xl font-bold text-[#0C3B2E]">Popular Annotations This Week</h2>
-                        <button className="text-sm text-[#6D9773] hover:text-[#5C8769]">View all annotations</button>
                     </div>
                     <div className="space-y-4">
                         {annotations.map((annotation) => (

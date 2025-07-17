@@ -128,7 +128,7 @@ const Header: React.FC<HeaderProps> = ({
                       <a
                         key={item.label}
                         href={item.href}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#1F2C24] hover:bg-[#F2F3EF] transition-colors duration-200"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200"
                         onClick={() => setIsDropdownOpen(false)}
                       >
                         {item.icon && <item.icon className="w-4 h-4 text-[#A0A0A0]" />}
