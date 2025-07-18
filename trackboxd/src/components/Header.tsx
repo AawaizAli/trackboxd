@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, ChevronDown, Music, Users, Settings, LogOut, BookOpen, MessageSquare, FileText, Menu, X } from 'lucide-react';
+import { Input } from "@/components/ui/input"; // Import shadcn input
 
 interface HeaderProps {
   user?: {
@@ -20,6 +21,37 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  
+  // Auto-focus input when expanded
+  useEffect(() => {
+    if (isSearchExpanded || isMobileSearchExpanded) {
+      searchRef.current?.focus();
+    }
+  }, [isSearchExpanded, isMobileSearchExpanded]);
+
+  const toggleSearch = () => {
+    setIsSearchExpanded(!isSearchExpanded);
+  };
+
+  const toggleMobileSearch = () => {
+    setIsMobileSearchExpanded(!isMobileSearchExpanded);
+  };
+
+  // Close search when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setIsSearchExpanded(false);
+        setIsMobileSearchExpanded(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -73,9 +105,34 @@ const Header: React.FC<HeaderProps> = ({
                 {item.label}
               </a>
             ))}
-            <button className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 ml-2">
-              <Search className="w-5 h-5" />
-            </button>
+            <div className="relative ml-2">
+              <div className={`flex items-center transition-all duration-300 ${isSearchExpanded ? 'w-48' : 'w-10'}`}>
+                {isSearchExpanded ? (
+                  <div className="w-full" ref={searchRef}>
+                    <Input
+                      type="search"
+                      placeholder="Search..."
+                      className="w-full border border-[#1F2C24] text-[#1F2C24] rounded-lg pl-3 pr-8 py-2 h-10 bg-[#FFFFE7] focus:outline-none focus:ring-2 focus:ring-[#0C3B2E] transition-all"
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={toggleSearch}
+                    className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200"
+                  >
+                    <Search className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+              {isSearchExpanded && (
+                <button
+                  onClick={toggleSearch}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-[#FFFFD5]"
+                >
+                  <X className="w-4 h-4 text-[#1F2C24]" />
+                </button>
+              )}
+            </div>
           </nav>
 
           {/* Right - User Section (desktop) */}
@@ -143,9 +200,35 @@ const Header: React.FC<HeaderProps> = ({
 
           {/* Mobile menu button */}
           <div className="flex md:hidden items-center gap-2">
-            <button className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#F2F3EF] transition-colors duration-200">
-              <Search className="w-5 h-5" />
-            </button>
+            <div className="relative">
+              <div className={`flex items-center transition-all duration-300 ${isMobileSearchExpanded ? 'w-40' : 'w-10'}`}>
+                {isMobileSearchExpanded ? (
+                  <div className="w-full" ref={searchRef}>
+                    <Input
+                      type="search"
+                      placeholder="Search..."
+                      className="w-full border border-[#D9D9D9] rounded-lg pl-3 pr-8 py-2 h-10 bg-[#FFFFF0] focus:outline-none focus:ring-2 focus:ring-[#0C3B2E] transition-all"
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={toggleMobileSearch}
+                    className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#F2F3EF] transition-colors duration-200"
+                  >
+                    <Search className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+              {isMobileSearchExpanded && (
+                <button
+                  onClick={toggleMobileSearch}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-[#FFFFD5]"
+                >
+                  <X className="w-4 h-4 text-[#A0A0A0]" />
+                </button>
+              )}
+            </div>
+            
             <button
               onClick={toggleMobileMenu}
               className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#F2F3EF] transition-colors duration-200"
