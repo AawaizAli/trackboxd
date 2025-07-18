@@ -204,16 +204,16 @@ const Header: React.FC<HeaderProps> = ({
               <div className={`flex items-center transition-all duration-300 ${isMobileSearchExpanded ? 'w-40' : 'w-10'}`}>
                 {isMobileSearchExpanded ? (
                   <div className="w-full" ref={searchRef}>
-                    <Input
+                     <Input
                       type="search"
                       placeholder="Search..."
-                      className="w-full border border-[#D9D9D9] rounded-lg pl-3 pr-8 py-2 h-10 bg-[#FFFFF0] focus:outline-none focus:ring-2 focus:ring-[#0C3B2E] transition-all"
+                      className="w-full border border-[#1F2C24] text-[#1F2C24] rounded-lg pl-3 pr-8 py-2 h-10 bg-[#FFFFE7] focus:outline-none focus:ring-2 focus:ring-[#0C3B2E] transition-all"
                     />
                   </div>
                 ) : (
                   <button
                     onClick={toggleMobileSearch}
-                    className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#F2F3EF] transition-colors duration-200"
+                    className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200"
                   >
                     <Search className="w-5 h-5" />
                   </button>
@@ -231,7 +231,7 @@ const Header: React.FC<HeaderProps> = ({
             
             <button
               onClick={toggleMobileMenu}
-              className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#F2F3EF] transition-colors duration-200"
+              className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200"
             >
               {isMobileMenuOpen ? (
                 <X className="w-5 h-5" />
@@ -256,7 +256,7 @@ const Header: React.FC<HeaderProps> = ({
                   className={`px-3 py-3 rounded-lg text-base font-medium transition-colors duration-200 ${
                     item.active
                       ? 'bg-[#0C3B2E] text-[#F9F9F9]'
-                      : 'text-[#1F2C24] hover:bg-[#F2F3EF]'
+                      : 'text-[#1F2C24] hover:bg-[#FFFFD5]'
                   }`}
                 >
                   {item.label}
@@ -298,7 +298,7 @@ const Header: React.FC<HeaderProps> = ({
                   <a
                     key={item.label}
                     href={item.href}
-                    className="flex items-center gap-3 px-3 py-3 text-base text-[#1F2C24] hover:bg-[#F2F3EF] transition-colors duration-200 rounded-lg"
+                    className="flex items-center gap-3 px-3 py-3 text-base text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.icon && <item.icon className="w-5 h-5 text-[#A0A0A0]" />}
