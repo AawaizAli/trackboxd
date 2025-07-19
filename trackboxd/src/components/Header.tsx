@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, ChevronDown, Music, Users, User, Settings, LogOut, BookOpen, MessageSquare, FileText, Menu, X } from 'lucide-react';
+import { Search, ChevronDown, Music, Heart, Users, User, Settings, LogOut, BookOpen, MessageSquare, FileText, Menu, X } from 'lucide-react';
 import { Input } from "@/components/ui/input"; // Import shadcn input
 
 interface HeaderProps {
@@ -70,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({
   const dropdownItems = [
     { label: 'Profile', href: `/profile/${user.username}`, icon: User },
     { type: 'divider' },
-    { label: 'My Songs', href: '/my-songs', icon: Music },
+    { label: 'My Likes', href: '/my-likes', icon: Heart },
     { label: 'My Playlists', href: '/my-playlists', icon: Users },
     { label: 'My Reviews', href: '/my-reviews', icon: MessageSquare },
     { label: 'My Annotations', href: '/my-annotations', icon: FileText },
