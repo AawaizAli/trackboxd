@@ -15,7 +15,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -50,15 +50,20 @@ interface Annotation {
     likes: number;
 }
 
+// Update the SpotifyTrack interface to match playlist response
 interface SpotifyTrack {
     id: string;
     name: string;
-    artists: { name: string }[];
+    preview_url: string | null;
     album: {
-        name: string;
-        images: { url: string }[];
+      name: string;
+      images: { url: string }[];
     };
-}
+    artists: { name: string }[];
+    added_by?: {
+      id: string;
+    };
+  }
 
 const Songs = () => {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -72,6 +77,9 @@ const Songs = () => {
     const [searchError, setSearchError] = useState<string | null>(null);
     const [searchResults, setSearchResults] = useState<SpotifyTrack[]>([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
+    const [globalTopTracks, setGlobalTopTracks] = useState<SpotifyTrack[]>([]);
+    const [isLoadingTopTracks, setIsLoadingTopTracks] = useState(true);
+    const [topTracksError, setTopTracksError] = useState<string | null>(null);
 
     // Mock data
     const tracks: Track[] = [
@@ -80,7 +88,8 @@ const Songs = () => {
             title: "Stop Breathing",
             artist: "Playboi Carti",
             album: "Whole Lotta Red",
-            coverArt: "https://i.scdn.co/image/ab67616d0000b27398ea0e689c91f8fea726d9bb",
+            coverArt:
+                "https://i.scdn.co/image/ab67616d0000b27398ea0e689c91f8fea726d9bb",
             avgRating: 4.5,
             saveCount: 1247,
             genre: "Pop",
@@ -93,7 +102,8 @@ const Songs = () => {
             title: "Bags",
             artist: "Clairo",
             album: "Charm",
-            coverArt: "https://upload.wikimedia.org/wikipedia/en/d/dc/Clairo_-_Charm.png",
+            coverArt:
+                "https://upload.wikimedia.org/wikipedia/en/d/dc/Clairo_-_Charm.png",
             avgRating: 4.8,
             saveCount: 2156,
             genre: "Rock",
@@ -106,7 +116,8 @@ const Songs = () => {
             title: "FOMDJ",
             artist: "Playboi Carti",
             album: "MUSIC",
-            coverArt: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Playboi_Carti_-_Music.png/960px-Playboi_Carti_-_Music.png",
+            coverArt:
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Playboi_Carti_-_Music.png/960px-Playboi_Carti_-_Music.png",
             avgRating: 4.2,
             saveCount: 892,
             genre: "Pop",
@@ -119,7 +130,8 @@ const Songs = () => {
             title: "Good 4 U",
             artist: "Olivia Rodrigo",
             album: "SOUR",
-            coverArt: "https://upload.wikimedia.org/wikipedia/en/thumb/b/b2/Olivia_Rodrigo_-_SOUR.png/250px-Olivia_Rodrigo_-_SOUR.png",
+            coverArt:
+                "https://upload.wikimedia.org/wikipedia/en/thumb/b/b2/Olivia_Rodrigo_-_SOUR.png/250px-Olivia_Rodrigo_-_SOUR.png",
             avgRating: 4.3,
             saveCount: 1543,
             genre: "Alternative",
@@ -132,7 +144,8 @@ const Songs = () => {
             title: "Levitating",
             artist: "Dua Lipa",
             album: "Future Nostalgia",
-            coverArt: "https://upload.wikimedia.org/wikipedia/en/c/c3/Tyler%2C_the_Creator_-_Flower_Boy.png",
+            coverArt:
+                "https://upload.wikimedia.org/wikipedia/en/c/c3/Tyler%2C_the_Creator_-_Flower_Boy.png",
             avgRating: 4.4,
             saveCount: 1876,
             genre: "Pop",
@@ -145,7 +158,8 @@ const Songs = () => {
             title: "Stay",
             artist: "The Kid LAROI & Justin Bieber",
             album: "F*ck Love 3",
-            coverArt: "https://upload.wikimedia.org/wikipedia/en/5/51/Igor_-_Tyler%2C_the_Creator.jpg",
+            coverArt:
+                "https://upload.wikimedia.org/wikipedia/en/5/51/Igor_-_Tyler%2C_the_Creator.jpg",
             avgRating: 4.1,
             saveCount: 967,
             genre: "Hip Hop",
@@ -156,28 +170,145 @@ const Songs = () => {
     ];
 
     const reviews: Review[] = [
-        { id: "r1", user: "Sarah Johnson", rating: 5.0, content: "This album changed my life! Every track is a masterpiece.", timestamp: "2 days ago", likes: 42 },
-        { id: "r2", user: "Mike Rodriguez", rating: 4.5, content: "The production quality is insane. Best album of the year!", timestamp: "1 day ago", likes: 31 },
-        { id: "r3", user: "Emma Davis", rating: 4.0, content: "Solid album with a few standout tracks. Worth a listen.", timestamp: "3 days ago", likes: 28 },
-        { id: "r4", user: "Jordan Kim", rating: 4.8, content: "Perfect blend of nostalgia and innovation. Brilliant!", timestamp: "1 day ago", likes: 37 },
-        { id: "r5", user: "Alex Turner", rating: 3.5, content: "Good but not their best work. Some tracks feel filler.", timestamp: "4 days ago", likes: 19 },
+        {
+            id: "r1",
+            user: "Sarah Johnson",
+            rating: 5.0,
+            content:
+                "This album changed my life! Every track is a masterpiece.",
+            timestamp: "2 days ago",
+            likes: 42,
+        },
+        {
+            id: "r2",
+            user: "Mike Rodriguez",
+            rating: 4.5,
+            content:
+                "The production quality is insane. Best album of the year!",
+            timestamp: "1 day ago",
+            likes: 31,
+        },
+        {
+            id: "r3",
+            user: "Emma Davis",
+            rating: 4.0,
+            content: "Solid album with a few standout tracks. Worth a listen.",
+            timestamp: "3 days ago",
+            likes: 28,
+        },
+        {
+            id: "r4",
+            user: "Jordan Kim",
+            rating: 4.8,
+            content: "Perfect blend of nostalgia and innovation. Brilliant!",
+            timestamp: "1 day ago",
+            likes: 37,
+        },
+        {
+            id: "r5",
+            user: "Alex Turner",
+            rating: 3.5,
+            content: "Good but not their best work. Some tracks feel filler.",
+            timestamp: "4 days ago",
+            likes: 19,
+        },
     ];
 
     const annotations: Annotation[] = [
-        { id: "a1", user: "Taylor Swift", content: "The bridge at 2:45 gives me chills every time! Pure emotion.", timestamp: "1 day ago", likes: 24 },
-        { id: "a2", user: "John Mayer", content: "Listen to the guitar solo at 3:15 - absolute perfection!", timestamp: "2 days ago", likes: 32 },
-        { id: "a3", user: "Beyoncé", content: "The vocal harmonies at 1:30 are everything! Queen behavior.", timestamp: "3 days ago", likes: 41 },
-        { id: "a4", user: "Bruno Mars", content: "The bassline at 0:45 is so funky! Can't stop grooving.", timestamp: "1 day ago", likes: 27 },
-        { id: "a5", user: "Adele", content: "The lyrics at 4:10 hit me right in the feels. So raw!", timestamp: "2 days ago", likes: 35 },
+        {
+            id: "a1",
+            user: "Taylor Swift",
+            content:
+                "The bridge at 2:45 gives me chills every time! Pure emotion.",
+            timestamp: "1 day ago",
+            likes: 24,
+        },
+        {
+            id: "a2",
+            user: "John Mayer",
+            content: "Listen to the guitar solo at 3:15 - absolute perfection!",
+            timestamp: "2 days ago",
+            likes: 32,
+        },
+        {
+            id: "a3",
+            user: "Beyoncé",
+            content:
+                "The vocal harmonies at 1:30 are everything! Queen behavior.",
+            timestamp: "3 days ago",
+            likes: 41,
+        },
+        {
+            id: "a4",
+            user: "Bruno Mars",
+            content: "The bassline at 0:45 is so funky! Can't stop grooving.",
+            timestamp: "1 day ago",
+            likes: 27,
+        },
+        {
+            id: "a5",
+            user: "Adele",
+            content: "The lyrics at 4:10 hit me right in the feels. So raw!",
+            timestamp: "2 days ago",
+            likes: 35,
+        },
     ];
 
     const trendingTracks = tracks.slice(0, 4);
     const recentlyReviewed = tracks.slice(0, 4);
     const recentlyAnnotated = tracks.slice(2, 6);
 
-    const genres = ["All", "Pop", "Rock", "Hip Hop", "Alternative", "Electronic"];
-    const moods = ["All", "Happy", "Sad", "Energetic", "Chill", "Angry", "Romantic", "Epic"];
-    const years = ["All", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015"];
+    const genres = [
+        "All",
+        "Pop",
+        "Rock",
+        "Hip Hop",
+        "Alternative",
+        "Electronic",
+    ];
+    const moods = [
+        "All",
+        "Happy",
+        "Sad",
+        "Energetic",
+        "Chill",
+        "Angry",
+        "Romantic",
+        "Epic",
+    ];
+    const years = [
+        "All",
+        "2023",
+        "2022",
+        "2021",
+        "2020",
+        "2019",
+        "2018",
+        "2017",
+        "2016",
+        "2015",
+    ];
+
+    useEffect(() => {
+        const fetchGlobalTopTracks = async () => {
+          try {
+            const res = await fetch('/api/songs/global-top-4');
+            if (!res.ok) {
+              throw new Error('Failed to fetch global top tracks');
+            }
+            const data = await res.json();
+            console.log("Global Top Tracks:", data);
+            setGlobalTopTracks(data);
+          } catch (error) {
+            console.error("Error fetching global top tracks:", error);
+            setTopTracksError('Failed to load global top tracks');
+          } finally {
+            setIsLoadingTopTracks(false);
+          }
+        };
+      
+        fetchGlobalTopTracks();
+      }, []);
 
     const renderStars = (rating: number) => {
         return (
@@ -187,8 +318,14 @@ const Songs = () => {
                         <div className="w-4 h-4 mb-2 text-[#D9D9D9]">★</div>
                         <div
                             className="absolute top-0 left-0 w-5 h-5 text-[#FFBA00] overflow-hidden"
-                            style={{ width: `${Math.max(0, Math.min(1, rating - star + 1)) * 100}%` }}
-                        >
+                            style={{
+                                width: `${
+                                    Math.max(
+                                        0,
+                                        Math.min(1, rating - star + 1)
+                                    ) * 100
+                                }%`,
+                            }}>
                             ★
                         </div>
                     </div>
@@ -204,21 +341,23 @@ const Songs = () => {
             setShowSearchResults(false);
             return;
         }
-        
+
         setIsSearching(true);
         setSearchError(null);
-        
+
         try {
-            const res = await fetch(`/api/spotify-search?q=${encodeURIComponent(query)}`);
+            const res = await fetch(
+                `/api/spotify-search?q=${encodeURIComponent(query)}`
+            );
             if (!res.ok) {
-                throw new Error('Failed to search');
+                throw new Error("Failed to search");
             }
             const data = await res.json();
             setSearchResults(data.tracks?.items || []);
             setShowSearchResults(true);
         } catch (error) {
             console.error("Spotify search error:", error);
-            setSearchError('Failed to search. Please try again.');
+            setSearchError("Failed to search. Please try again.");
             setShowSearchResults(false);
         } finally {
             setIsSearching(false);
@@ -228,8 +367,14 @@ const Songs = () => {
     // Full track card
     const TrackCard = ({ track }: { track: Track }) => (
         <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-            <div className={`p-4 ${viewMode === "list" ? "flex items-center space-x-4" : ""}`}>
-                <div className={`${viewMode === "list" ? "w-16 h-16" : "w-full h-48"} relative overflow-hidden rounded-lg bg-gray-200`}>
+            <div
+                className={`p-4 ${
+                    viewMode === "list" ? "flex items-center space-x-4" : ""
+                }`}>
+                <div
+                    className={`${
+                        viewMode === "list" ? "w-16 h-16" : "w-full h-48"
+                    } relative overflow-hidden rounded-lg bg-gray-200`}>
                     <img
                         src={track.coverArt}
                         alt={`${track.title} cover`}
@@ -238,26 +383,53 @@ const Songs = () => {
                 </div>
 
                 <div className={`${viewMode === "list" ? "flex-1" : "mt-3"}`}>
-                    <div className={`${viewMode === "list" ? "flex items-center justify-between" : ""}`}>
-                        <div className={`${viewMode === "list" ? "flex-1" : ""}`}>
+                    <div
+                        className={`${
+                            viewMode === "list"
+                                ? "flex items-center justify-between"
+                                : ""
+                        }`}>
+                        <div
+                            className={`${
+                                viewMode === "list" ? "flex-1" : ""
+                            }`}>
                             <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
                                 {track.title}
                             </h3>
-                            <p className="text-[#A0A0A0] text-sm">{track.artist}</p>
-                            <p className="text-[#A0A0A0] text-xs">{track.album}</p>
+                            <p className="text-[#A0A0A0] text-sm">
+                                {track.artist}
+                            </p>
+                            <p className="text-[#A0A0A0] text-xs">
+                                {track.album}
+                            </p>
                         </div>
 
-                        <div className={`${viewMode === "list" ? "flex items-center space-x-6" : "mt-2"}`}>
+                        <div
+                            className={`${
+                                viewMode === "list"
+                                    ? "flex items-center space-x-6"
+                                    : "mt-2"
+                            }`}>
                             {renderStars(track.avgRating)}
                             <div className="flex items-center space-x-1 text-[#A0A0A0]">
                                 <Heart className="w-4 h-4" />
-                                <span className="text-sm">{track.saveCount}</span>
+                                <span className="text-sm">
+                                    {track.saveCount}
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <div className={`${viewMode === "list" ? "mt-2" : "mt-3"} flex flex-wrap gap-2`}>
-                        <button className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${track.isSaved ? "bg-[#FFBA00] text-[#1F2C24]" : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"}`}>
+                    <div
+                        className={`${
+                            viewMode === "list" ? "mt-2" : "mt-3"
+                        } flex flex-wrap gap-2`}>
+                        <button
+                            className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                                track.isSaved
+                                    ? "bg-[#FFBA00] text-[#1F2C24]"
+                                    : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
+                            }`}>
                             <Heart className="w-3 h-3" />
                             <span>{track.isSaved ? "Liked" : "Like"}</span>
                         </button>
@@ -292,8 +464,12 @@ const Songs = () => {
                         <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
                             {track.name}
                         </h3>
-                        <p className="text-[#A0A0A0] text-sm">{track.artists.map(a => a.name).join(', ')}</p>
-                        <p className="text-[#A0A0A0] text-xs">{track.album.name}</p>
+                        <p className="text-[#A0A0A0] text-sm">
+                            {track.artists.map((a) => a.name).join(", ")}
+                        </p>
+                        <p className="text-[#A0A0A0] text-xs">
+                            {track.album.name}
+                        </p>
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -323,8 +499,12 @@ const Songs = () => {
                     />
                 </div>
                 <div className="min-w-0">
-                    <h3 className="font-medium text-[#1F2C24] truncate">{track.title}</h3>
-                    <p className="text-[#A0A0A0] text-sm truncate">{track.artist}</p>
+                    <h3 className="font-medium text-[#1F2C24] truncate">
+                        {track.title}
+                    </h3>
+                    <p className="text-[#A0A0A0] text-sm truncate">
+                        {track.artist}
+                    </p>
                 </div>
             </div>
         </div>
@@ -336,10 +516,14 @@ const Songs = () => {
             <div className="flex justify-between items-start">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <div className="font-medium text-[#1F2C24]">{review.user}</div>
+                        <div className="font-medium text-[#1F2C24]">
+                            {review.user}
+                        </div>
                         {renderStars(review.rating)}
                     </div>
-                    <p className="text-[#1F2C24] line-clamp-2 mb-2">{review.content}</p>
+                    <p className="text-[#1F2C24] line-clamp-2 mb-2">
+                        {review.content}
+                    </p>
                 </div>
                 <div className="flex items-center space-x-1 text-[#A0A0A0]">
                     <Heart className="w-4 h-4" />
@@ -347,8 +531,12 @@ const Songs = () => {
                 </div>
             </div>
             <div className="flex justify-between items-center mt-2">
-                <span className="text-xs text-[#A0A0A0]">{review.timestamp}</span>
-                <button className="text-xs text-[#6D9773] hover:text-[#5C8769]">Read full review</button>
+                <span className="text-xs text-[#A0A0A0]">
+                    {review.timestamp}
+                </span>
+                <button className="text-xs text-[#6D9773] hover:text-[#5C8769]">
+                    Read full review
+                </button>
             </div>
         </div>
     );
@@ -358,8 +546,12 @@ const Songs = () => {
         <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
             <div className="flex justify-between items-start">
                 <div>
-                    <div className="font-medium text-[#1F2C24] mb-2">{annotation.user}</div>
-                    <p className="text-[#1F2C24] line-clamp-2 mb-2">{annotation.content}</p>
+                    <div className="font-medium text-[#1F2C24] mb-2">
+                        {annotation.user}
+                    </div>
+                    <p className="text-[#1F2C24] line-clamp-2 mb-2">
+                        {annotation.content}
+                    </p>
                 </div>
                 <div className="flex items-center space-x-1 text-[#A0A0A0]">
                     <Heart className="w-4 h-4" />
@@ -367,8 +559,12 @@ const Songs = () => {
                 </div>
             </div>
             <div className="flex justify-between items-center mt-2">
-                <span className="text-xs text-[#A0A0A0]">{annotation.timestamp}</span>
-                <button className="text-xs text-[#6D9773] hover:text-[#5C8769]">View annotation</button>
+                <span className="text-xs text-[#A0A0A0]">
+                    {annotation.timestamp}
+                </span>
+                <button className="text-xs text-[#6D9773] hover:text-[#5C8769]">
+                    View annotation
+                </button>
             </div>
         </div>
     );
@@ -388,15 +584,32 @@ const Songs = () => {
                                 <DropdownMenu>
                                     <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
                                         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#A0A0A0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4 text-[#A0A0A0]"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                                                />
                                             </svg>
                                         </div>
-                                        <span className="truncate">{selectedGenre || "Genre"}</span>
+                                        <span className="truncate">
+                                            {selectedGenre || "Genre"}
+                                        </span>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="max-h-60 overflow-y-auto bg-[#FFFFF0] border border-[#D9D9D9]">
                                         {genres.map((genre) => (
-                                            <DropdownMenuItem key={genre} className="hover:bg-[#F2F3EF] cursor-pointer" onSelect={() => setSelectedGenre(genre)}>
+                                            <DropdownMenuItem
+                                                key={genre}
+                                                className="hover:bg-[#F2F3EF] cursor-pointer"
+                                                onSelect={() =>
+                                                    setSelectedGenre(genre)
+                                                }>
                                                 {genre}
                                             </DropdownMenuItem>
                                         ))}
@@ -409,15 +622,32 @@ const Songs = () => {
                                 <DropdownMenu>
                                     <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
                                         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#A0A0A0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4 text-[#A0A0A0]"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
                                             </svg>
                                         </div>
-                                        <span className="truncate">{selectedMood || "Mood"}</span>
+                                        <span className="truncate">
+                                            {selectedMood || "Mood"}
+                                        </span>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="max-h-60 overflow-y-auto bg-[#FFFFF0] border border-[#D9D9D9]">
                                         {moods.map((mood) => (
-                                            <DropdownMenuItem key={mood} className="hover:bg-[#F2F3EF] cursor-pointer" onSelect={() => setSelectedMood(mood)}>
+                                            <DropdownMenuItem
+                                                key={mood}
+                                                className="hover:bg-[#F2F3EF] cursor-pointer"
+                                                onSelect={() =>
+                                                    setSelectedMood(mood)
+                                                }>
                                                 {mood}
                                             </DropdownMenuItem>
                                         ))}
@@ -430,15 +660,32 @@ const Songs = () => {
                                 <DropdownMenu>
                                     <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
                                         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#A0A0A0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4 text-[#A0A0A0]"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                />
                                             </svg>
                                         </div>
-                                        <span className="truncate">{selectedYear || "Year"}</span>
+                                        <span className="truncate">
+                                            {selectedYear || "Year"}
+                                        </span>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="max-h-60 overflow-y-auto bg-[#FFFFF0] border border-[#D9D9D9]">
                                         {years.map((year) => (
-                                            <DropdownMenuItem key={year} className="hover:bg-[#F2F3EF] cursor-pointer" onSelect={() => setSelectedYear(year)}>
+                                            <DropdownMenuItem
+                                                key={year}
+                                                className="hover:bg-[#F2F3EF] cursor-pointer"
+                                                onSelect={() =>
+                                                    setSelectedYear(year)
+                                                }>
                                                 {year}
                                             </DropdownMenuItem>
                                         ))}
@@ -453,11 +700,23 @@ const Songs = () => {
                                         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                                             <Star className="h-4 w-4 text-[#A0A0A0]" />
                                         </div>
-                                        <span className="truncate">{selectedRating || "Rating"}</span>
+                                        <span className="truncate">
+                                            {selectedRating || "Rating"}
+                                        </span>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="bg-[#FFFFF0] border border-[#D9D9D9]">
-                                        {["All Ratings", "4+ Stars", "3+ Stars", "2+ Stars"].map((rating) => (
-                                            <DropdownMenuItem key={rating} className="hover:bg-[#F2F3EF] cursor-pointer" onSelect={() => setSelectedRating(rating)}>
+                                        {[
+                                            "All Ratings",
+                                            "4+ Stars",
+                                            "3+ Stars",
+                                            "2+ Stars",
+                                        ].map((rating) => (
+                                            <DropdownMenuItem
+                                                key={rating}
+                                                className="hover:bg-[#F2F3EF] cursor-pointer"
+                                                onSelect={() =>
+                                                    setSelectedRating(rating)
+                                                }>
                                                 {rating}
                                             </DropdownMenuItem>
                                         ))}
@@ -487,7 +746,9 @@ const Songs = () => {
                                 )}
                             </div>
                             {searchError && (
-                                <p className="text-red-500 text-sm mt-1">{searchError}</p>
+                                <p className="text-red-500 text-sm mt-1">
+                                    {searchError}
+                                </p>
                             )}
                         </div>
                     </div>
@@ -498,19 +759,24 @@ const Songs = () => {
                     <div className="mb-8">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-[#0C3B2E]">
-                                Search Results for <span className="text-[#6D9773]">"{searchTerm}"</span>
+                                Search Results for{" "}
+                                <span className="text-[#6D9773]">
+                                    "{searchTerm}"
+                                </span>
                             </h2>
-                            <button 
+                            <button
                                 onClick={() => setShowSearchResults(false)}
-                                className="text-sm text-[#6D9773] hover:text-[#5C8769]"
-                            >
+                                className="text-sm text-[#6D9773] hover:text-[#5C8769]">
                                 Clear results
                             </button>
                         </div>
                         {searchResults.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                                 {searchResults.map((track) => (
-                                    <SpotifyTrackCard key={`spotify-${track.id}`} track={track} />
+                                    <SpotifyTrackCard
+                                        key={`spotify-${track.id}`}
+                                        track={track}
+                                    />
                                 ))}
                             </div>
                         ) : (
@@ -524,11 +790,15 @@ const Songs = () => {
                     <>
                         <div className="mb-8">
                             <h2 className="text-2xl font-bold text-[#0C3B2E] mb-6">
-                                <span className="text-[#FFBA00]">Trending</span> This Week
+                                <span className="text-[#FFBA00]">Trending</span>{" "}
+                                This Week
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                                 {trendingTracks.map((track) => (
-                                    <TrackCard key={`trending-${track.id}`} track={track} />
+                                    <TrackCard
+                                        key={`trending-${track.id}`}
+                                        track={track}
+                                    />
                                 ))}
                             </div>
                         </div>
@@ -538,11 +808,16 @@ const Songs = () => {
                             {/* Recently Reviewed */}
                             <div>
                                 <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-[#0C3B2E]">Recently Reviewed</h2>
+                                    <h2 className="text-xl font-bold text-[#0C3B2E]">
+                                        Recently Reviewed
+                                    </h2>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     {recentlyReviewed.map((track) => (
-                                        <CompactTrackCard key={`reviewed-${track.id}`} track={track} />
+                                        <CompactTrackCard
+                                            key={`reviewed-${track.id}`}
+                                            track={track}
+                                        />
                                     ))}
                                 </div>
                             </div>
@@ -550,11 +825,16 @@ const Songs = () => {
                             {/* Recently Annotated */}
                             <div>
                                 <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-[#0C3B2E]">Recently Annotated</h2>
+                                    <h2 className="text-xl font-bold text-[#0C3B2E]">
+                                        Recently Annotated
+                                    </h2>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     {recentlyAnnotated.map((track) => (
-                                        <CompactTrackCard key={`annotated-${track.id}`} track={track} />
+                                        <CompactTrackCard
+                                            key={`annotated-${track.id}`}
+                                            track={track}
+                                        />
                                     ))}
                                 </div>
                             </div>
@@ -563,11 +843,16 @@ const Songs = () => {
                         {/* Popular Reviews This Week */}
                         <div className="mb-8">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-[#0C3B2E]">Popular Reviews This Week</h2>
+                                <h2 className="text-2xl font-bold text-[#0C3B2E]">
+                                    Popular Reviews This Week
+                                </h2>
                             </div>
                             <div className="space-y-4">
                                 {reviews.map((review) => (
-                                    <ReviewCard key={review.id} review={review} />
+                                    <ReviewCard
+                                        key={review.id}
+                                        review={review}
+                                    />
                                 ))}
                             </div>
                         </div>
@@ -575,11 +860,16 @@ const Songs = () => {
                         {/* Popular Annotations This Week */}
                         <div className="mb-8">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-[#0C3B2E]">Popular Annotations This Week</h2>
+                                <h2 className="text-2xl font-bold text-[#0C3B2E]">
+                                    Popular Annotations This Week
+                                </h2>
                             </div>
                             <div className="space-y-4">
                                 {annotations.map((annotation) => (
-                                    <AnnotationCard key={annotation.id} annotation={annotation} />
+                                    <AnnotationCard
+                                        key={annotation.id}
+                                        annotation={annotation}
+                                    />
                                 ))}
                             </div>
                         </div>

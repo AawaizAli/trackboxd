@@ -14,6 +14,7 @@ const basic = Buffer.from(`${client_id}:${client_secret}`).toString('base64');
 const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
 const SEARCH_ENDPOINT = `https://api.spotify.com/v1/search`;
 const USER_PROFILE_ENDPOINT = `https://api.spotify.com/v1/me`;
+const PLAYLIST_ITEMS_ENDPOINT = `https://api.spotify.com/v1/playlists`;
 
 export const getAccessToken = async () => {
   if (!refresh_token) {
@@ -80,6 +81,40 @@ export const getCurrentUserProfile = async () => {
     return response.json();
   } catch (error) {
     console.error('Spotify user profile error:', error);
+    throw error;
+  }
+};
+
+export const getPlaylistTracks = async (playlistId: string, limit: number = 4) => {
+  try {
+    const { access_token } = await getAccessToken();
+    
+    const url = new URL(`${PLAYLIST_ITEMS_ENDPOINT}/${playlistId}/tracks`);
+    url.searchParams.append('limit', limit.toString());
+    url.searchParams.append('market', 'US'); // Add market parameter
+    url.searchParams.append('fields', 'items(track(name,id,preview_url,album(name,images),added_by(id))');
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    // Add detailed error logging
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Spotify API error ${response.status}: ${response.statusText}`, {
+        url: url.toString(),
+        status: response.status,
+        errorBody
+      });
+      throw new Error(`Spotify API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.items;
+  } catch (error) {
+    console.error('Spotify playlist tracks error:', error);
     throw error;
   }
 };
