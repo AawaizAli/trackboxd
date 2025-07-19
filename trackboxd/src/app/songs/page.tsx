@@ -50,20 +50,24 @@ interface Annotation {
     likes: number;
 }
 
-// Update the SpotifyTrack interface to match playlist response
 interface SpotifyTrack {
     id: string;
     name: string;
     preview_url: string | null;
     album: {
-      name: string;
-      images: { url: string }[];
+        name: string;
+        images: { url: string }[];
+        release_date: string;
     };
     artists: { name: string }[];
     added_by?: {
-      id: string;
+        id: string;
     };
-  }
+}
+
+interface SpotifyPlaylistTrack {
+    track: SpotifyTrack;
+}
 
 const Songs = () => {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -81,93 +85,19 @@ const Songs = () => {
     const [isLoadingTopTracks, setIsLoadingTopTracks] = useState(true);
     const [topTracksError, setTopTracksError] = useState<string | null>(null);
 
-    // Mock data
-    const tracks: Track[] = [
-        {
-            id: "1",
-            title: "Stop Breathing",
-            artist: "Playboi Carti",
-            album: "Whole Lotta Red",
-            coverArt:
-                "https://i.scdn.co/image/ab67616d0000b27398ea0e689c91f8fea726d9bb",
-            avgRating: 4.5,
-            saveCount: 1247,
-            genre: "Pop",
-            year: 2020,
-            mood: "Energetic",
-            isSaved: false,
-        },
-        {
-            id: "2",
-            title: "Bags",
-            artist: "Clairo",
-            album: "Charm",
-            coverArt:
-                "https://upload.wikimedia.org/wikipedia/en/d/dc/Clairo_-_Charm.png",
-            avgRating: 4.8,
-            saveCount: 2156,
-            genre: "Rock",
-            year: 1975,
-            mood: "Epic",
-            isSaved: true,
-        },
-        {
-            id: "3",
-            title: "FOMDJ",
-            artist: "Playboi Carti",
-            album: "MUSIC",
-            coverArt:
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Playboi_Carti_-_Music.png/960px-Playboi_Carti_-_Music.png",
-            avgRating: 4.2,
-            saveCount: 892,
-            genre: "Pop",
-            year: 2021,
-            mood: "Angry",
-            isSaved: false,
-        },
-        {
-            id: "4",
-            title: "Good 4 U",
-            artist: "Olivia Rodrigo",
-            album: "SOUR",
-            coverArt:
-                "https://upload.wikimedia.org/wikipedia/en/thumb/b/b2/Olivia_Rodrigo_-_SOUR.png/250px-Olivia_Rodrigo_-_SOUR.png",
-            avgRating: 4.3,
-            saveCount: 1543,
-            genre: "Alternative",
-            year: 2020,
-            mood: "Chill",
-            isSaved: true,
-        },
-        {
-            id: "5",
-            title: "Levitating",
-            artist: "Dua Lipa",
-            album: "Future Nostalgia",
-            coverArt:
-                "https://upload.wikimedia.org/wikipedia/en/c/c3/Tyler%2C_the_Creator_-_Flower_Boy.png",
-            avgRating: 4.4,
-            saveCount: 1876,
-            genre: "Pop",
-            year: 2020,
-            mood: "Happy",
-            isSaved: false,
-        },
-        {
-            id: "6",
-            title: "Stay",
-            artist: "The Kid LAROI & Justin Bieber",
-            album: "F*ck Love 3",
-            coverArt:
-                "https://upload.wikimedia.org/wikipedia/en/5/51/Igor_-_Tyler%2C_the_Creator.jpg",
-            avgRating: 4.1,
-            saveCount: 967,
-            genre: "Hip Hop",
-            year: 2021,
-            mood: "Romantic",
-            isSaved: false,
-        },
-    ];
+    const spotifyToTrack = (spotifyTrack: SpotifyTrack): Track => ({
+        id: spotifyTrack.id,
+        title: spotifyTrack.name,
+        artist: spotifyTrack.artists.map((a) => a.name).join(", "),
+        album: spotifyTrack.album.name,
+        coverArt: spotifyTrack.album.images[0]?.url || "/default-album.png",
+        avgRating: 4.0, // Default rating
+        saveCount: Math.floor(Math.random() * 2000) + 500, // Random save count between 500-2500
+        genre: "Pop", // Default genre
+        year: parseInt(spotifyTrack.album.release_date.substring(0, 4)) || 2023,
+        mood: "Energetic", // Default mood
+        isSaved: false, // Default not saved
+    });
 
     const reviews: Review[] = [
         {
@@ -254,9 +184,20 @@ const Songs = () => {
         },
     ];
 
-    const trendingTracks = tracks.slice(0, 4);
-    const recentlyReviewed = tracks.slice(0, 4);
-    const recentlyAnnotated = tracks.slice(2, 6);
+    const trendingTracks =
+        globalTopTracks.length > 0
+            ? globalTopTracks.slice(0, 4).map(spotifyToTrack)
+            : [];
+
+    const recentlyReviewed =
+        globalTopTracks.length > 0
+            ? globalTopTracks.slice(0, 4).map(spotifyToTrack)
+            : [];
+
+    const recentlyAnnotated =
+        globalTopTracks.length > 0
+            ? globalTopTracks.slice(2, 6).map(spotifyToTrack)
+            : [];
 
     const genres = [
         "All",
@@ -291,24 +232,28 @@ const Songs = () => {
 
     useEffect(() => {
         const fetchGlobalTopTracks = async () => {
-          try {
-            const res = await fetch('/api/songs/global-top-4');
-            if (!res.ok) {
-              throw new Error('Failed to fetch global top tracks');
+            try {
+                const res = await fetch("/api/songs/global-top-4");
+                if (!res.ok) {
+                    throw new Error("Failed to fetch global top tracks");
+                }
+                const data = await res.json();
+
+                // Extract the track objects from the playlist items
+                const tracks = data.map(
+                    (item: SpotifyPlaylistTrack) => item.track
+                );
+                setGlobalTopTracks(tracks);
+            } catch (error) {
+                console.error("Error fetching global top tracks:", error);
+                setTopTracksError("Failed to load global top tracks");
+            } finally {
+                setIsLoadingTopTracks(false);
             }
-            const data = await res.json();
-            console.log("Global Top Tracks:", data);
-            setGlobalTopTracks(data);
-          } catch (error) {
-            console.error("Error fetching global top tracks:", error);
-            setTopTracksError('Failed to load global top tracks');
-          } finally {
-            setIsLoadingTopTracks(false);
-          }
         };
-      
+
         fetchGlobalTopTracks();
-      }, []);
+    }, []);
 
     const renderStars = (rating: number) => {
         return (
@@ -364,7 +309,7 @@ const Songs = () => {
         }
     };
 
-    // Full track card
+    // Full track card with truncated artist and album names
     const TrackCard = ({ track }: { track: Track }) => (
         <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
             <div
@@ -396,10 +341,10 @@ const Songs = () => {
                             <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
                                 {track.title}
                             </h3>
-                            <p className="text-[#A0A0A0] text-sm">
+                            <p className="text-[#A0A0A0] text-sm truncate">
                                 {track.artist}
                             </p>
-                            <p className="text-[#A0A0A0] text-xs">
+                            <p className="text-[#A0A0A0] text-xs truncate">
                                 {track.album}
                             </p>
                         </div>
@@ -447,7 +392,7 @@ const Songs = () => {
         </div>
     );
 
-    // Spotify track card
+    // Spotify track card with truncated artist and album names
     const SpotifyTrackCard = ({ track }: { track: SpotifyTrack }) => (
         <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
             <div className="p-4">
@@ -464,10 +409,10 @@ const Songs = () => {
                         <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
                             {track.name}
                         </h3>
-                        <p className="text-[#A0A0A0] text-sm">
+                        <p className="text-[#A0A0A0] text-sm truncate">
                             {track.artists.map((a) => a.name).join(", ")}
                         </p>
-                        <p className="text-[#A0A0A0] text-xs">
+                        <p className="text-[#A0A0A0] text-xs truncate">
                             {track.album.name}
                         </p>
                     </div>
@@ -487,7 +432,7 @@ const Songs = () => {
         </div>
     );
 
-    // Compact track card for recently reviewed/annotated
+    // Compact track card for recently reviewed/annotated with truncated artist name
     const CompactTrackCard = ({ track }: { track: Track }) => (
         <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
             <div className="flex items-center space-x-3 p-3">
@@ -793,14 +738,22 @@ const Songs = () => {
                                 <span className="text-[#FFBA00]">Trending</span>{" "}
                                 This Week
                             </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                                {trendingTracks.map((track) => (
-                                    <TrackCard
-                                        key={`trending-${track.id}`}
-                                        track={track}
-                                    />
-                                ))}
-                            </div>
+                            {isLoadingTopTracks ? (
+                                <div className="flex justify-center items-center h-48">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6D9773]"></div>
+                                </div>
+                            ) : topTracksError ? (
+                                <p className="text-red-500">{topTracksError}</p>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                                    {trendingTracks.map((track) => (
+                                        <TrackCard
+                                            key={`trending-${track.id}`}
+                                            track={track}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Recently Reviewed & Annotated - Side by side */}

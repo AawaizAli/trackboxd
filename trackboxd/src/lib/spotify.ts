@@ -92,7 +92,7 @@ export const getPlaylistTracks = async (playlistId: string, limit: number = 4) =
     const url = new URL(`${PLAYLIST_ITEMS_ENDPOINT}/${playlistId}/tracks`);
     url.searchParams.append('limit', limit.toString());
     url.searchParams.append('market', 'US'); // Add market parameter
-    url.searchParams.append('fields', 'items(track(name,id,preview_url,album(name,images),added_by(id))');
+    // url.searchParams.append('fields', 'items(track(name,id,preview_url,album(name,images),added_by(id))');
 
     const response = await fetch(url.toString(), {
       headers: {

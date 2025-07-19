@@ -3,7 +3,7 @@ import { getPlaylistTracks } from '@/lib/spotify';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const playlistId = '37i9dQZEVXbLRQDuF5jeBp';
+  const playlistId = '5FN6Ego7eLX6zHuCMovIR2';
   
   try {
     const tracks = await getPlaylistTracks(playlistId, 4);
