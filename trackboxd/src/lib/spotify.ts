@@ -13,6 +13,7 @@ if (!client_id || !client_secret) {
 const basic = Buffer.from(`${client_id}:${client_secret}`).toString('base64');
 const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
 const SEARCH_ENDPOINT = `https://api.spotify.com/v1/search`;
+const USER_PROFILE_ENDPOINT = `https://api.spotify.com/v1/me`;
 
 export const getAccessToken = async () => {
   if (!refresh_token) {
@@ -58,6 +59,27 @@ export const searchTracks = async (query: string) => {
     return response.json();
   } catch (error) {
     console.error('Spotify search error:', error);
+    throw error;
+  }
+};
+
+export const getCurrentUserProfile = async () => {
+  try {
+    const { access_token } = await getAccessToken();
+    
+    const response = await fetch(USER_PROFILE_ENDPOINT, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Spotify API error: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Spotify user profile error:', error);
     throw error;
   }
 };
