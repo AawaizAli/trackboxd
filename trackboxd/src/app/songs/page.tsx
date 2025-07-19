@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Search,
     Grid,
@@ -50,6 +50,16 @@ interface Annotation {
     likes: number;
 }
 
+interface SpotifyTrack {
+    id: string;
+    name: string;
+    artists: { name: string }[];
+    album: {
+        name: string;
+        images: { url: string }[];
+    };
+}
+
 const Songs = () => {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [sortBy, setSortBy] = useState("Most Rated");
@@ -58,6 +68,10 @@ const Songs = () => {
     const [selectedMood, setSelectedMood] = useState("Mood");
     const [selectedYear, setSelectedYear] = useState("Year");
     const [selectedRating, setSelectedRating] = useState("Rating");
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchError, setSearchError] = useState<string | null>(null);
+    const [searchResults, setSearchResults] = useState<SpotifyTrack[]>([]);
+    const [showSearchResults, setShowSearchResults] = useState(false);
 
     // Mock data
     const tracks: Track[] = [
@@ -184,6 +198,33 @@ const Songs = () => {
         );
     };
 
+    const searchSpotify = async (query: string) => {
+        if (!query) {
+            setSearchError(null);
+            setShowSearchResults(false);
+            return;
+        }
+        
+        setIsSearching(true);
+        setSearchError(null);
+        
+        try {
+            const res = await fetch(`/api/spotify-search?q=${encodeURIComponent(query)}`);
+            if (!res.ok) {
+                throw new Error('Failed to search');
+            }
+            const data = await res.json();
+            setSearchResults(data.tracks?.items || []);
+            setShowSearchResults(true);
+        } catch (error) {
+            console.error("Spotify search error:", error);
+            setSearchError('Failed to search. Please try again.');
+            setShowSearchResults(false);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
     // Full track card
     const TrackCard = ({ track }: { track: Track }) => (
         <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
@@ -227,6 +268,42 @@ const Songs = () => {
                         <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
                             <MessageCircle className="w-3 h-3" />
                             <span>Annotate</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    // Spotify track card
+    const SpotifyTrackCard = ({ track }: { track: SpotifyTrack }) => (
+        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <div className="p-4">
+                <div className="w-full h-48 relative overflow-hidden rounded-lg bg-gray-200">
+                    <img
+                        src={track.album.images[0]?.url || "/default-album.png"}
+                        alt={`${track.name} cover`}
+                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+                    />
+                </div>
+
+                <div className="mt-3">
+                    <div>
+                        <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
+                            {track.name}
+                        </h3>
+                        <p className="text-[#A0A0A0] text-sm">{track.artists.map(a => a.name).join(', ')}</p>
+                        <p className="text-[#A0A0A0] text-xs">{track.album.name}</p>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769] transition-colors">
+                            <Heart className="w-3 h-3" />
+                            <span>Save to Library</span>
+                        </button>
+                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                            <Star className="w-3 h-3" />
+                            <span>Review</span>
                         </button>
                     </div>
                 </div>
@@ -397,76 +474,117 @@ const Songs = () => {
                                     type="text"
                                     placeholder="Search tracks, artists, albums..."
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        searchSpotify(e.target.value);
+                                    }}
                                     className="w-full h-full pl-10 pr-4 py-3 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773]"
                                 />
+                                {isSearching && (
+                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#6D9773]"></div>
+                                    </div>
+                                )}
                             </div>
+                            {searchError && (
+                                <p className="text-red-500 text-sm mt-1">{searchError}</p>
+                            )}
                         </div>
                     </div>
                 </div>
+
+                {/* Search Results */}
+                {showSearchResults && (
+                    <div className="mb-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-[#0C3B2E]">
+                                Search Results for <span className="text-[#6D9773]">"{searchTerm}"</span>
+                            </h2>
+                            <button 
+                                onClick={() => setShowSearchResults(false)}
+                                className="text-sm text-[#6D9773] hover:text-[#5C8769]"
+                            >
+                                Clear results
+                            </button>
+                        </div>
+                        {searchResults.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                                {searchResults.map((track) => (
+                                    <SpotifyTrackCard key={`spotify-${track.id}`} track={track} />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-[#A0A0A0]">No results found</p>
+                        )}
+                    </div>
+                )}
 
                 {/* Trending This Week - 4 songs only */}
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-[#0C3B2E] mb-6">
-                        <span className="text-[#FFBA00]">Trending</span> This Week
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                        {trendingTracks.map((track) => (
-                            <TrackCard key={`trending-${track.id}`} track={track} />
-                        ))}
-                    </div>
-                </div>
-
-                {/* Recently Reviewed & Annotated - Side by side */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    {/* Recently Reviewed */}
-                    <div>
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold text-[#0C3B2E]">Recently Reviewed</h2>
+                {!showSearchResults && (
+                    <>
+                        <div className="mb-8">
+                            <h2 className="text-2xl font-bold text-[#0C3B2E] mb-6">
+                                <span className="text-[#FFBA00]">Trending</span> This Week
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                                {trendingTracks.map((track) => (
+                                    <TrackCard key={`trending-${track.id}`} track={track} />
+                                ))}
+                            </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            {recentlyReviewed.map((track) => (
-                                <CompactTrackCard key={`reviewed-${track.id}`} track={track} />
-                            ))}
-                        </div>
-                    </div>
 
-                    {/* Recently Annotated */}
-                    <div>
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold text-[#0C3B2E]">Recently Annotated</h2>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            {recentlyAnnotated.map((track) => (
-                                <CompactTrackCard key={`annotated-${track.id}`} track={track} />
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                        {/* Recently Reviewed & Annotated - Side by side */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            {/* Recently Reviewed */}
+                            <div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-xl font-bold text-[#0C3B2E]">Recently Reviewed</h2>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {recentlyReviewed.map((track) => (
+                                        <CompactTrackCard key={`reviewed-${track.id}`} track={track} />
+                                    ))}
+                                </div>
+                            </div>
 
-                {/* Popular Reviews This Week */}
-                <div className="mb-8">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-[#0C3B2E]">Popular Reviews This Week</h2>
-                    </div>
-                    <div className="space-y-4">
-                        {reviews.map((review) => (
-                            <ReviewCard key={review.id} review={review} />
-                        ))}
-                    </div>
-                </div>
+                            {/* Recently Annotated */}
+                            <div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-xl font-bold text-[#0C3B2E]">Recently Annotated</h2>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {recentlyAnnotated.map((track) => (
+                                        <CompactTrackCard key={`annotated-${track.id}`} track={track} />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 
-                {/* Popular Annotations This Week */}
-                <div className="mb-8">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-[#0C3B2E]">Popular Annotations This Week</h2>
-                    </div>
-                    <div className="space-y-4">
-                        {annotations.map((annotation) => (
-                            <AnnotationCard key={annotation.id} annotation={annotation} />
-                        ))}
-                    </div>
-                </div>
+                        {/* Popular Reviews This Week */}
+                        <div className="mb-8">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-[#0C3B2E]">Popular Reviews This Week</h2>
+                            </div>
+                            <div className="space-y-4">
+                                {reviews.map((review) => (
+                                    <ReviewCard key={review.id} review={review} />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Popular Annotations This Week */}
+                        <div className="mb-8">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-[#0C3B2E]">Popular Annotations This Week</h2>
+                            </div>
+                            <div className="space-y-4">
+                                {annotations.map((annotation) => (
+                                    <AnnotationCard key={annotation.id} annotation={annotation} />
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
             <Footer variant="light" />
         </div>

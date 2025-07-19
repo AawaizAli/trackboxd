@@ -1,16 +1,7 @@
-import NextAuth, { type NextAuthOptions } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
+import { JWT } from "next-auth/jwt";
 
-// Define the required scopes
-const SPOTIFY_SCOPES = [
-  'user-read-email',
-  'user-read-private',
-  'user-library-read',
-  'user-top-read',
-  'user-read-recently-played'
-].join(',');
-
-// Type-safe auth configuration
 export const authOptions: NextAuthOptions = {
   providers: [
     SpotifyProvider({
@@ -18,56 +9,57 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: SPOTIFY_SCOPES,
+          scope: 'user-read-email user-read-private',
           show_dialog: true
         }
       }
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account }): Promise<JWT> {
       // Initial sign in
       if (account) {
         return {
           ...token,
           accessToken: account.access_token,
-          refreshToken: account.refresh_token, // This will be provided automatically
+          refreshToken: account.refresh_token,
           expiresAt: account.expires_at ? account.expires_at * 1000 : Date.now() + 3600 * 1000,
         };
       }
-      
-      // Return existing token if not expired
+
+      // Type-safe expiration check
       if (token.expiresAt && Date.now() < token.expiresAt) {
         return token;
       }
-      
+
       // Refresh token if expired
       return refreshAccessToken(token);
     },
-    async session({ session, token }) {
-      session.accessToken = token.accessToken;
-      session.error = token.error;
-      return session;
-    },
-  },
-  cookies: {
-    sessionToken: {
-      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      },
+    async session({ session, token }): Promise<any> {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          name: token.name,
+          email: token.email,
+          image: token.picture,
+        },
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        expiresAt: token.expiresAt,
+        error: token.error,
+      };
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
 };
 
-// Token refresh implementation
-async function refreshAccessToken(token: any) {
+async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
+    if (!token.refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -84,12 +76,14 @@ async function refreshAccessToken(token: any) {
 
     const refreshedTokens = await response.json();
 
-    if (!response.ok) throw refreshedTokens;
+    if (!response.ok) {
+      throw refreshedTokens;
+    }
 
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
-      expiresAt: Date.now() + refreshedTokens.expires_in * 1000,
+      expiresAt: Date.now() + (refreshedTokens.expires_in * 1000),
       refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
     };
   } catch (error) {
@@ -100,6 +94,3 @@ async function refreshAccessToken(token: any) {
     };
   }
 }
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };

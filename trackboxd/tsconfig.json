@@ -13,15 +13,26 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "plugins": [{
+      "name": "next"
+    }],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    // Add these for better NextAuth support
+    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "types": ["next-auth"],
+    "strictNullChecks": true,
+    "noImplicitAny": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    // Add these to include your custom types
+    "src/types/**/*.d.ts",
+    "src/**/*.types.ts"
+  ],
   "exclude": ["node_modules"]
 }
