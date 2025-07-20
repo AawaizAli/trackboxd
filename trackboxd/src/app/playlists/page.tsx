@@ -168,9 +168,6 @@ const Playlists = () => {
                     alt={playlist.title}
                     className="w-full h-48 object-cover"
                   />
-                  <div className="absolute top-3 right-3 bg-[#FFBA00] text-[#1F2C24] px-2 py-1 rounded-full text-xs font-bold">
-                    Hot
-                  </div>
                 </div>
                 
                 <div className="p-4">

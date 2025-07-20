@@ -104,7 +104,7 @@ const AnnotationsPage = () => {
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <MessageCircle className="w-8 h-8 text-[#6D9773]" />
+            <MessageCircle className="w-8 h-8 text-[#FFBA00]" />
             <h1 className="text-3xl font-bold text-[#0C3B2E]">
               Your Annotations
             </h1>
