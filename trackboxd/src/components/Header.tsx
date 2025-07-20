@@ -41,6 +41,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
     const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
 
     const [spotifyUser, setSpotifyUser] = useState<SpotifyUser | null>(null);
+    const [trackDetails, setTrackDetails] = useState<any>(null); // Add state for track details
     const searchRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -58,6 +59,42 @@ const Header: React.FC<HeaderProps> = ({}) => {
 
         fetchSpotifyUser();
     }, []);
+
+    useEffect(() => {
+      let isMounted = true; // Track component mount status
+      
+      const fetchData = async () => {
+          try {
+              // Fetch user data
+              const userRes = await fetch("/api/me");
+              if (!userRes.ok) throw new Error("Failed to fetch user");
+              const userData = await userRes.json();
+              
+              if (isMounted) setSpotifyUser(userData);
+              console.log("Spotify user data:", userData);
+  
+              // Fetch track details - use a dynamic ID if available
+              const trackId = "5BZsQlgw21vDOAjoqkNgKb"; // Replace with dynamic ID if possible
+              const trackRes = await fetch(`/api/songs/${trackId}`);
+              
+              if (!trackRes.ok) throw new Error(`HTTP error! status: ${trackRes.status}`);
+              const trackData = await trackRes.json();
+              
+              if (isMounted) setTrackDetails(trackData);
+              console.log("Track details:", trackData);
+              
+          } catch (error) {
+              console.error("Error fetching data:", error);
+          }
+      };
+  
+      fetchData();
+  
+      // Cleanup function to prevent state updates on unmounted component
+      return () => {
+          isMounted = false;
+      };
+  }, []);
 
     const getInitials = (name: string) => {
         return name
@@ -206,7 +243,10 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                         />
                                     ) : (
                                         <span className="text-[#F9F9F9] text-sm font-semibold">
-                                            {getInitials(spotifyUser?.display_name || "Guest User")}
+                                            {getInitials(
+                                                spotifyUser?.display_name ||
+                                                    "Guest User"
+                                            )}
                                         </span>
                                     )}
                                 </div>
@@ -339,7 +379,10 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                         />
                                     ) : (
                                         <span className="text-[#F9F9F9] text-base font-semibold">
-                                            {getInitials(spotifyUser?.display_name || "Guest User")}
+                                            {getInitials(
+                                                spotifyUser?.display_name ||
+                                                    "Guest User"
+                                            )}
                                         </span>
                                     )}
                                 </div>

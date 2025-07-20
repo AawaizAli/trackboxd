@@ -244,6 +244,7 @@ const Songs = () => {
                     (item: SpotifyPlaylistTrack) => item.track
                 );
                 setGlobalTopTracks(tracks);
+                console.log("Global top tracks:", tracks);
             } catch (error) {
                 console.error("Error fetching global top tracks:", error);
                 setTopTracksError("Failed to load global top tracks");

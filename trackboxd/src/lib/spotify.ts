@@ -15,6 +15,7 @@ const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
 const SEARCH_ENDPOINT = `https://api.spotify.com/v1/search`;
 const USER_PROFILE_ENDPOINT = `https://api.spotify.com/v1/me`;
 const PLAYLIST_ITEMS_ENDPOINT = `https://api.spotify.com/v1/playlists`;
+const TRACKS_ENDPOINT = `https://api.spotify.com/v1/tracks`;
 
 export const getAccessToken = async () => {
   if (!refresh_token) {
@@ -115,6 +116,32 @@ export const getPlaylistTracks = async (playlistId: string, limit: number = 4) =
     return data.items;
   } catch (error) {
     console.error('Spotify playlist tracks error:', error);
+    throw error;
+  }
+};
+
+export const getTrackDetails = async (trackId: string) => {
+  try {
+    const { access_token } = await getAccessToken();
+
+    if (!trackId) {
+      throw new Error('Track ID is required');
+    }
+
+    const response = await fetch(`${TRACKS_ENDPOINT}/${trackId}`, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Spotify API error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching track details:', error);
     throw error;
   }
 };
