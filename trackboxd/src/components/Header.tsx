@@ -17,6 +17,7 @@ import {
     X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input"; // Import shadcn input
+import Image from "next/image"; // Import Next.js Image component
 
 interface HeaderProps {
     user?: {
@@ -173,14 +174,24 @@ const Header: React.FC<HeaderProps> = ({}) => {
         <header className="bg-[#FFFFE7] border-b border-[#D9D9D9] sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    {/* Left - Logo and Title */}
-                    <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3">
-                            <h1 className="text-xl font-bold text-[#1F2C24] tracking-tight">
+                            {/* Logo Image */}
+                            <div className="h-12 w-auto"> {/* Adjust height as needed */}
+                                <Image
+                                    src="/logo1.svg"
+                                    alt="Trackboxd Logo"
+                                    width={40} // Adjust width to maintain aspect ratio
+                                    height={60} // Adjust height to match the header height
+                                    className="h-full w-auto" // Maintain aspect ratio
+                                />
+                            </div>
+                            <h1 className="text-2xl font-bold text-[#1F2C24] tracking-tight"> {/* Increased text size */}
                                 Trackboxd
                             </h1>
                         </div>
                     </div>
+
 
                     {/* Middle - Navigation (desktop) */}
                     <nav className="hidden md:flex items-center gap-1">
