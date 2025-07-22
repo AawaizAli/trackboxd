@@ -15,9 +15,10 @@ import {
     FileText,
     Menu,
     X,
+    Plus,
 } from "lucide-react";
-import { Input } from "@/components/ui/input"; // Import shadcn input
-import Image from "next/image"; // Import Next.js Image component
+import { Input } from "@/components/ui/input";
+import Image from "next/image";
 
 interface HeaderProps {
     user?: {
@@ -27,7 +28,6 @@ interface HeaderProps {
     };
 }
 
-// Update the SpotifyUser interface
 interface SpotifyUser {
     display_name: string;
     email: string;
@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
     const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
 
     const [spotifyUser, setSpotifyUser] = useState<SpotifyUser | null>(null);
-    const [trackDetails, setTrackDetails] = useState<any>(null); // Add state for track details
+    const [trackDetails, setTrackDetails] = useState<any>(null);
     const searchRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -62,20 +62,18 @@ const Header: React.FC<HeaderProps> = ({}) => {
     }, []);
 
     useEffect(() => {
-      let isMounted = true; // Track component mount status
+      let isMounted = true;
       
       const fetchData = async () => {
           try {
-              // Fetch user data
               const userRes = await fetch("/api/me");
               if (!userRes.ok) throw new Error("Failed to fetch user");
               const userData = await userRes.json();
               
               if (isMounted) setSpotifyUser(userData);
               console.log("Spotify user data:", userData);
-  
-              // Fetch track details - use a dynamic ID if available
-              const trackId = "5BZsQlgw21vDOAjoqkNgKb"; // Replace with dynamic ID if possible
+
+              const trackId = "5BZsQlgw21vDOAjoqkNgKb";
               const trackRes = await fetch(`/api/songs/${trackId}`);
               
               if (!trackRes.ok) throw new Error(`HTTP error! status: ${trackRes.status}`);
@@ -91,7 +89,6 @@ const Header: React.FC<HeaderProps> = ({}) => {
   
       fetchData();
   
-      // Cleanup function to prevent state updates on unmounted component
       return () => {
           isMounted = false;
       };
@@ -105,14 +102,12 @@ const Header: React.FC<HeaderProps> = ({}) => {
             .toUpperCase();
     };
 
-    // Derived user data (fallback to defaults if no Spotify data)
     const user = {
         name: spotifyUser?.display_name || "Guest User",
         avatar: spotifyUser?.images?.[0]?.url,
         username: spotifyUser?.email?.split("@")[0] || "guest",
     };
 
-    // Auto-focus input when expanded
     useEffect(() => {
         if (isSearchExpanded || isMobileSearchExpanded) {
             searchRef.current?.focus();
@@ -127,7 +122,6 @@ const Header: React.FC<HeaderProps> = ({}) => {
         setIsMobileSearchExpanded(!isMobileSearchExpanded);
     };
 
-    // Close search when clicking outside
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (
@@ -174,24 +168,23 @@ const Header: React.FC<HeaderProps> = ({}) => {
         <header className="bg-[#FFFFE7] border-b border-[#D9D9D9] sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                <div className="flex items-center gap-4">
+                    {/* Left - Logo and Title */}
+                    <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3">
-                            {/* Logo Image */}
-                            <div className="h-12 w-auto"> {/* Adjust height as needed */}
+                            <div className="h-12 w-auto">
                                 <Image
                                     src="/logo1.svg"
                                     alt="Trackboxd Logo"
-                                    width={40} // Adjust width to maintain aspect ratio
-                                    height={60} // Adjust height to match the header height
-                                    className="h-full w-auto" // Maintain aspect ratio
+                                    width={40}
+                                    height={60}
+                                    className="h-full w-auto"
                                 />
                             </div>
-                            <h1 className="text-2xl font-bold text-[#1F2C24] tracking-tight"> {/* Increased text size */}
+                            <h1 className="text-2xl font-bold text-[#1F2C24] tracking-tight">
                                 Trackboxd
                             </h1>
                         </div>
                     </div>
-
 
                     {/* Middle - Navigation (desktop) */}
                     <nav className="hidden md:flex items-center gap-1">
@@ -238,81 +231,91 @@ const Header: React.FC<HeaderProps> = ({}) => {
                         </div>
                     </nav>
 
-                    {/* Right - User Section (desktop) */}
-                    <div className="hidden md:block relative">
-                        {/* Dropdown button */}
-                        <button
-                            onClick={toggleDropdown}
-                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#FFFFD5] transition-colors duration-200">
-                            <div className="relative">
-                                <div className="w-8 h-8 rounded-full bg-[#0C3B2E] flex items-center justify-center ring-2 ring-[#FFBA00]">
-                                    {user.avatar ? (
-                                        <img
-                                            src={user.avatar}
-                                            alt={user.name}
-                                            className="w-full h-full rounded-full object-cover"
-                                        />
-                                    ) : (
-                                        <span className="text-[#F9F9F9] text-sm font-semibold">
-                                            {getInitials(
-                                                spotifyUser?.display_name ||
-                                                    "Guest User"
-                                            )}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            <span className="text-sm font-medium text-[#1F2C24]">
-                                {spotifyUser?.display_name || "Guest User"}
-                            </span>
-
-                            <ChevronDown
-                                className={`w-4 h-4 text-[#A0A0A0] transition-transform duration-200 ${
-                                    isDropdownOpen ? "rotate-180" : ""
-                                }`}
-                            />
+                    {/* Right - Actions Section (desktop) */}
+                    <div className="flex items-center gap-4">
+                        {/* Log + Button - Desktop */}
+                        <button className="hidden md:flex items-center gap-1.5 bg-[#FFBA00] text-[#1F2C24] py-2 px-4 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] shadow-sm">
+                            <Plus className="w-4 h-4" />
+                            <span className="font-medium text-sm">Log</span>
                         </button>
-
-                        {/* Dropdown Menu */}
-                        {isDropdownOpen && (
-                            <>
-                                {/* Backdrop for mobile */}
-                                <div
-                                    className="fixed inset-0 z-10 md:hidden"
-                                    onClick={() => setIsDropdownOpen(false)}
-                                />
-
-                                {/* Dropdown Content - FIXED POSITIONING */}
-                                <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-1/25 top-full mt-2 w-56 bg-[#FFFFF0] rounded-xl shadow-lg border border-[#D9D9D9] py-2 z-20">
-                                    {dropdownItems.map((item, index) =>
-                                        item.type === "divider" ? (
-                                            <div
-                                                key={index}
-                                                className="h-px bg-[#D9D9D9] my-2"
+                        
+                        {/* User Section */}
+                        <div className="hidden md:block relative">
+                            <button
+                                onClick={toggleDropdown}
+                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#FFFFD5] transition-colors duration-200">
+                                <div className="relative">
+                                    <div className="w-8 h-8 rounded-full bg-[#0C3B2E] flex items-center justify-center ring-2 ring-[#FFBA00]">
+                                        {user.avatar ? (
+                                            <img
+                                                src={user.avatar}
+                                                alt={user.name}
+                                                className="w-full h-full rounded-full object-cover"
                                             />
                                         ) : (
-                                            <a
-                                                key={item.label}
-                                                href={item.href}
-                                                className="flex items-center gap-3 px-4 py-3 text-sm text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200"
-                                                onClick={() =>
-                                                    setIsDropdownOpen(false)
-                                                }>
-                                                {item.icon && (
-                                                    <item.icon className="w-4 h-4 text-[#A0A0A0]" />
+                                            <span className="text-[#F9F9F9] text-sm font-semibold">
+                                                {getInitials(
+                                                    spotifyUser?.display_name ||
+                                                        "Guest User"
                                                 )}
-                                                {item.label}
-                                            </a>
-                                        )
-                                    )}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
-                            </>
-                        )}
+
+                                <span className="text-sm font-medium text-[#1F2C24]">
+                                    {spotifyUser?.display_name || "Guest User"}
+                                </span>
+
+                                <ChevronDown
+                                    className={`w-4 h-4 text-[#A0A0A0] transition-transform duration-200 ${
+                                        isDropdownOpen ? "rotate-180" : ""
+                                    }`}
+                                />
+                            </button>
+
+                            {isDropdownOpen && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 z-10 md:hidden"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    />
+
+                                    <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-1/25 top-full mt-2 w-56 bg-[#FFFFF0] rounded-xl shadow-lg border border-[#D9D9D9] py-2 z-20">
+                                        {dropdownItems.map((item, index) =>
+                                            item.type === "divider" ? (
+                                                <div
+                                                    key={index}
+                                                    className="h-px bg-[#D9D9D9] my-2"
+                                                />
+                                            ) : (
+                                                <a
+                                                    key={item.label}
+                                                    href={item.href}
+                                                    className="flex items-center gap-3 px-4 py-3 text-sm text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200"
+                                                    onClick={() =>
+                                                        setIsDropdownOpen(false)
+                                                    }>
+                                                    {item.icon && (
+                                                        <item.icon className="w-4 h-4 text-[#A0A0A0]" />
+                                                    )}
+                                                    {item.label}
+                                                </a>
+                                            )
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     {/* Mobile menu button */}
                     <div className="flex md:hidden items-center gap-2">
+                        {/* Log + Button - Mobile (always visible) */}
+                        <button className="flex md:hidden ml-2 items-center gap-1 bg-[#FFBA00] text-[#1F2C24] p-2 rounded-lg transition-all duration-200 ease-in-out">
+                            <Plus className="w-4 h-4" />
+                        </button>
+                        
                         <div className="relative">
                             <div
                                 className={`flex items-center transition-all duration-300 ${
@@ -374,6 +377,12 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                     {item.label}
                                 </a>
                             ))}
+                            
+                            {/* Log + Button - Mobile (inside menu) */}
+                            <button className="flex items-center gap-2 justify-center bg-[#0C3B2E] hover:bg-[#0a3328] text-[#F9F9F9] py-3 px-4 rounded-lg transition-all duration-200 mt-2">
+                                <Plus className="w-5 h-5" />
+                                <span className="font-medium">Log +</span>
+                            </button>
                         </nav>
                     </div>
 
