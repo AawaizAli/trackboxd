@@ -4,6 +4,7 @@ import "next-auth";
 declare module "next-auth" {
   interface Session {
     user: {
+      id?: string;
       name?: string | null;
       email?: string | null;
       image?: string | null;
@@ -12,6 +13,7 @@ declare module "next-auth" {
     refreshToken?: string;
     expiresAt?: number;
     error?: string;
+    spotifyId?: string;
   }
 }
 

@@ -1,19 +1,69 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { userId, trackId } = req.body;
+export async function POST(req: NextRequest) {
+  return handleLikeRequest(req, 'POST');
+}
+
+export async function DELETE(req: NextRequest) {
+  return handleLikeRequest(req, 'DELETE');
+}
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get('userId');
+  const trackId = searchParams.get('trackId');
+
+  if (!userId || !trackId) {
+    return NextResponse.json(
+      { error: 'Missing parameters' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+    
+    const { data } = await supabase
+      .from('likes')
+      .select('id')
+      .match({ user_id: userId, target_type: 'track', target_id: trackId })
+      .single();
+
+    return NextResponse.json({ isLiked: !!data });
+  } catch (error) {
+    console.error('GET like error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+async function handleLikeRequest(req: NextRequest, method: 'POST' | 'DELETE') {
+  const { userId, trackId } = await req.json();
+
+  if (!userId || !trackId) {
+    return NextResponse.json(
+      { error: 'Missing parameters' },
+      { status: 400 }
+    );
+  }
 
   try {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    if (req.method === 'POST') {
+    if (method === 'POST') {
       // Like track logic
       const { error: upsertError } = await supabase
         .from('spotify_items')
-        .upsert({ id: trackId, type: 'track' }, { onConflict: 'id' });
+        .upsert(
+          { id: trackId, type: 'track' },
+          { onConflict: 'id' }
+        );
 
       if (upsertError) throw upsertError;
 
@@ -23,16 +73,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (likeError) {
         if (likeError.code === '23505') {
-          return res.status(400).json({ error: 'You already liked this track' });
+          return NextResponse.json(
+            { error: 'You already liked this track' },
+            { status: 400 }
+          );
         }
         throw likeError;
       }
 
       await supabase.rpc('increment_like_count', { item_id: trackId });
-      return res.status(200).json({ success: true });
+      return NextResponse.json({ success: true });
     } 
-    else if (req.method === 'DELETE') {
-      // Unlike track logic
+    else { // DELETE
       const { error: deleteError } = await supabase
         .from('likes')
         .delete()
@@ -41,23 +93,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (deleteError) throw deleteError;
       
       await supabase.rpc('decrement_like_count', { item_id: trackId });
-      return res.status(200).json({ success: true });
-    } 
-    else if (req.method === 'GET') {
-      // Check like status
-      const { data } = await supabase
-        .from('likes')
-        .select('id')
-        .match({ user_id: userId, target_type: 'track', target_id: trackId })
-        .single();
-
-      return res.status(200).json({ isLiked: !!data });
+      return NextResponse.json({ success: true });
     }
-
-    res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
-    return res.status(405).end('Method Not Allowed');
   } catch (error) {
     console.error('Like API error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

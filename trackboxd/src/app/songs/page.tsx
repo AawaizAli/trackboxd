@@ -19,6 +19,8 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import useUser from "@/hooks/useUser";
 
 interface Track {
     id: string;
@@ -85,6 +87,22 @@ const Songs = () => {
     const [globalTopTracks, setGlobalTopTracks] = useState<SpotifyTrack[]>([]);
     const [isLoadingTopTracks, setIsLoadingTopTracks] = useState(true);
     const [topTracksError, setTopTracksError] = useState<string | null>(null);
+    const [likes, setLikes] = useState<Record<string, boolean>>({});
+    const [isLoadingLikes, setIsLoadingLikes] = useState<
+        Record<string, boolean>
+    >({});
+    const [fetchedTracks, setFetchedTracks] = useState<Set<string>>(new Set());
+
+    const { user, loading: userLoading, error: userError } = useUser();
+
+    console.log("User data:", user); // This should show your user data
+    console.log("User ID:", user?.id); // Access the user ID
+
+    useEffect(() => {
+        if (user) {
+            console.log("User ID:", user.id);
+        }
+    }, [user]);
 
     const spotifyToTrack = (spotifyTrack: SpotifyTrack): Track => ({
         id: spotifyTrack.id,
@@ -99,6 +117,38 @@ const Songs = () => {
         mood: "Energetic", // Default mood
         isSaved: false, // Default not saved
     });
+
+    const handleLikeClick = async (trackId: string) => {
+        if (!user) {
+            // Redirect to landing page if not logged in
+            window.location.href = "/";
+            return;
+        }
+
+        setIsLoadingLikes((prev) => ({ ...prev, [trackId]: true }));
+
+        try {
+            const currentLikedStatus = likes[trackId] || false;
+            const method = currentLikedStatus ? "DELETE" : "POST";
+            const endpoint = `/api/like/track`;
+
+            const response = await fetch(endpoint, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: user.id, trackId }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update like status");
+            }
+
+            setLikes((prev) => ({ ...prev, [trackId]: !currentLikedStatus }));
+        } catch (error) {
+            console.error("Like operation failed:", error);
+        } finally {
+            setIsLoadingLikes((prev) => ({ ...prev, [trackId]: false }));
+        }
+    };
 
     const reviews: Review[] = [
         {
@@ -231,6 +281,47 @@ const Songs = () => {
         "2015",
     ];
 
+    const fetchLikeStatuses = async (trackIds: string[]) => {
+        if (!user) return;
+
+        try {
+            // Filter out tracks we've already fetched
+            const tracksToFetch = trackIds.filter(
+                (id) => !fetchedTracks.has(id)
+            );
+            if (tracksToFetch.length === 0) return;
+
+            // Update fetched tracks set
+            setFetchedTracks((prev) => {
+                const newSet = new Set(prev);
+                tracksToFetch.forEach((id) => newSet.add(id));
+                return newSet;
+            });
+
+            // Fetch like statuses
+            const likeStatuses = await Promise.all(
+                tracksToFetch.map((trackId) =>
+                    fetch(
+                        `/api/like/track?userId=${user.id}&trackId=${trackId}`
+                    )
+                        .then((res) => res.json())
+                        .then((data) => ({ trackId, isLiked: data.isLiked }))
+                )
+            );
+
+            // Update likes state
+            setLikes((prev) => {
+                const newLikes = { ...prev };
+                likeStatuses.forEach(({ trackId, isLiked }) => {
+                    newLikes[trackId] = isLiked;
+                });
+                return newLikes;
+            });
+        } catch (error) {
+            console.error("Failed to fetch like statuses:", error);
+        }
+    };
+
     useEffect(() => {
         const fetchGlobalTopTracks = async () => {
             try {
@@ -256,6 +347,27 @@ const Songs = () => {
 
         fetchGlobalTopTracks();
     }, []);
+
+    useEffect(() => {
+        if (user && globalTopTracks.length > 0) {
+            const trackIds = globalTopTracks.map((t) => t.id);
+            fetchLikeStatuses(trackIds);
+        }
+    }, [user, globalTopTracks]);
+
+    useEffect(() => {
+        if (user && searchResults.length > 0) {
+            const trackIds = searchResults.map((t) => t.id);
+            fetchLikeStatuses(trackIds);
+        }
+    }, [user, searchResults]);
+
+    useEffect(() => {
+        if (!user) {
+            setLikes({});
+            setFetchedTracks(new Set());
+        }
+    }, [user]);
 
     const renderStars = (rating: number) => {
         return (
@@ -312,154 +424,211 @@ const Songs = () => {
     };
 
     // Full track card with truncated artist and album names
-    const TrackCard = ({ track }: { track: Track }) => (
-        <Link href={`/songs/${track.id}`}>
-        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-            <div
-                className={`p-4 ${
-                    viewMode === "list" ? "flex items-center space-x-4" : ""
-                }`}>
-                <div
-                    className={`${
-                        viewMode === "list" ? "w-16 h-16" : "w-full h-48"
-                    } relative overflow-hidden rounded-lg bg-gray-200`}>
-                    <img
-                        src={track.coverArt}
-                        alt={`${track.title} cover`}
-                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
-                    />
-                </div>
+    const TrackCard = ({ track }: { track: Track }) => {
+        const isLiked = likes[track.id] || false;
+        const isLoading = isLoadingLikes[track.id] || false;
 
-                <div className={`${viewMode === "list" ? "flex-1" : "mt-3"}`}>
+        return (
+            <Link href={`/songs/${track.id}`}>
+                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
                     <div
-                        className={`${
+                        className={`p-4 ${
                             viewMode === "list"
-                                ? "flex items-center justify-between"
+                                ? "flex items-center space-x-4"
                                 : ""
                         }`}>
                         <div
                             className={`${
-                                viewMode === "list" ? "flex-1" : ""
-                            }`}>
-                            <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
-                                {track.title}
-                            </h3>
-                            <p className="text-[#A0A0A0] text-sm truncate">
-                                {track.artist}
-                            </p>
-                            <p className="text-[#A0A0A0] text-xs truncate">
-                                {track.album}
-                            </p>
+                                viewMode === "list"
+                                    ? "w-16 h-16"
+                                    : "w-full h-48"
+                            } relative overflow-hidden rounded-lg bg-gray-200`}>
+                            <img
+                                src={track.coverArt}
+                                alt={`${track.title} cover`}
+                                className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+                            />
                         </div>
 
                         <div
                             className={`${
-                                viewMode === "list"
-                                    ? "flex items-center space-x-6"
-                                    : "mt-2"
+                                viewMode === "list" ? "flex-1" : "mt-3"
                             }`}>
-                            {renderStars(track.avgRating)}
-                            <div className="flex items-center space-x-1 text-[#A0A0A0]">
-                                <Heart className="w-4 h-4" />
-                                <span className="text-sm">
-                                    {track.saveCount}
-                                </span>
+                            <div
+                                className={`${
+                                    viewMode === "list"
+                                        ? "flex items-center justify-between"
+                                        : ""
+                                }`}>
+                                <div
+                                    className={`${
+                                        viewMode === "list" ? "flex-1" : ""
+                                    }`}>
+                                    <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
+                                        {track.title}
+                                    </h3>
+                                    <p className="text-[#A0A0A0] text-sm truncate">
+                                        {track.artist}
+                                    </p>
+                                    <p className="text-[#A0A0A0] text-xs truncate">
+                                        {track.album}
+                                    </p>
+                                </div>
+
+                                <div
+                                    className={`${
+                                        viewMode === "list"
+                                            ? "flex items-center space-x-6"
+                                            : "mt-2"
+                                    }`}>
+                                    {renderStars(track.avgRating)}
+                                    <div className="flex items-center space-x-1 text-[#A0A0A0]">
+                                        <Heart className="w-4 h-4" />
+                                        <span className="text-sm">
+                                            {track.saveCount}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                className={`${
+                                    viewMode === "list" ? "mt-2" : "mt-3"
+                                } flex flex-wrap gap-2`}>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleLikeClick(track.id);
+                                    }}
+                                    disabled={isLoading}
+                                    className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                                        isLiked
+                                            ? "bg-[#FFBA00] text-[#1F2C24]"
+                                            : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
+                                    }`}>
+                                    {isLoading ? (
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    ) : (
+                                        <>
+                                            <Heart className="w-3 h-3" />
+                                            <span>
+                                                {isLiked ? "Liked" : "Like"}
+                                            </span>
+                                        </>
+                                    )}
+                                </button>
+                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                                    <Star className="w-3 h-3" />
+                                    <span>Review</span>
+                                </button>
+                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                                    <MessageCircle className="w-3 h-3" />
+                                    <span>Annotate</span>
+                                </button>
                             </div>
                         </div>
                     </div>
-
-                    <div
-                        className={`${
-                            viewMode === "list" ? "mt-2" : "mt-3"
-                        } flex flex-wrap gap-2`}>
-                        <button
-                            className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
-                                track.isSaved
-                                    ? "bg-[#FFBA00] text-[#1F2C24]"
-                                    : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
-                            }`}>
-                            <Heart className="w-3 h-3" />
-                            <span>{track.isSaved ? "Liked" : "Like"}</span>
-                        </button>
-                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                            <Star className="w-3 h-3" />
-                            <span>Review</span>
-                        </button>
-                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                            <MessageCircle className="w-3 h-3" />
-                            <span>Annotate</span>
-                        </button>
-                    </div>
                 </div>
-            </div>
-        </div>
-        </Link>
-    );
+            </Link>
+        );
+    };
 
     // Spotify track card with truncated artist and album names
-    const SpotifyTrackCard = ({ track }: { track: SpotifyTrack }) => (
-        <Link href={`/songs/${track.id}`}>
-        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-            <div className="p-4">
-                <div className="w-full h-48 relative overflow-hidden rounded-lg bg-gray-200">
-                    <img
-                        src={track.album.images[0]?.url || "/default-album.png"}
-                        alt={`${track.name} cover`}
-                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
-                    />
-                </div>
+    const SpotifyTrackCard = ({ track }: { track: SpotifyTrack }) => {
+        const isLiked = likes[track.id] || false;
+        const isLoading = isLoadingLikes[track.id] || false;
 
-                <div className="mt-3">
-                    <div>
-                        <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
-                            {track.name}
-                        </h3>
-                        <p className="text-[#A0A0A0] text-sm truncate">
-                            {track.artists.map((a) => a.name).join(", ")}
-                        </p>
-                        <p className="text-[#A0A0A0] text-xs truncate">
-                            {track.album.name}
-                        </p>
-                    </div>
+        return (
+            <Link href={`/songs/${track.id}`}>
+                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                    <div className="p-4">
+                        <div className="w-full h-48 relative overflow-hidden rounded-lg bg-gray-200">
+                            <img
+                                src={
+                                    track.album.images[0]?.url ||
+                                    "/default-album.png"
+                                }
+                                alt={`${track.name} cover`}
+                                className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+                            />
+                        </div>
 
-                    <div className="mt-3 flex flex-wrap gap-2">
-                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769] transition-colors">
-                            <Heart className="w-3 h-3" />
-                            <span>Save to Library</span>
-                        </button>
-                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                            <Star className="w-3 h-3" />
-                            <span>Review</span>
-                        </button>
+                        <div className="mt-3">
+                            <div>
+                                <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
+                                    {track.name}
+                                </h3>
+                                <p className="text-[#A0A0A0] text-sm truncate">
+                                    {track.artists
+                                        .map((a) => a.name)
+                                        .join(", ")}
+                                </p>
+                                <p className="text-[#A0A0A0] text-xs truncate">
+                                    {track.album.name}
+                                </p>
+                            </div>
+
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleLikeClick(track.id);
+                                    }}
+                                    disabled={isLoading}
+                                    className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                                        isLiked
+                                            ? "bg-[#FFBA00] text-[#1F2C24]"
+                                            : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
+                                    }`}>
+                                    {isLoading ? (
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    ) : (
+                                        <>
+                                            <Heart className="w-3 h-3" />
+                                            <span>
+                                                {isLiked ? "Liked" : "Like"}
+                                            </span>
+                                        </>
+                                    )}
+                                </button>
+                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                                    <Star className="w-3 h-3" />
+                                    <span>Review</span>
+                                </button>
+                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                                    <MessageCircle className="w-3 h-3" />
+                                    <span>Annotate</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        </Link>
-    );
+            </Link>
+        );
+    };
 
     // Compact track card for recently reviewed/annotated with truncated artist name
     const CompactTrackCard = ({ track }: { track: Track }) => (
         <Link href={`/songs/${track.id}`}>
-        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center space-x-3 p-3">
-                <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
-                    <img
-                        src={track.coverArt}
-                        alt={`${track.title} cover`}
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-                <div className="min-w-0">
-                    <h3 className="font-medium text-[#1F2C24] truncate">
-                        {track.title}
-                    </h3>
-                    <p className="text-[#A0A0A0] text-sm truncate">
-                        {track.artist}
-                    </p>
+            <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                <div className="flex items-center space-x-3 p-3">
+                    <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
+                        <img
+                            src={track.coverArt}
+                            alt={`${track.title} cover`}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div className="min-w-0">
+                        <h3 className="font-medium text-[#1F2C24] truncate">
+                            {track.title}
+                        </h3>
+                        <p className="text-[#A0A0A0] text-sm truncate">
+                            {track.artist}
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
         </Link>
     );
 

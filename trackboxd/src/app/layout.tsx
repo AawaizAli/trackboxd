@@ -30,9 +30,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#FFFFF0] text-[#1F2C24]`}
-      >
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#FFFFF0] text-[#1F2C24]`}>
         <SessionProvider session={session}>
           {children}
         </SessionProvider>

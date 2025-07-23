@@ -113,11 +113,17 @@ export const authOptions: NextAuthOptions = {
       
       return refreshAccessToken(token);
     },
-    async session({ session, token }: { session: any, token: any }) {
-      session.accessToken = token.accessToken as string;
-      session.spotifyId = token.spotifyId as string;
-      session.error = token.error as string;
-      return session;
+    async session({ session, token, user }) {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: token.spotifyId,
+        },
+        accessToken: token.accessToken,
+        spotifyId: token.spotifyId,
+        error: token.error,
+      };
     },
   },
   cookies: {
