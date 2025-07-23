@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import LogModal from "./log/LogModal";
 
 interface HeaderProps {
     user?: {
@@ -41,6 +42,8 @@ const Header: React.FC<HeaderProps> = ({}) => {
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
 
+    const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+
     const [spotifyUser, setSpotifyUser] = useState<SpotifyUser | null>(null);
     const [trackDetails, setTrackDetails] = useState<any>(null);
     const searchRef = useRef<HTMLInputElement>(null);
@@ -62,37 +65,37 @@ const Header: React.FC<HeaderProps> = ({}) => {
     }, []);
 
     useEffect(() => {
-      let isMounted = true;
-      
-      const fetchData = async () => {
-          try {
-              const userRes = await fetch("/api/me");
-              if (!userRes.ok) throw new Error("Failed to fetch user");
-              const userData = await userRes.json();
-              
-              if (isMounted) setSpotifyUser(userData);
-              console.log("Spotify user data:", userData);
+        let isMounted = true;
 
-              const trackId = "5BZsQlgw21vDOAjoqkNgKb";
-              const trackRes = await fetch(`/api/songs/${trackId}`);
-              
-              if (!trackRes.ok) throw new Error(`HTTP error! status: ${trackRes.status}`);
-              const trackData = await trackRes.json();
-              
-              if (isMounted) setTrackDetails(trackData);
-              console.log("Track details:", trackData);
-              
-          } catch (error) {
-              console.error("Error fetching data:", error);
-          }
-      };
-  
-      fetchData();
-  
-      return () => {
-          isMounted = false;
-      };
-  }, []);
+        const fetchData = async () => {
+            try {
+                const userRes = await fetch("/api/me");
+                if (!userRes.ok) throw new Error("Failed to fetch user");
+                const userData = await userRes.json();
+
+                if (isMounted) setSpotifyUser(userData);
+                console.log("Spotify user data:", userData);
+
+                const trackId = "5BZsQlgw21vDOAjoqkNgKb";
+                const trackRes = await fetch(`/api/songs/${trackId}`);
+
+                if (!trackRes.ok)
+                    throw new Error(`HTTP error! status: ${trackRes.status}`);
+                const trackData = await trackRes.json();
+
+                if (isMounted) setTrackDetails(trackData);
+                console.log("Track details:", trackData);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const getInitials = (name: string) => {
         return name
@@ -233,12 +236,13 @@ const Header: React.FC<HeaderProps> = ({}) => {
 
                     {/* Right - Actions Section (desktop) */}
                     <div className="flex items-center gap-4">
-                        {/* Log + Button - Desktop */}
-                        <button className="hidden md:flex items-center gap-1.5 bg-[#FFBA00] text-[#1F2C24] py-2 px-4 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] shadow-sm">
+                        <button
+                            onClick={() => setIsLogModalOpen(true)}
+                            className="hidden md:flex items-center gap-1.5 bg-[#FFBA00] text-[#1F2C24] py-2 px-4 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] shadow-sm">
                             <Plus className="w-4 h-4" />
                             <span className="font-medium text-sm">Log</span>
                         </button>
-                        
+
                         {/* User Section */}
                         <div className="hidden md:block relative">
                             <button
@@ -312,10 +316,12 @@ const Header: React.FC<HeaderProps> = ({}) => {
                     {/* Mobile menu button */}
                     <div className="flex md:hidden items-center gap-2">
                         {/* Log + Button - Mobile (always visible) */}
-                        <button className="flex md:hidden ml-2 items-center gap-1 bg-[#FFBA00] text-[#1F2C24] p-2 rounded-lg transition-all duration-200 ease-in-out">
+                        <button
+                            onClick={() => setIsLogModalOpen(true)}
+                            className="flex md:hidden ml-2 items-center gap-1 bg-[#FFBA00] text-[#1F2C24] p-2 rounded-lg transition-all duration-200 ease-in-out">
                             <Plus className="w-4 h-4" />
                         </button>
-                        
+
                         <div className="relative">
                             <div
                                 className={`flex items-center transition-all duration-300 ${
@@ -377,7 +383,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                     {item.label}
                                 </a>
                             ))}
-                            
+
                             {/* Log + Button - Mobile (inside menu) */}
                             <button className="flex items-center gap-2 justify-center bg-[#0C3B2E] hover:bg-[#0a3328] text-[#F9F9F9] py-3 px-4 rounded-lg transition-all duration-200 mt-2">
                                 <Plus className="w-5 h-5" />
@@ -444,6 +450,10 @@ const Header: React.FC<HeaderProps> = ({}) => {
                     </div>
                 </div>
             )}
+            <LogModal
+                isOpen={isLogModalOpen}
+                onClose={() => setIsLogModalOpen(false)}
+            />
         </header>
     );
 };

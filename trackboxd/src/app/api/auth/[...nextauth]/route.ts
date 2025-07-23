@@ -1,5 +1,18 @@
-import NextAuth, { type NextAuthOptions } from "next-auth";
+import { createClient } from "@/lib/supabase/server";
+import NextAuth, { type NextAuthOptions, DefaultSession, Profile } from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
+import { cookies } from "next/headers";
+
+declare module "next-auth" {
+  interface Session extends DefaultSession {
+    accessToken?: string;
+    spotifyId?: string;
+    error?: string;
+  }
+  interface Profile {
+    id: string;
+  }
+}
 
 // Define the required scopes
 const SPOTIFY_SCOPES = [
@@ -25,28 +38,85 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
-      // Initial sign in
-      if (account) {
-        return {
-          ...token,
-          accessToken: account.access_token,
-          refreshToken: account.refresh_token, // This will be provided automatically
-          expiresAt: account.expires_at ? account.expires_at * 1000 : Date.now() + 3600 * 1000,
-        };
+    async signIn({ user, account, profile }: any) {
+      try {
+        const supabase = createClient(cookies());
+        
+        // Get the Spotify profile data
+        const { data: existingUser, error: fetchError } = await supabase
+          .from('users')
+          .select()
+          .eq('id', profile.id)
+          .single();
+
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          console.error('Error fetching user:', fetchError);
+          return false;
+        }
+
+        if (!existingUser) {
+          // Create new user if doesn't exist
+          const { error: insertError } = await supabase
+            .from('users')
+            .insert({
+              id: profile.id,
+              email: profile.email,
+              name: profile.display_name,
+              image_url: profile.images?.[0]?.url || null,
+              spotify_url: profile.external_urls?.spotify || null,
+              country: profile.country || null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          if (insertError) {
+            console.error('Error creating user:', insertError);
+            return false;
+          }
+        } else {
+          // Update existing user
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({
+              email: profile.email,
+              name: profile.display_name,
+              image_url: profile.images?.[0]?.url || null,
+              spotify_url: profile.external_urls?.spotify || null,
+              country: profile.country || null,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', profile.id);
+
+          if (updateError) {
+            console.error('Error updating user:', updateError);
+            return false;
+          }
+        }
+
+        return true;
+      } catch (error) {
+        console.error('Auth error:', error);
+        return false;
+      }
+    },
+    async jwt({ token, account, profile }) {
+      if (account && profile) {
+        token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+        token.spotifyId = profile.id;
+        token.expiresAt = account.expires_at ? account.expires_at * 1000 : Date.now() + 3600 * 1000;
       }
       
-      // Return existing token if not expired
       if (token.expiresAt && Date.now() < token.expiresAt) {
         return token;
       }
       
-      // Refresh token if expired
       return refreshAccessToken(token);
     },
-    async session({ session, token }) {
-      session.accessToken = token.accessToken;
-      session.error = token.error;
+    async session({ session, token }: { session: any, token: any }) {
+      session.accessToken = token.accessToken as string;
+      session.spotifyId = token.spotifyId as string;
+      session.error = token.error as string;
       return session;
     },
   },
