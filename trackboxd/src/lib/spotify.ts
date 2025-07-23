@@ -145,3 +145,51 @@ export const getTrackDetails = async (trackId: string) => {
     throw error;
   }
 };
+
+export const searchPlaylists = async (
+  query: string,
+  options: {
+    limit?: number;
+    offset?: number;
+    market?: string;
+  } = {}
+) => {
+  try {
+    const { access_token } = await getAccessToken();
+    
+    // Set default options
+    const { limit = 20, offset = 0, market = 'US' } = options;
+
+    // Create URL with query parameters
+    const url = new URL(SEARCH_ENDPOINT);
+    url.searchParams.append('q', query);
+    url.searchParams.append('type', 'playlist');
+    url.searchParams.append('limit', limit.toString());
+    url.searchParams.append('offset', offset.toString());
+    url.searchParams.append('market', market);
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    // Add detailed error logging
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Spotify API error ${response.status}: ${response.statusText}`, {
+        url: url.toString(),
+        status: response.status,
+        errorBody
+      });
+      throw new Error(`Spotify API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    // console.log('Search playlists response:', data);
+    return data.playlists?.items || [];
+  } catch (error) {
+    console.error('Spotify playlist search error:', error);
+    throw error;
+  }
+};

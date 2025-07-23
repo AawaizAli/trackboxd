@@ -385,10 +385,10 @@ export default function ActivityPage() {
                             See what you and your friends have been listening to
                         </p>
                     </div>
-                    <button className="bg-[#FFBA00] text-[#1F2C24] px-4 py-3 rounded-lg font-bold hover:bg-[#FFBA00]/90 transition-colors flex items-center gap-2 shadow-md">
+                    {/* <button className="bg-[#FFBA00] text-[#1F2C24] px-4 py-3 rounded-lg font-bold hover:bg-[#FFBA00]/90 transition-colors flex items-center gap-2 shadow-md">
                         <Plus className="w-5 h-5" />
                         Log Something
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Combined Activity Feed */}

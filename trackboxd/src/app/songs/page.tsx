@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Link from "next/link";
 
 interface Track {
     id: string;
@@ -293,7 +294,7 @@ const Songs = () => {
 
         try {
             const res = await fetch(
-                `/api/spotify-search?q=${encodeURIComponent(query)}`
+                `/api/songs/search?q=${encodeURIComponent(query)}`
             );
             if (!res.ok) {
                 throw new Error("Failed to search");
@@ -312,6 +313,7 @@ const Songs = () => {
 
     // Full track card with truncated artist and album names
     const TrackCard = ({ track }: { track: Track }) => (
+        <Link href={`/songs/${track.id}`}>
         <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
             <div
                 className={`p-4 ${
@@ -391,10 +393,12 @@ const Songs = () => {
                 </div>
             </div>
         </div>
+        </Link>
     );
 
     // Spotify track card with truncated artist and album names
     const SpotifyTrackCard = ({ track }: { track: SpotifyTrack }) => (
+        <Link href={`/songs/${track.id}`}>
         <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
             <div className="p-4">
                 <div className="w-full h-48 relative overflow-hidden rounded-lg bg-gray-200">
@@ -431,10 +435,12 @@ const Songs = () => {
                 </div>
             </div>
         </div>
+        </Link>
     );
 
     // Compact track card for recently reviewed/annotated with truncated artist name
     const CompactTrackCard = ({ track }: { track: Track }) => (
+        <Link href={`/songs/${track.id}`}>
         <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
             <div className="flex items-center space-x-3 p-3">
                 <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
@@ -454,6 +460,7 @@ const Songs = () => {
                 </div>
             </div>
         </div>
+        </Link>
     );
 
     // Review card for popular reviews
