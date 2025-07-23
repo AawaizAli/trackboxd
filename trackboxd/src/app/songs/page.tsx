@@ -19,8 +19,6 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { likeTrack, unlikeTrack, isTrackLiked } from "@/lib/supabase/db-likes";
-import { useSession } from "next-auth/react";
 
 interface Track {
     id: string;
@@ -34,7 +32,6 @@ interface Track {
     year: number;
     mood: string;
     isSaved: boolean;
-    isLiked: boolean; // Add this new field
 }
 
 interface Review {
@@ -89,90 +86,19 @@ const Songs = () => {
     const [isLoadingTopTracks, setIsLoadingTopTracks] = useState(true);
     const [topTracksError, setTopTracksError] = useState<string | null>(null);
 
-    const { data: session } = useSession();
-    const user = session?.user;
-
     const spotifyToTrack = (spotifyTrack: SpotifyTrack): Track => ({
         id: spotifyTrack.id,
         title: spotifyTrack.name,
         artist: spotifyTrack.artists.map((a) => a.name).join(", "),
         album: spotifyTrack.album.name,
         coverArt: spotifyTrack.album.images[0]?.url || "/default-album.png",
-        avgRating: 4.0,
-        saveCount: Math.floor(Math.random() * 2000) + 500,
-        genre: "Pop",
+        avgRating: 4.0, // Default rating
+        saveCount: Math.floor(Math.random() * 2000) + 500, // Random save count between 500-2500
+        genre: "Pop", // Default genre
         year: parseInt(spotifyTrack.album.release_date.substring(0, 4)) || 2023,
-        mood: "Energetic",
-        isSaved: false,
-        isLiked: false, // Initialize as false
+        mood: "Energetic", // Default mood
+        isSaved: false, // Default not saved
     });
-
-    const handleLike = async (trackId: string) => {
-        try {
-            const result = await likeTrack(user.id, trackId);
-            if (result.success) {
-                // Update the UI state
-                setGlobalTopTracks((prevTracks) =>
-                    prevTracks.map((track) =>
-                        track.id === trackId
-                            ? { ...track, isLiked: true }
-                            : track
-                    )
-                );
-                // You might want to show a success toast here
-            } else {
-                // Show error message
-                console.error(result.message);
-            }
-        } catch (error) {
-            console.error("Error liking track:", error);
-        }
-    };
-
-    // Add this function to check like status
-    const checkLikeStatus = async (trackId: string) => {
-        try {
-            const isLiked = await isTrackLiked(user.id, trackId);
-            return isLiked;
-        } catch (error) {
-            console.error("Error checking like status:", error);
-            return false;
-        }
-    };
-
-    useEffect(() => {
-        const fetchGlobalTopTracks = async () => {
-            try {
-                const res = await fetch("/api/songs/global-top-4");
-                if (!res.ok)
-                    throw new Error("Failed to fetch global top tracks");
-                const data = await res.json();
-                const tracks = data.map(
-                    (item: SpotifyPlaylistTrack) => item.track
-                );
-
-                // Check like status for each track
-                const tracksWithLikeStatus = await Promise.all(
-                    tracks.map(async (track: SpotifyTrack) => {
-                        const isLiked = await checkLikeStatus(track.id);
-                        return {
-                            ...spotifyToTrack(track),
-                            isLiked,
-                        };
-                    })
-                );
-
-                setGlobalTopTracks(tracksWithLikeStatus);
-            } catch (error) {
-                console.error("Error fetching global top tracks:", error);
-                setTopTracksError("Failed to load global top tracks");
-            } finally {
-                setIsLoadingTopTracks(false);
-            }
-        };
-
-        fetchGlobalTopTracks();
-    }, [user?.id]);
 
     const reviews: Review[] = [
         {
@@ -386,257 +312,154 @@ const Songs = () => {
     };
 
     // Full track card with truncated artist and album names
-    const TrackCard = ({ track }: { track: Track }) => {
-        const [isLiked, setIsLiked] = useState(track.isLiked);
-        const [isProcessing, setIsProcessing] = useState(false);
+    const TrackCard = ({ track }: { track: Track }) => (
+        <Link href={`/songs/${track.id}`}>
+        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <div
+                className={`p-4 ${
+                    viewMode === "list" ? "flex items-center space-x-4" : ""
+                }`}>
+                <div
+                    className={`${
+                        viewMode === "list" ? "w-16 h-16" : "w-full h-48"
+                    } relative overflow-hidden rounded-lg bg-gray-200`}>
+                    <img
+                        src={track.coverArt}
+                        alt={`${track.title} cover`}
+                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+                    />
+                </div>
 
-        const handleLikeClick = async (e: React.MouseEvent) => {
-            e.preventDefault(); // Prevent navigation when clicking like button
-            e.stopPropagation();
-
-            if (isProcessing) return;
-            setIsProcessing(true);
-
-            try {
-                if (isLiked) {
-                    const result = await unlikeTrack(user.id, track.id);
-                    if (result.success) {
-                        setIsLiked(false);
-                        // Update the save count in the UI
-                        track.saveCount = Math.max(0, track.saveCount - 1);
-                    }
-                } else {
-                    const result = await likeTrack(user.id, track.id);
-                    if (result.success) {
-                        setIsLiked(true);
-                        // Update the save count in the UI
-                        track.saveCount += 1;
-                    }
-                }
-            } catch (error) {
-                console.error("Error toggling like:", error);
-            } finally {
-                setIsProcessing(false);
-            }
-        };
-
-        return (
-            <Link href={`/songs/${track.id}`}>
-                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                <div className={`${viewMode === "list" ? "flex-1" : "mt-3"}`}>
                     <div
-                        className={`p-4 ${
+                        className={`${
                             viewMode === "list"
-                                ? "flex items-center space-x-4"
+                                ? "flex items-center justify-between"
                                 : ""
                         }`}>
                         <div
                             className={`${
-                                viewMode === "list"
-                                    ? "w-16 h-16"
-                                    : "w-full h-48"
-                            } relative overflow-hidden rounded-lg bg-gray-200`}>
-                            <img
-                                src={track.coverArt}
-                                alt={`${track.title} cover`}
-                                className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
-                            />
+                                viewMode === "list" ? "flex-1" : ""
+                            }`}>
+                            <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
+                                {track.title}
+                            </h3>
+                            <p className="text-[#A0A0A0] text-sm truncate">
+                                {track.artist}
+                            </p>
+                            <p className="text-[#A0A0A0] text-xs truncate">
+                                {track.album}
+                            </p>
                         </div>
 
                         <div
                             className={`${
-                                viewMode === "list" ? "flex-1" : "mt-3"
+                                viewMode === "list"
+                                    ? "flex items-center space-x-6"
+                                    : "mt-2"
                             }`}>
-                            <div
-                                className={`${
-                                    viewMode === "list"
-                                        ? "flex items-center justify-between"
-                                        : ""
-                                }`}>
-                                <div
-                                    className={`${
-                                        viewMode === "list" ? "flex-1" : ""
-                                    }`}>
-                                    <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
-                                        {track.title}
-                                    </h3>
-                                    <p className="text-[#A0A0A0] text-sm truncate">
-                                        {track.artist}
-                                    </p>
-                                    <p className="text-[#A0A0A0] text-xs truncate">
-                                        {track.album}
-                                    </p>
-                                </div>
-
-                                <div
-                                    className={`${
-                                        viewMode === "list"
-                                            ? "flex items-center space-x-6"
-                                            : "mt-2"
-                                    }`}>
-                                    {renderStars(track.avgRating)}
-                                    <div className="flex items-center space-x-1 text-[#A0A0A0]">
-                                        <Heart className="w-4 h-4" />
-                                        <span className="text-sm">
-                                            {track.saveCount}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div
-                                className={`${
-                                    viewMode === "list" ? "mt-2" : "mt-3"
-                                } flex flex-wrap gap-2`}>
-                                <button
-                                    onClick={handleLikeClick}
-                                    disabled={isProcessing}
-                                    className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
-                                        isLiked
-                                            ? "bg-[#FFBA00] text-[#1F2C24]"
-                                            : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
-                                    }`}>
-                                    <Heart className="w-3 h-3" />
-                                    <span>{isLiked ? "Liked" : "Like"}</span>
-                                    {isProcessing && (
-                                        <span className="ml-1">
-                                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                        </span>
-                                    )}
-                                </button>
-                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                                    <Star className="w-3 h-3" />
-                                    <span>Review</span>
-                                </button>
-                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                                    <MessageCircle className="w-3 h-3" />
-                                    <span>Annotate</span>
-                                </button>
+                            {renderStars(track.avgRating)}
+                            <div className="flex items-center space-x-1 text-[#A0A0A0]">
+                                <Heart className="w-4 h-4" />
+                                <span className="text-sm">
+                                    {track.saveCount}
+                                </span>
                             </div>
                         </div>
                     </div>
+
+                    <div
+                        className={`${
+                            viewMode === "list" ? "mt-2" : "mt-3"
+                        } flex flex-wrap gap-2`}>
+                        <button
+                            className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                                track.isSaved
+                                    ? "bg-[#FFBA00] text-[#1F2C24]"
+                                    : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
+                            }`}>
+                            <Heart className="w-3 h-3" />
+                            <span>{track.isSaved ? "Liked" : "Like"}</span>
+                        </button>
+                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                            <Star className="w-3 h-3" />
+                            <span>Review</span>
+                        </button>
+                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                            <MessageCircle className="w-3 h-3" />
+                            <span>Annotate</span>
+                        </button>
+                    </div>
                 </div>
-            </Link>
-        );
-    };
+            </div>
+        </div>
+        </Link>
+    );
 
     // Spotify track card with truncated artist and album names
-    const SpotifyTrackCard = ({ track }: { track: SpotifyTrack }) => {
-        const [isLiked, setIsLiked] = useState(false);
-        const [isProcessing, setIsProcessing] = useState(false);
+    const SpotifyTrackCard = ({ track }: { track: SpotifyTrack }) => (
+        <Link href={`/songs/${track.id}`}>
+        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <div className="p-4">
+                <div className="w-full h-48 relative overflow-hidden rounded-lg bg-gray-200">
+                    <img
+                        src={track.album.images[0]?.url || "/default-album.png"}
+                        alt={`${track.name} cover`}
+                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+                    />
+                </div>
 
-        useEffect(() => {
-            const checkLike = async () => {
-                const liked = await checkLikeStatus(track.id);
-                setIsLiked(liked);
-            };
-            checkLike();
-        }, [track.id]);
+                <div className="mt-3">
+                    <div>
+                        <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
+                            {track.name}
+                        </h3>
+                        <p className="text-[#A0A0A0] text-sm truncate">
+                            {track.artists.map((a) => a.name).join(", ")}
+                        </p>
+                        <p className="text-[#A0A0A0] text-xs truncate">
+                            {track.album.name}
+                        </p>
+                    </div>
 
-        const handleLikeClick = async (e: React.MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (isProcessing) return;
-            setIsProcessing(true);
-
-            try {
-                if (isLiked) {
-                    await unlikeTrack(user.id, track.id);
-                    setIsLiked(false);
-                } else {
-                    await likeTrack(user.id, track.id);
-                    setIsLiked(true);
-                }
-            } catch (error) {
-                console.error("Error toggling like:", error);
-            } finally {
-                setIsProcessing(false);
-            }
-        };
-
-        return (
-            <Link href={`/songs/${track.id}`}>
-                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                    <div className="p-4">
-                        <div className="w-full h-48 relative overflow-hidden rounded-lg bg-gray-200">
-                            <img
-                                src={
-                                    track.album.images[0]?.url ||
-                                    "/default-album.png"
-                                }
-                                alt={`${track.name} cover`}
-                                className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
-                            />
-                        </div>
-
-                        <div className="mt-3">
-                            <div>
-                                <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
-                                    {track.name}
-                                </h3>
-                                <p className="text-[#A0A0A0] text-sm truncate">
-                                    {track.artists
-                                        .map((a) => a.name)
-                                        .join(", ")}
-                                </p>
-                                <p className="text-[#A0A0A0] text-xs truncate">
-                                    {track.album.name}
-                                </p>
-                            </div>
-
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                <button
-                                    onClick={handleLikeClick}
-                                    disabled={isProcessing}
-                                    className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
-                                        isLiked
-                                            ? "bg-[#FFBA00] text-[#1F2C24]"
-                                            : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
-                                    }`}>
-                                    <Heart className="w-3 h-3" />
-                                    <span>
-                                        {isLiked ? "Liked" : "Like"}
-                                    </span>
-                                    {isProcessing && (
-                                        <span className="ml-1">
-                                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                        </span>
-                                    )}
-                                </button>
-                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                                    <Star className="w-3 h-3" />
-                                    <span>Review</span>
-                                </button>
-                            </div>
-                        </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769] transition-colors">
+                            <Heart className="w-3 h-3" />
+                            <span>Save to Library</span>
+                        </button>
+                        <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                            <Star className="w-3 h-3" />
+                            <span>Review</span>
+                        </button>
                     </div>
                 </div>
-            </Link>
-        );
-    };
+            </div>
+        </div>
+        </Link>
+    );
 
     // Compact track card for recently reviewed/annotated with truncated artist name
     const CompactTrackCard = ({ track }: { track: Track }) => (
         <Link href={`/songs/${track.id}`}>
-            <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                <div className="flex items-center space-x-3 p-3">
-                    <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
-                        <img
-                            src={track.coverArt}
-                            alt={`${track.title} cover`}
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div className="min-w-0">
-                        <h3 className="font-medium text-[#1F2C24] truncate">
-                            {track.title}
-                        </h3>
-                        <p className="text-[#A0A0A0] text-sm truncate">
-                            {track.artist}
-                        </p>
-                    </div>
+        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <div className="flex items-center space-x-3 p-3">
+                <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
+                    <img
+                        src={track.coverArt}
+                        alt={`${track.title} cover`}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+                <div className="min-w-0">
+                    <h3 className="font-medium text-[#1F2C24] truncate">
+                        {track.title}
+                    </h3>
+                    <p className="text-[#A0A0A0] text-sm truncate">
+                        {track.artist}
+                    </p>
                 </div>
             </div>
+        </div>
         </Link>
     );
 
