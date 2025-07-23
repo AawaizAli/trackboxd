@@ -16,7 +16,7 @@ const LogModal: React.FC<LogModalProps> = ({ isOpen, onClose }) => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
             {/* Backdrop */}
             <div
-                className="fixed inset-0 backdrop-blur-sm bg-black bg-opacity-30"
+                className="fixed inset-0 bg-black/50 !important"
                 onClick={onClose}
             />
 
