@@ -64,38 +64,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
         fetchSpotifyUser();
     }, []);
 
-    useEffect(() => {
-        let isMounted = true;
-
-        const fetchData = async () => {
-            try {
-                const userRes = await fetch("/api/me");
-                if (!userRes.ok) throw new Error("Failed to fetch user");
-                const userData = await userRes.json();
-
-                if (isMounted) setSpotifyUser(userData);
-                console.log("Spotify user data:", userData);
-
-                const trackId = "5BZsQlgw21vDOAjoqkNgKb";
-                const trackRes = await fetch(`/api/songs/${trackId}`);
-
-                if (!trackRes.ok)
-                    throw new Error(`HTTP error! status: ${trackRes.status}`);
-                const trackData = await trackRes.json();
-
-                if (isMounted) setTrackDetails(trackData);
-                console.log("Track details:", trackData);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        };
-
-        fetchData();
-
-        return () => {
-            isMounted = false;
-        };
-    }, []);
+   
 
     const getInitials = (name: string) => {
         return name
