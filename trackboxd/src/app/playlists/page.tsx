@@ -158,43 +158,49 @@ const Playlists = () => {
         "Road Trip",
     ];
 
+    const truncateText = (text: string, maxLength: number) => {
+        return text.length > maxLength
+            ? text.substring(0, maxLength) + "..."
+            : text;
+    };
+
     // In your searchPlaylists function:
     const searchPlaylists = async (query: string) => {
-      if (!query) {
+        if (!query) {
+            setSearchError(null);
+            setShowSearchResults(false);
+            return;
+        }
+
+        setIsSearching(true);
         setSearchError(null);
-        setShowSearchResults(false);
-        return;
-      }
-    
-      setIsSearching(true);
-      setSearchError(null);
-    
-      try {
-        const res = await fetch(
-          `/api/playlists/search?q=${encodeURIComponent(query)}`
-        );
-        if (!res.ok) {
-          throw new Error("Failed to search");
+
+        try {
+            const res = await fetch(
+                `/api/playlists/search?q=${encodeURIComponent(query)}`
+            );
+            if (!res.ok) {
+                throw new Error("Failed to search");
+            }
+            const data = await res.json();
+
+            // Handle both array response and Spotify-style response
+            let results = [];
+            if (Array.isArray(data)) {
+                results = data.filter(Boolean); // Filter out null values
+            } else if (data.playlists?.items) {
+                results = data.playlists.items.filter(Boolean);
+            }
+
+            setSearchResults(results);
+            setShowSearchResults(true);
+        } catch (error) {
+            console.error("Playlist search error:", error);
+            setSearchError("Failed to search. Please try again.");
+            setShowSearchResults(false);
+        } finally {
+            setIsSearching(false);
         }
-        const data = await res.json();
-        
-        // Handle both array response and Spotify-style response
-        let results = [];
-        if (Array.isArray(data)) {
-          results = data.filter(Boolean);  // Filter out null values
-        } else if (data.playlists?.items) {
-          results = data.playlists.items.filter(Boolean);
-        }
-        
-        setSearchResults(results);
-        setShowSearchResults(true);
-      } catch (error) {
-        console.error("Playlist search error:", error);
-        setSearchError("Failed to search. Please try again.");
-        setShowSearchResults(false);
-      } finally {
-        setIsSearching(false);
-      }
     };
 
     return (
@@ -292,21 +298,33 @@ const Playlists = () => {
                                         </div>
 
                                         <div className="p-4">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
+                                            <div className="flex justify-between items-start mb-2 gap-2">
+                                                <div className="min-w-0">
+                                                    {" "}
+                                                    {/* Add min-w-0 to allow text truncation */}
                                                     <h3 className="font-bold text-lg text-[#0C3B2E] truncate">
                                                         {playlist.name}
                                                     </h3>
-                                                    <p className="text-[#6D9773] text-sm">
+                                                    <p className="text-[#6D9773] text-sm truncate">
                                                         by{" "}
-                                                        {
-                                                            playlist.owner
-                                                                .display_name
-                                                        }
+                                                        {playlist.owner
+                                                            ?.display_name ||
+                                                            "Unknown"}
                                                     </p>
                                                 </div>
-                                                <button className="p-2 rounded-full text-[#A0A0A0] hover:text-[#FF3C57]">
-                                                    <Heart className="w-5 h-5" />
+                                                <button
+                                                    className={`flex-shrink-0 p-2 rounded-full ${
+                                                        playlist.isLiked
+                                                            ? "text-[#FF3C57]"
+                                                            : "text-[#A0A0A0] hover:text-[#FF3C57]"
+                                                    }`}>
+                                                    <Heart
+                                                        className={`w-5 h-5 ${
+                                                            playlist.isLiked
+                                                                ? "fill-[#FF3C57]"
+                                                                : ""
+                                                        }`}
+                                                    />
                                                 </button>
                                             </div>
 
@@ -374,6 +392,7 @@ const Playlists = () => {
                                     <div
                                         key={`popular-${playlist.id}`}
                                         className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                                        {/* Cover art remains the same */}
                                         <div className="relative">
                                             <img
                                                 src={playlist.coverArt}
@@ -383,17 +402,20 @@ const Playlists = () => {
                                         </div>
 
                                         <div className="p-4">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
+                                            {/* Modified title and like button container */}
+                                            <div className="flex justify-between items-start mb-2 gap-2">
+                                                <div className="min-w-0">
+                                                    {" "}
+                                                    {/* Add min-w-0 to allow text truncation */}
                                                     <h3 className="font-bold text-lg text-[#0C3B2E] truncate">
                                                         {playlist.title}
                                                     </h3>
-                                                    <p className="text-[#6D9773] text-sm">
+                                                    <p className="text-[#6D9773] text-sm truncate">
                                                         by {playlist.creator}
                                                     </p>
                                                 </div>
                                                 <button
-                                                    className={`p-2 rounded-full ${
+                                                    className={`flex-shrink-0 p-2 rounded-full ${
                                                         playlist.isLiked
                                                             ? "text-[#FF3C57]"
                                                             : "text-[#A0A0A0] hover:text-[#FF3C57]"
@@ -408,6 +430,7 @@ const Playlists = () => {
                                                 </button>
                                             </div>
 
+                                            {/* Rest of the content remains the same */}
                                             <p className="text-[#1F2C24] text-sm mb-4 line-clamp-2">
                                                 {playlist.description}
                                             </p>
@@ -449,7 +472,7 @@ const Playlists = () => {
                                                         </svg>
                                                         <span>
                                                             {playlist.followers.toLocaleString()}{" "}
-                                                            saves{" "}
+                                                            saves
                                                         </span>
                                                     </div>
                                                 </div>
