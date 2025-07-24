@@ -21,7 +21,7 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import useUser from "@/hooks/useUser";
-
+import AnnotationForm from "@/components/log/forms/AnnotationForm";
 interface Track {
     id: string;
     title: string;
@@ -92,7 +92,8 @@ const Songs = () => {
         Record<string, boolean>
     >({});
     const [fetchedTracks, setFetchedTracks] = useState<Set<string>>(new Set());
-
+    const [showAnnotationForm, setShowAnnotationForm] = useState(false);
+    const [annotationTrack, setAnnotationTrack] = useState<Track | null>(null);
     const { user, loading: userLoading, error: userError } = useUser();
 
     console.log("User data:", user); // This should show your user data
@@ -521,9 +522,16 @@ const Songs = () => {
                                     <Star className="w-3 h-3" />
                                     <span>Review</span>
                                 </button>
-                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                                    <MessageCircle className="w-3 h-3" />
-                                    <span>Annotate</span>
+                                <button 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setAnnotationTrack(track);
+                                    setShowAnnotationForm(true);
+                                }}
+                                className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors"
+                                >
+                                <MessageCircle className="w-3 h-3" />
+                                <span>Annotate</span>
                                 </button>
                             </div>
                         </div>
@@ -1003,6 +1011,41 @@ const Songs = () => {
                                 ))}
                             </div>
                         </div>
+
+                        {/* Annotation Form Popup */}
+                        {showAnnotationForm && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center">
+                            {/* Darkened background overlay */}
+                            <div 
+                            className="absolute inset-0 bg-black/50 bg-opacity-20"
+                            onClick={() => setShowAnnotationForm(false)}
+                            ></div>
+                            
+                            {/* Popup container */}
+                            <div className="bg-[#FFFFF0] rounded-lg p-6 w-full max-w-2xl border border-[#D9D9D9] shadow-lg relative z-10">
+                            
+                            {/* Annotation Form */}
+                            <AnnotationForm
+                                onClose={() => {
+                                setShowAnnotationForm(false);
+                                setAnnotationTrack(null);
+                                }}
+                                initialTrack={
+                                annotationTrack
+                                    ? {
+                                        id: annotationTrack.id,
+                                        name: annotationTrack.title,
+                                        artist: annotationTrack.artist,
+                                        album: annotationTrack.album,
+                                        coverArt: annotationTrack.coverArt,
+                                    }
+                                    : undefined
+                                }
+                            />
+                            </div>
+                        </div>
+                        )}
+                                                
                     </>
                 )}
             </div>

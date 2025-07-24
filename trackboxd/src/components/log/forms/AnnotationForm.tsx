@@ -1,33 +1,121 @@
 "use client";
 
-import React, { useState } from "react";
-import { Search, X, Music } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, X, Music, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-interface AnnotationFormProps {
-  onClose: () => void;
+interface SimplifiedTrack {
+  id: string;
+  name: string;
+  artist: string;
+  album: string;
+  coverArt: string;
 }
 
-const AnnotationForm: React.FC<AnnotationFormProps> = ({ onClose }) => {
+interface AnnotationFormProps {
+  onClose: () => void;
+  initialTrack?: SimplifiedTrack;
+}
+
+const AnnotationForm: React.FC<AnnotationFormProps> = ({ 
+  onClose, 
+  initialTrack 
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTrack, setSelectedTrack] = useState<any>(null);
+  const [selectedTrack, setSelectedTrack] = useState<SimplifiedTrack | null>(
+    initialTrack || null
+  );
   const [timestamp, setTimestamp] = useState("");
   const [annotationText, setAnnotationText] = useState("");
+  const [searchResults, setSearchResults] = useState<SimplifiedTrack[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [trendingTracks, setTrendingTracks] = useState<SimplifiedTrack[]>([]);
+  const [isLoadingTrending, setIsLoadingTrending] = useState(true);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulated search results
-    console.log("Searching for:", searchQuery);
-  };
+  // Fetch trending tracks on mount
+  useEffect(() => {
+    const fetchTrendingTracks = async () => {
+      try {
+        setIsLoadingTrending(true);
+        const res = await fetch("/api/songs/global-top-4");
+        if (!res.ok) throw new Error("Failed to fetch trending tracks");
+        
+        const data = await res.json();
+        const tracks = data.map((item: any) => ({
+          id: item.track.id,
+          name: item.track.name,
+          artist: item.track.artists.map((a: any) => a.name).join(", "),
+          album: item.track.album.name,
+          coverArt: item.track.album.images[0]?.url || "/default-album.png"
+        }));
+        
+        // Select 3 random trending tracks
+        const shuffled = [...tracks].sort(() => 0.5 - Math.random());
+        setTrendingTracks(shuffled.slice(0, 3));
+      } catch (error) {
+        console.error("Error fetching trending tracks:", error);
+      } finally {
+        setIsLoadingTrending(false);
+      }
+    };
 
-  const handleSelectTrack = (track: any) => {
-    setSelectedTrack(track);
+    fetchTrendingTracks();
+  }, []);
+
+  // Debounce search requests
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setSearchError(null);
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      searchSpotify(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const searchSpotify = async (query: string) => {
+    setIsSearching(true);
+    setSearchError(null);
+
+    try {
+      const res = await fetch(`/api/songs/search?q=${encodeURIComponent(query)}`);
+      if (!res.ok) {
+        throw new Error("Failed to search");
+      }
+      const data = await res.json();
+      
+      // Convert Spotify tracks to simplified format
+      const results = data.tracks?.items?.map((track: any) => ({
+        id: track.id,
+        name: track.name,
+        artist: track.artists.map((a: any) => a.name).join(", "),
+        album: track.album.name,
+        coverArt: track.album.images[0]?.url || "/default-album.png"
+      })) || [];
+      
+      setSearchResults(results);
+    } catch (error) {
+      console.error("Spotify search error:", error);
+      setSearchError("Failed to search. Please try again.");
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting annotation:", { selectedTrack, timestamp, annotationText });
+    console.log("Submitting annotation:", { 
+      trackId: selectedTrack?.id,
+      timestamp, 
+      annotationText 
+    });
     onClose();
   };
 
@@ -38,7 +126,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({ onClose }) => {
           <h3 className="font-medium text-[#1F2C24]">
             Search for a track to annotate
           </h3>
-          <form onSubmit={handleSearch} className="relative">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A0A0A0]" />
             <Input
               type="search"
@@ -47,7 +135,12 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({ onClose }) => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-10 py-6 rounded-xl bg-[#FFFFE7] border border-[#D9D9D9]"
             />
-            {searchQuery && (
+            {isSearching && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <Loader2 className="w-5 h-5 text-[#6D9773] animate-spin" />
+              </div>
+            )}
+            {searchQuery && !isSearching && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
@@ -56,25 +149,95 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({ onClose }) => {
                 <X className="w-5 h-5 text-[#A0A0A0]" />
               </button>
             )}
-          </form>
+          </div>
 
-          {/* Search Results (simplified) */}
+          {searchError && (
+            <p className="text-red-500 text-sm">{searchError}</p>
+          )}
+
+          {/* Content Area */}
           <div className="border rounded-lg p-4 bg-[#FFFFE7] border-[#D9D9D9]">
-            <div className="space-y-3">
-              {[1, 2, 3].map((item) => (
-                <div
-                  key={item}
-                  className="flex items-center gap-3 p-3 hover:bg-[#FFFFD5] rounded-lg cursor-pointer"
-                  onClick={() => handleSelectTrack({ id: item.toString(), name: `Track ${item}` })}
-                >
-                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
-                  <div>
-                    <h4 className="font-medium text-[#1F2C24]">Track {item}</h4>
-                    <p className="text-sm text-[#A0A0A0]">Artist Name</p>
-                  </div>
+            {searchQuery ? (
+              // Search Results
+              searchResults.length > 0 ? (
+                <div className="space-y-3">
+                  {searchResults.map((track) => (
+                    <div
+                      key={track.id}
+                      className="flex items-center gap-3 p-3 hover:bg-[#FFFFD5] rounded-lg cursor-pointer"
+                      onClick={() => setSelectedTrack(track)}
+                    >
+                      <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
+                        <img
+                          src={track.coverArt}
+                          alt={`${track.name} cover`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-medium text-[#1F2C24] truncate">
+                          {track.name}
+                        </h4>
+                        <p className="text-sm text-[#A0A0A0] truncate">
+                          {track.artist}
+                        </p>
+                        <p className="text-xs text-[#A0A0A0] truncate">
+                          {track.album}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              ) : (
+                <div className="text-center py-8 text-[#A0A0A0]">
+                  <Music className="w-12 h-12 mx-auto mb-2" />
+                  <p>No results found for "{searchQuery}"</p>
+                </div>
+              )
+            ) : (
+              // Trending Tracks
+              <>
+                <h4 className="text-sm font-medium text-[#1F2C24] mb-3">
+                  Trending This Week
+                </h4>
+                {isLoadingTrending ? (
+                  <div className="flex justify-center items-center h-32">
+                    <Loader2 className="w-8 h-8 text-[#6D9773] animate-spin" />
+                  </div>
+                ) : trendingTracks.length > 0 ? (
+                  <div className="space-y-3">
+                    {trendingTracks.map((track) => (
+                      <div
+                        key={`trending-${track.id}`}
+                        className="flex items-center gap-3 p-3 hover:bg-[#FFFFD5] rounded-lg cursor-pointer"
+                        onClick={() => setSelectedTrack(track)}
+                      >
+                        <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
+                          <img
+                            src={track.coverArt}
+                            alt={`${track.name} cover`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-medium text-[#1F2C24] truncate">
+                            {track.name}
+                          </h4>
+                          <p className="text-sm text-[#A0A0A0] truncate">
+                            {track.artist}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-[#A0A0A0]">
+                    <Music className="w-12 h-12 mx-auto mb-2" />
+                    <p>No trending tracks available</p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       ) : (
@@ -93,10 +256,23 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({ onClose }) => {
           </div>
 
           <div className="flex items-center gap-4 p-4 bg-[#FFFFE7] rounded-lg border border-[#D9D9D9]">
-            <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
-            <div>
-              <h4 className="font-bold text-[#1F2C24]">{selectedTrack.name}</h4>
-              <p className="text-sm text-[#A0A0A0]">Artist Name • 3:45</p>
+            <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
+              <img
+                src={selectedTrack.coverArt}
+                alt={`${selectedTrack.name} cover`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="min-w-0">
+              <h4 className="font-bold text-[#1F2C24] truncate">
+                {selectedTrack.name}
+              </h4>
+              <p className="text-sm text-[#A0A0A0] truncate">
+                {selectedTrack.artist}
+              </p>
+              <p className="text-xs text-[#A0A0A0] truncate">
+                {selectedTrack.album}
+              </p>
             </div>
           </div>
 
