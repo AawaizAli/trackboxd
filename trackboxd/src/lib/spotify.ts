@@ -193,3 +193,72 @@ export const searchPlaylists = async (
     throw error;
   }
 };
+
+export const searchTracksAndAlbums = async (
+  query: string,
+  options: {
+    trackLimit?: number;
+    albumLimit?: number;
+    market?: string;
+  } = {}
+) => {
+  try {
+    const { access_token } = await getAccessToken();
+    const { trackLimit = 7, albumLimit = 4, market = 'US' } = options;
+
+    // Create URLs for both endpoints
+    const tracksUrl = new URL(SEARCH_ENDPOINT);
+    tracksUrl.searchParams.append('q', query);
+    tracksUrl.searchParams.append('type', 'track');
+    tracksUrl.searchParams.append('limit', trackLimit.toString());
+    tracksUrl.searchParams.append('market', market);
+
+    const albumsUrl = new URL(SEARCH_ENDPOINT);
+    albumsUrl.searchParams.append('q', query);
+    albumsUrl.searchParams.append('type', 'album'); // <-- Changed from 'playlist' to 'album'
+    albumsUrl.searchParams.append('limit', albumLimit.toString());
+    albumsUrl.searchParams.append('market', market);
+
+    // Execute both requests in parallel
+    const [tracksResponse, albumsResponse] = await Promise.all([
+      fetch(tracksUrl.toString(), {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }),
+      fetch(albumsUrl.toString(), {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }),
+    ]);
+
+    // Check for errors
+    if (!tracksResponse.ok || !albumsResponse.ok) {
+      const tracksError = !tracksResponse.ok ? await tracksResponse.text() : null;
+      const albumsError = !albumsResponse.ok ? await albumsResponse.text() : null;
+      
+      console.error('Spotify API errors:', {
+        tracksError,
+        albumsError,
+      });
+      
+      throw new Error(
+        `Spotify API errors: ${tracksError || ''} ${albumsError || ''}`
+      );
+    }
+
+    const [tracksData, albumsData] = await Promise.all([
+      tracksResponse.json(),
+      albumsResponse.json(),
+    ]);
+
+    return {
+      tracks: tracksData.tracks?.items || [],
+      albums: albumsData.albums?.items || [],
+    };
+  } catch (error) {
+    console.error('Spotify combined search error:', error);
+    throw error;
+  }
+};
