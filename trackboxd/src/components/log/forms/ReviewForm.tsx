@@ -4,10 +4,19 @@ import React, { useState, useEffect } from "react";
 import { Search, X, Music, Disc, Disc3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import useUser from "@/hooks/useUser"; // if not already imported
+import useUser from "@/hooks/useUser";
+
+interface SimplifiedTrack {
+  id: string;
+  name: string;
+  artist: string;
+  album: string;
+  coverArt: string;
+}
 
 interface ReviewFormProps {
   onClose: () => void;
+  initialTrack?: SimplifiedTrack;
 }
 
 interface SpotifyItem {
@@ -23,7 +32,7 @@ interface SpotifyItem {
 }
 
 interface SpotifyAPIResponse {
-  tracks: SpotifyTrack[];  // Removed the nested items array
+  tracks: SpotifyTrack[];
   albums: SpotifyAlbum[];
 }
 
@@ -52,9 +61,20 @@ interface SpotifyImage {
   url: string;
 }
 
-const ReviewForm: React.FC<ReviewFormProps> = ({ onClose }) => {
+const ReviewForm: React.FC<ReviewFormProps> = ({ onClose, initialTrack }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItem, setSelectedItem] = useState<SpotifyItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<SpotifyItem | null>(
+    initialTrack ? {
+      id: initialTrack.id,
+      name: initialTrack.name,
+      artists: [{ name: initialTrack.artist }],
+      album: {
+        name: initialTrack.album,
+        images: initialTrack.coverArt ? [{ url: initialTrack.coverArt }] : []
+      },
+      type: 'track'
+    } : null
+  );
   const [rating, setRating] = useState<number>(0);
   const [reviewText, setReviewText] = useState("");
   const [searchResults, setSearchResults] = useState<SpotifyItem[]>([]);
@@ -62,8 +82,42 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose }) => {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [trendingTracks, setTrendingTracks] = useState<SimplifiedTrack[]>([]);
+  const [isLoadingTrending, setIsLoadingTrending] = useState(false);
 
   const { user, loading: userLoading, error: userError } = useUser();
+
+  // Fetch trending tracks on mount if no initial track
+  useEffect(() => {
+    if (initialTrack) return;
+
+    const fetchTrendingTracks = async () => {
+      try {
+        setIsLoadingTrending(true);
+        const res = await fetch("/api/songs/global-top-4");
+        if (!res.ok) throw new Error("Failed to fetch trending tracks");
+        
+        const data = await res.json();
+        const tracks = data.map((item: any) => ({
+          id: item.track.id,
+          name: item.track.name,
+          artist: item.track.artists.map((a: any) => a.name).join(", "),
+          album: item.track.album.name,
+          coverArt: item.track.album.images[0]?.url || "/default-album.png"
+        }));
+        
+        // Select 3 random trending tracks
+        const shuffled = [...tracks].sort(() => 0.5 - Math.random());
+        setTrendingTracks(shuffled.slice(0, 3));
+      } catch (error) {
+        console.error("Error fetching trending tracks:", error);
+      } finally {
+        setIsLoadingTrending(false);
+      }
+    };
+
+    fetchTrendingTracks();
+  }, [initialTrack]);
 
   // Search when query changes (with debounce)
   useEffect(() => {
@@ -85,7 +139,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose }) => {
         }
 
         const data: SpotifyAPIResponse = await response.json();
-        console.log('Raw search results:', data);
         
         // Transform tracks to SpotifyItem format
         const transformedTracks = (data.tracks || []).map(track => ({
@@ -110,10 +163,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose }) => {
 
         // Combine and set results
         const combinedResults: SpotifyItem[] = [...transformedTracks, ...transformedAlbums];
-        console.log('Transformed tracks:', transformedTracks);
-        console.log('Transformed albums:', transformedAlbums);
-        console.log('Combined results:', combinedResults);
-        
         setSearchResults(combinedResults);
       } catch (error) {
         console.error('Search error:', error);
@@ -142,7 +191,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose }) => {
           rating: rating,
           text: reviewText,
           isPublic: true,
-          userId: user?.id  // ADD THIS LINE
+          userId: user?.id
         })
       });
 
@@ -162,24 +211,20 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose }) => {
     }
   };
 
-  // Get image URL for an item (handles both tracks and albums)
   const getImageUrl = (item: SpotifyItem): string | undefined => {
     return item.album?.images?.[0]?.url || 
            item.images?.[0]?.url || 
            undefined;
   };
 
-  // Get artist name(s) for display
   const getArtists = (item: SpotifyItem) => {
     return item.artists?.map(artist => artist.name).join(", ") || "Unknown Artist";
   };
 
-  // Get album name for tracks
   const getAlbumName = (item: SpotifyItem) => {
     return item.album?.name || "Album";
   };
 
-  // Replace your star rating UI with this updated version that includes half stars
   const StarRating = () => {
     const handleStarClick = (rating: number) => {
       setRating(rating);
@@ -191,7 +236,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose }) => {
       const x = e.clientX - rect.left;
       const half = rect.width / 2;
       
-      // If cursor is on the left half of the star, set half rating
       if (x < half) {
         setRating(rating - 0.5);
       } else {
@@ -325,9 +369,57 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose }) => {
                 No results found for "{searchQuery}"
               </div>
             ) : (
-              <div className="text-center py-4 text-[#A0A0A0]">
-                Enter a search query above
-              </div>
+              // Show trending tracks when no search query
+              <>
+                <h4 className="text-sm font-medium text-[#1F2C24] mb-3">
+                  Trending This Week
+                </h4>
+                {isLoadingTrending ? (
+                  <div className="flex justify-center items-center h-32">
+                    <div className="w-4 h-4 border-2 border-[#0C3B2E] border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : trendingTracks.length > 0 ? (
+                  <div className="space-y-3">
+                    {trendingTracks.map((track) => (
+                      <div
+                        key={`trending-${track.id}`}
+                        className="flex items-center gap-3 p-3 hover:bg-[#FFFFD5] rounded-lg cursor-pointer"
+                        onClick={() => setSelectedItem({
+                          id: track.id,
+                          name: track.name,
+                          artists: [{ name: track.artist }],
+                          album: {
+                            name: track.album,
+                            images: track.coverArt ? [{ url: track.coverArt }] : []
+                          },
+                          type: 'track'
+                        })}
+                      >
+                        <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
+                          <img
+                            src={track.coverArt}
+                            alt={`${track.name} cover`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-medium text-[#1F2C24] truncate">
+                            {track.name}
+                          </h4>
+                          <p className="text-sm text-[#A0A0A0] truncate">
+                            {track.artist}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-[#A0A0A0]">
+                    <Music className="w-12 h-12 mx-auto mb-2" />
+                    <p>No trending tracks available</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

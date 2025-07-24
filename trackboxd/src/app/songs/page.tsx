@@ -22,6 +22,8 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import useUser from "@/hooks/useUser";
 import AnnotationForm from "@/components/log/forms/AnnotationForm";
+import ReviewForm from "@/components/log/forms/ReviewForm";
+
 interface Track {
     id: string;
     title: string;
@@ -95,6 +97,9 @@ const Songs = () => {
     const [showAnnotationForm, setShowAnnotationForm] = useState(false);
     const [annotationTrack, setAnnotationTrack] = useState<Track | null>(null);
     const { user, loading: userLoading, error: userError } = useUser();
+
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [reviewTrack, setReviewTrack] = useState<Track | null>(null);
 
     console.log("User data:", user); // This should show your user data
     console.log("User ID:", user?.id); // Access the user ID
@@ -518,20 +523,25 @@ const Songs = () => {
                                         </>
                                     )}
                                 </button>
-                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setReviewTrack(track);
+                                        setShowReviewForm(true);
+                                    }}
+                                    className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
                                     <Star className="w-3 h-3" />
                                     <span>Review</span>
                                 </button>
-                                <button 
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setAnnotationTrack(track);
-                                    setShowAnnotationForm(true);
-                                }}
-                                className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors"
-                                >
-                                <MessageCircle className="w-3 h-3" />
-                                <span>Annotate</span>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setAnnotationTrack(track);
+                                        setShowAnnotationForm(true);
+                                    }}
+                                    className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                                    <MessageCircle className="w-3 h-3" />
+                                    <span>Annotate</span>
                                 </button>
                             </div>
                         </div>
@@ -599,7 +609,13 @@ const Songs = () => {
                                         </>
                                     )}
                                 </button>
-                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setReviewTrack(spotifyToTrack(track));
+                                        setShowReviewForm(true);
+                                    }}
+                                    className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
                                     <Star className="w-3 h-3" />
                                     <span>Review</span>
                                 </button>
@@ -1012,40 +1028,74 @@ const Songs = () => {
                             </div>
                         </div>
 
+                        {/* Review Form Popup */}
+                        {showReviewForm && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center">
+                                {/* Darkened background overlay */}
+                                <div
+                                    className="absolute inset-0 bg-black/50 bg-opacity-20"
+                                    onClick={() =>
+                                        setShowReviewForm(false)
+                                    }></div>
+
+                                {/* Popup container */}
+                                <div className="bg-[#FFFFF0] rounded-lg p-6 w-full max-w-2xl border border-[#D9D9D9] shadow-lg relative z-10">
+                                    {/* Review Form */}
+                                    <ReviewForm
+                                        onClose={() => {
+                                            setShowReviewForm(false);
+                                            setReviewTrack(null);
+                                        }}
+                                        initialTrack={
+                                            reviewTrack
+                                                ? {
+                                                      id: reviewTrack.id,
+                                                      name: reviewTrack.title,
+                                                      artist: reviewTrack.artist,
+                                                      album: reviewTrack.album,
+                                                      coverArt:
+                                                      reviewTrack.coverArt,
+                                                  }
+                                                : undefined}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         {/* Annotation Form Popup */}
                         {showAnnotationForm && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center">
-                            {/* Darkened background overlay */}
-                            <div 
-                            className="absolute inset-0 bg-black/50 bg-opacity-20"
-                            onClick={() => setShowAnnotationForm(false)}
-                            ></div>
-                            
-                            {/* Popup container */}
-                            <div className="bg-[#FFFFF0] rounded-lg p-6 w-full max-w-2xl border border-[#D9D9D9] shadow-lg relative z-10">
-                            
-                            {/* Annotation Form */}
-                            <AnnotationForm
-                                onClose={() => {
-                                setShowAnnotationForm(false);
-                                setAnnotationTrack(null);
-                                }}
-                                initialTrack={
-                                annotationTrack
-                                    ? {
-                                        id: annotationTrack.id,
-                                        name: annotationTrack.title,
-                                        artist: annotationTrack.artist,
-                                        album: annotationTrack.album,
-                                        coverArt: annotationTrack.coverArt,
-                                    }
-                                    : undefined
-                                }
-                            />
+                            <div className="fixed inset-0 z-50 flex items-center justify-center">
+                                {/* Darkened background overlay */}
+                                <div
+                                    className="absolute inset-0 bg-black/50 bg-opacity-20"
+                                    onClick={() =>
+                                        setShowAnnotationForm(false)
+                                    }></div>
+
+                                {/* Popup container */}
+                                <div className="bg-[#FFFFF0] rounded-lg p-6 w-full max-w-2xl border border-[#D9D9D9] shadow-lg relative z-10">
+                                    {/* Annotation Form */}
+                                    <AnnotationForm
+                                        onClose={() => {
+                                            setShowAnnotationForm(false);
+                                            setAnnotationTrack(null);
+                                        }}
+                                        initialTrack={
+                                            annotationTrack
+                                                ? {
+                                                      id: annotationTrack.id,
+                                                      name: annotationTrack.title,
+                                                      artist: annotationTrack.artist,
+                                                      album: annotationTrack.album,
+                                                      coverArt:
+                                                          annotationTrack.coverArt,
+                                                  }
+                                                : undefined
+                                        }
+                                    />
+                                </div>
                             </div>
-                        </div>
                         )}
-                                                
                     </>
                 )}
             </div>
