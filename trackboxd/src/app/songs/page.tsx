@@ -1,78 +1,204 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-    Search,
-    Grid,
-    List,
-    Heart,
-    Star,
-    MessageCircle,
-    Bookmark,
-} from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import useUser from "@/hooks/useUser";
 import AnnotationForm from "@/components/log/forms/AnnotationForm";
 import ReviewForm from "@/components/log/forms/ReviewForm";
 
-interface Track {
-    id: string;
-    title: string;
-    artist: string;
-    album: string;
-    coverArt: string;
-    avgRating: number;
-    saveCount: number;
-    genre: string;
-    year: number;
-    mood: string;
-    isSaved: boolean;
-}
+import Filters from "@/components/songs/Filters";
+import TrackCard from "@/components/songs/TrackCard";
+import SpotifyTrackCard from "@/components/songs/SpotifyTrackCard";
+import CompactTrackCard from "@/components/songs/CompactTrackCard";
+import ReviewCard from "@/components/songs/ReviewCard";
+import AnnotationCard from "@/components/songs/AnnotationCard";
+import { spotifyToTrack, reviewToTrack } from "@/utils/trackConverters";
 
-interface Review {
-    id: string;
-    user: string;
-    rating: number;
-    content: string;
-    timestamp: string;
-    likes: number;
-}
+import {
+    Track,
+    SpotifyTrack,
+    Review,
+    Annotation,
+    SpotifyPlaylistTrack,
+} from "./types";
 
-interface Annotation {
-    id: string;
-    user: string;
-    content: string;
-    timestamp: string;
-    likes: number;
-}
+const reviews: Review[] = [
+    {
+        id: "r1",
+        rating: 3.5,
+        text: "Good but not their best work. Some tracks feel filler.",
+        created_at: "4 days ago",
+        user_id: "5",
+        item_id: "5",
+        spotify_items: {
+            id: "5",
+            type: "track",
+        },
+        users: {
+            id: "5",
+            name: "Alex Turner",
+            image_url: "/default-avatar.png",
+        },
+        track_details: {
+            id: "5",
+            name: "Track Name",
+            album: {
+                name: "Album Name",
+                images: [{ url: "/default-album.png" }],
+                release_date: "2023",
+            },
+            artists: [{ name: "Artist Name" }],
+        },
+    },
+    {
+        id: "r2",
+        rating: 3.5,
+        text: "Good but not their best work. Some tracks feel filler.",
+        created_at: "4 days ago",
+        user_id: "5",
+        item_id: "5",
+        spotify_items: {
+            id: "5",
+            type: "track",
+        },
+        users: {
+            id: "5",
+            name: "Alex Turner",
+            image_url: "/default-avatar.png",
+        },
+        track_details: {
+            id: "5",
+            name: "Track Name",
+            album: {
+                name: "Album Name",
+                images: [{ url: "/default-album.png" }],
+                release_date: "2023",
+            },
+            artists: [{ name: "Artist Name" }],
+        },
+    },
+    {
+        id: "r3",
+        rating: 3.5,
+        text: "Good but not their best work. Some tracks feel filler.",
+        created_at: "4 days ago",
+        user_id: "5",
+        item_id: "5",
+        spotify_items: {
+            id: "5",
+            type: "track",
+        },
+        users: {
+            id: "5",
+            name: "Alex Turner",
+            image_url: "/default-avatar.png",
+        },
+        track_details: {
+            id: "5",
+            name: "Track Name",
+            album: {
+                name: "Album Name",
+                images: [{ url: "/default-album.png" }],
+                release_date: "2023",
+            },
+            artists: [{ name: "Artist Name" }],
+        },
+    },
+    {
+        id: "r4",
+        rating: 3.5,
+        text: "Good but not their best work. Some tracks feel filler.",
+        created_at: "4 days ago",
+        user_id: "5",
+        item_id: "5",
+        spotify_items: {
+            id: "5",
+            type: "track",
+        },
+        users: {
+            id: "5",
+            name: "Alex Turner",
+            image_url: "/default-avatar.png",
+        },
+        track_details: {
+            id: "5",
+            name: "Track Name",
+            album: {
+                name: "Album Name",
+                images: [{ url: "/default-album.png" }],
+                release_date: "2023",
+            },
+            artists: [{ name: "Artist Name" }],
+        },
+    },
+    {
+        id: "r5",
+        rating: 3.5,
+        text: "Good but not their best work. Some tracks feel filler.",
+        created_at: "4 days ago",
+        user_id: "5",
+        item_id: "5",
+        spotify_items: {
+            id: "5",
+            type: "track",
+        },
+        users: {
+            id: "5",
+            name: "Alex Turner",
+            image_url: "/default-avatar.png",
+        },
+        track_details: {
+            id: "5",
+            name: "Track Name",
+            album: {
+                name: "Album Name",
+                images: [{ url: "/default-album.png" }],
+                release_date: "2023",
+            },
+            artists: [{ name: "Artist Name" }],
+        },
+    },
+];
 
-interface SpotifyTrack {
-    id: string;
-    name: string;
-    preview_url: string | null;
-    album: {
-        name: string;
-        images: { url: string }[];
-        release_date: string;
-    };
-    artists: { name: string }[];
-    added_by?: {
-        id: string;
-    };
-}
-
-interface SpotifyPlaylistTrack {
-    track: SpotifyTrack;
-}
+const annotations: Annotation[] = [
+    {
+        id: "a1",
+        user: "Taylor Swift",
+        content: "The bridge at 2:45 gives me chills every time! Pure emotion.",
+        timestamp: "1 day ago",
+        likes: 24,
+    },
+    {
+        id: "a2",
+        user: "John Mayer",
+        content: "Listen to the guitar solo at 3:15 - absolute perfection!",
+        timestamp: "2 days ago",
+        likes: 32,
+    },
+    {
+        id: "a3",
+        user: "Beyoncé",
+        content: "The vocal harmonies at 1:30 are everything! Queen behavior.",
+        timestamp: "3 days ago",
+        likes: 41,
+    },
+    {
+        id: "a4",
+        user: "Bruno Mars",
+        content: "The bassline at 0:45 is so funky! Can't stop grooving.",
+        timestamp: "1 day ago",
+        likes: 27,
+    },
+    {
+        id: "a5",
+        user: "Adele",
+        content: "The lyrics at 4:10 hit me right in the feels. So raw!",
+        timestamp: "2 days ago",
+        likes: 35,
+    },
+];
 
 const Songs = () => {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -101,28 +227,38 @@ const Songs = () => {
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [reviewTrack, setReviewTrack] = useState<Track | null>(null);
 
-    console.log("User data:", user); // This should show your user data
-    console.log("User ID:", user?.id); // Access the user ID
+    const [recentlyReviewedTracks, setRecentlyReviewedTracks] = useState<
+        Review[]
+    >([]);
+    const [isLoadingRecentlyReviewed, setIsLoadingRecentlyReviewed] =
+        useState(false);
+    const [recentlyReviewedError, setRecentlyReviewedError] = useState<
+        string | null
+    >(null);
+
+    const fetchRecentlyReviewedTracks = async () => {
+        setIsLoadingRecentlyReviewed(true);
+        setRecentlyReviewedError(null);
+
+        try {
+            const res = await fetch("/api/review/last-reviewed-tracks");
+            if (!res.ok) {
+                throw new Error("Failed to fetch recently reviewed tracks");
+            }
+            const data = await res.json();
+            setRecentlyReviewedTracks(data);
+            console.log("Recently reviewed tracks:", data);
+        } catch (error) {
+            console.error("Error fetching recently reviewed tracks:", error);
+            setRecentlyReviewedError("Failed to load recently reviewed tracks");
+        } finally {
+            setIsLoadingRecentlyReviewed(false);
+        }
+    };
 
     useEffect(() => {
-        if (user) {
-            console.log("User ID:", user.id);
-        }
-    }, [user]);
-
-    const spotifyToTrack = (spotifyTrack: SpotifyTrack): Track => ({
-        id: spotifyTrack.id,
-        title: spotifyTrack.name,
-        artist: spotifyTrack.artists.map((a) => a.name).join(", "),
-        album: spotifyTrack.album.name,
-        coverArt: spotifyTrack.album.images[0]?.url || "/default-album.png",
-        avgRating: 4.0, // Default rating
-        saveCount: Math.floor(Math.random() * 2000) + 500, // Random save count between 500-2500
-        genre: "Pop", // Default genre
-        year: parseInt(spotifyTrack.album.release_date.substring(0, 4)) || 2023,
-        mood: "Energetic", // Default mood
-        isSaved: false, // Default not saved
-    });
+        fetchRecentlyReviewedTracks();
+    }, []);
 
     const handleLikeClick = async (trackId: string) => {
         if (!user) {
@@ -156,97 +292,7 @@ const Songs = () => {
         }
     };
 
-    const reviews: Review[] = [
-        {
-            id: "r1",
-            user: "Sarah Johnson",
-            rating: 5.0,
-            content:
-                "This album changed my life! Every track is a masterpiece.",
-            timestamp: "2 days ago",
-            likes: 42,
-        },
-        {
-            id: "r2",
-            user: "Mike Rodriguez",
-            rating: 4.5,
-            content:
-                "The production quality is insane. Best album of the year!",
-            timestamp: "1 day ago",
-            likes: 31,
-        },
-        {
-            id: "r3",
-            user: "Emma Davis",
-            rating: 4.0,
-            content: "Solid album with a few standout tracks. Worth a listen.",
-            timestamp: "3 days ago",
-            likes: 28,
-        },
-        {
-            id: "r4",
-            user: "Jordan Kim",
-            rating: 4.8,
-            content: "Perfect blend of nostalgia and innovation. Brilliant!",
-            timestamp: "1 day ago",
-            likes: 37,
-        },
-        {
-            id: "r5",
-            user: "Alex Turner",
-            rating: 3.5,
-            content: "Good but not their best work. Some tracks feel filler.",
-            timestamp: "4 days ago",
-            likes: 19,
-        },
-    ];
-
-    const annotations: Annotation[] = [
-        {
-            id: "a1",
-            user: "Taylor Swift",
-            content:
-                "The bridge at 2:45 gives me chills every time! Pure emotion.",
-            timestamp: "1 day ago",
-            likes: 24,
-        },
-        {
-            id: "a2",
-            user: "John Mayer",
-            content: "Listen to the guitar solo at 3:15 - absolute perfection!",
-            timestamp: "2 days ago",
-            likes: 32,
-        },
-        {
-            id: "a3",
-            user: "Beyoncé",
-            content:
-                "The vocal harmonies at 1:30 are everything! Queen behavior.",
-            timestamp: "3 days ago",
-            likes: 41,
-        },
-        {
-            id: "a4",
-            user: "Bruno Mars",
-            content: "The bassline at 0:45 is so funky! Can't stop grooving.",
-            timestamp: "1 day ago",
-            likes: 27,
-        },
-        {
-            id: "a5",
-            user: "Adele",
-            content: "The lyrics at 4:10 hit me right in the feels. So raw!",
-            timestamp: "2 days ago",
-            likes: 35,
-        },
-    ];
-
     const trendingTracks =
-        globalTopTracks.length > 0
-            ? globalTopTracks.slice(0, 4).map(spotifyToTrack)
-            : [];
-
-    const recentlyReviewed =
         globalTopTracks.length > 0
             ? globalTopTracks.slice(0, 4).map(spotifyToTrack)
             : [];
@@ -256,55 +302,21 @@ const Songs = () => {
             ? globalTopTracks.slice(2, 6).map(spotifyToTrack)
             : [];
 
-    const genres = [
-        "All",
-        "Pop",
-        "Rock",
-        "Hip Hop",
-        "Alternative",
-        "Electronic",
-    ];
-    const moods = [
-        "All",
-        "Happy",
-        "Sad",
-        "Energetic",
-        "Chill",
-        "Angry",
-        "Romantic",
-        "Epic",
-    ];
-    const years = [
-        "All",
-        "2023",
-        "2022",
-        "2021",
-        "2020",
-        "2019",
-        "2018",
-        "2017",
-        "2016",
-        "2015",
-    ];
-
     const fetchLikeStatuses = async (trackIds: string[]) => {
         if (!user) return;
 
         try {
-            // Filter out tracks we've already fetched
             const tracksToFetch = trackIds.filter(
                 (id) => !fetchedTracks.has(id)
             );
             if (tracksToFetch.length === 0) return;
 
-            // Update fetched tracks set
             setFetchedTracks((prev) => {
                 const newSet = new Set(prev);
                 tracksToFetch.forEach((id) => newSet.add(id));
                 return newSet;
             });
 
-            // Fetch like statuses
             const likeStatuses = await Promise.all(
                 tracksToFetch.map((trackId) =>
                     fetch(
@@ -315,7 +327,6 @@ const Songs = () => {
                 )
             );
 
-            // Update likes state
             setLikes((prev) => {
                 const newLikes = { ...prev };
                 likeStatuses.forEach(({ trackId, isLiked }) => {
@@ -336,8 +347,6 @@ const Songs = () => {
                     throw new Error("Failed to fetch global top tracks");
                 }
                 const data = await res.json();
-
-                // Extract the track objects from the playlist items
                 const tracks = data.map(
                     (item: SpotifyPlaylistTrack) => item.track
                 );
@@ -429,476 +438,28 @@ const Songs = () => {
         }
     };
 
-    // Full track card with truncated artist and album names
-    const TrackCard = ({ track }: { track: Track }) => {
-        const isLiked = likes[track.id] || false;
-        const isLoading = isLoadingLikes[track.id] || false;
-
-        return (
-            <Link href={`/songs/${track.id}`}>
-                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                    <div
-                        className={`p-4 ${
-                            viewMode === "list"
-                                ? "flex items-center space-x-4"
-                                : ""
-                        }`}>
-                        <div
-                            className={`${
-                                viewMode === "list"
-                                    ? "w-16 h-16"
-                                    : "w-full h-48"
-                            } relative overflow-hidden rounded-lg bg-gray-200`}>
-                            <img
-                                src={track.coverArt}
-                                alt={`${track.title} cover`}
-                                className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
-                            />
-                        </div>
-
-                        <div
-                            className={`${
-                                viewMode === "list" ? "flex-1" : "mt-3"
-                            }`}>
-                            <div
-                                className={`${
-                                    viewMode === "list"
-                                        ? "flex items-center justify-between"
-                                        : ""
-                                }`}>
-                                <div
-                                    className={`${
-                                        viewMode === "list" ? "flex-1" : ""
-                                    }`}>
-                                    <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
-                                        {track.title}
-                                    </h3>
-                                    <p className="text-[#A0A0A0] text-sm truncate">
-                                        {track.artist}
-                                    </p>
-                                    <p className="text-[#A0A0A0] text-xs truncate">
-                                        {track.album}
-                                    </p>
-                                </div>
-
-                                <div
-                                    className={`${
-                                        viewMode === "list"
-                                            ? "flex items-center space-x-6"
-                                            : "mt-2"
-                                    }`}>
-                                    {renderStars(track.avgRating)}
-                                    <div className="flex items-center space-x-1 text-[#A0A0A0]">
-                                        <Heart className="w-4 h-4" />
-                                        <span className="text-sm">
-                                            {track.saveCount}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div
-                                className={`${
-                                    viewMode === "list" ? "mt-2" : "mt-3"
-                                } flex flex-wrap gap-2`}>
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handleLikeClick(track.id);
-                                    }}
-                                    disabled={isLoading}
-                                    className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
-                                        isLiked
-                                            ? "bg-[#FFBA00] text-[#1F2C24]"
-                                            : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
-                                    }`}>
-                                    {isLoading ? (
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    ) : (
-                                        <>
-                                            <Heart className="w-3 h-3" />
-                                            <span>
-                                                {isLiked ? "Liked" : "Like"}
-                                            </span>
-                                        </>
-                                    )}
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setReviewTrack(track);
-                                        setShowReviewForm(true);
-                                    }}
-                                    className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                                    <Star className="w-3 h-3" />
-                                    <span>Review</span>
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setAnnotationTrack(track);
-                                        setShowAnnotationForm(true);
-                                    }}
-                                    className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                                    <MessageCircle className="w-3 h-3" />
-                                    <span>Annotate</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Link>
-        );
-    };
-
-    // Spotify track card with truncated artist and album names
-    const SpotifyTrackCard = ({ track }: { track: SpotifyTrack }) => {
-        const isLiked = likes[track.id] || false;
-        const isLoading = isLoadingLikes[track.id] || false;
-
-        return (
-            <Link href={`/songs/${track.id}`}>
-                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                    <div className="p-4">
-                        <div className="w-full h-48 relative overflow-hidden rounded-lg bg-gray-200">
-                            <img
-                                src={
-                                    track.album.images[0]?.url ||
-                                    "/default-album.png"
-                                }
-                                alt={`${track.name} cover`}
-                                className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
-                            />
-                        </div>
-
-                        <div className="mt-3">
-                            <div>
-                                <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
-                                    {track.name}
-                                </h3>
-                                <p className="text-[#A0A0A0] text-sm truncate">
-                                    {track.artists
-                                        .map((a) => a.name)
-                                        .join(", ")}
-                                </p>
-                                <p className="text-[#A0A0A0] text-xs truncate">
-                                    {track.album.name}
-                                </p>
-                            </div>
-
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handleLikeClick(track.id);
-                                    }}
-                                    disabled={isLoading}
-                                    className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
-                                        isLiked
-                                            ? "bg-[#FFBA00] text-[#1F2C24]"
-                                            : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
-                                    }`}>
-                                    {isLoading ? (
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    ) : (
-                                        <>
-                                            <Heart className="w-3 h-3" />
-                                            <span>
-                                                {isLiked ? "Liked" : "Like"}
-                                            </span>
-                                        </>
-                                    )}
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setReviewTrack(spotifyToTrack(track));
-                                        setShowReviewForm(true);
-                                    }}
-                                    className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                                    <Star className="w-3 h-3" />
-                                    <span>Review</span>
-                                </button>
-                                <button className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                                    <MessageCircle className="w-3 h-3" />
-                                    <span>Annotate</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Link>
-        );
-    };
-
-    // Compact track card for recently reviewed/annotated with truncated artist name
-    const CompactTrackCard = ({ track }: { track: Track }) => (
-        <Link href={`/songs/${track.id}`}>
-            <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                <div className="flex items-center space-x-3 p-3">
-                    <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
-                        <img
-                            src={track.coverArt}
-                            alt={`${track.title} cover`}
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div className="min-w-0">
-                        <h3 className="font-medium text-[#1F2C24] truncate">
-                            {track.title}
-                        </h3>
-                        <p className="text-[#A0A0A0] text-sm truncate">
-                            {track.artist}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </Link>
-    );
-
-    // Review card for popular reviews
-    const ReviewCard = ({ review }: { review: Review }) => (
-        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex justify-between items-start">
-                <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="font-medium text-[#1F2C24]">
-                            {review.user}
-                        </div>
-                        {renderStars(review.rating)}
-                    </div>
-                    <p className="text-[#1F2C24] line-clamp-2 mb-2">
-                        {review.content}
-                    </p>
-                </div>
-                <div className="flex items-center space-x-1 text-[#A0A0A0]">
-                    <Heart className="w-4 h-4" />
-                    <span className="text-sm">{review.likes}</span>
-                </div>
-            </div>
-            <div className="flex justify-between items-center mt-2">
-                <span className="text-xs text-[#A0A0A0]">
-                    {review.timestamp}
-                </span>
-                <button className="text-xs text-[#6D9773] hover:text-[#5C8769]">
-                    Read full review
-                </button>
-            </div>
-        </div>
-    );
-
-    // Annotation card for popular annotations
-    const AnnotationCard = ({ annotation }: { annotation: Annotation }) => (
-        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex justify-between items-start">
-                <div>
-                    <div className="font-medium text-[#1F2C24] mb-2">
-                        {annotation.user}
-                    </div>
-                    <p className="text-[#1F2C24] line-clamp-2 mb-2">
-                        {annotation.content}
-                    </p>
-                </div>
-                <div className="flex items-center space-x-1 text-[#A0A0A0]">
-                    <Heart className="w-4 h-4" />
-                    <span className="text-sm">{annotation.likes}</span>
-                </div>
-            </div>
-            <div className="flex justify-between items-center mt-2">
-                <span className="text-xs text-[#A0A0A0]">
-                    {annotation.timestamp}
-                </span>
-                <button className="text-xs text-[#6D9773] hover:text-[#5C8769]">
-                    View annotation
-                </button>
-            </div>
-        </div>
-    );
-
     return (
         <div className="min-h-screen bg-[#FFFFF0]">
             <Header />
 
             <div className="max-w-5xl mx-auto px-4 py-8">
                 {/* Search and Filters */}
-                <div className="mb-8">
-                    <div className="flex flex-col lg:flex-row gap-3 items-stretch">
-                        {/* Filters - Left-aligned */}
-                        <div className="flex flex-wrap gap-3 flex-1">
-                            {/* Genre Filter */}
-                            <div className="relative flex-1 min-w-[150px]">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
-                                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-4 w-4 text-[#A0A0A0]"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                                                />
-                                            </svg>
-                                        </div>
-                                        <span className="truncate">
-                                            {selectedGenre || "Genre"}
-                                        </span>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="max-h-60 overflow-y-auto bg-[#FFFFF0] border border-[#D9D9D9]">
-                                        {genres.map((genre) => (
-                                            <DropdownMenuItem
-                                                key={genre}
-                                                className="hover:bg-[#F2F3EF] cursor-pointer"
-                                                onSelect={() =>
-                                                    setSelectedGenre(genre)
-                                                }>
-                                                {genre}
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
 
-                            {/* Mood Filter */}
-                            <div className="relative flex-1 min-w-[150px]">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
-                                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-4 w-4 text-[#A0A0A0]"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                />
-                                            </svg>
-                                        </div>
-                                        <span className="truncate">
-                                            {selectedMood || "Mood"}
-                                        </span>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="max-h-60 overflow-y-auto bg-[#FFFFF0] border border-[#D9D9D9]">
-                                        {moods.map((mood) => (
-                                            <DropdownMenuItem
-                                                key={mood}
-                                                className="hover:bg-[#F2F3EF] cursor-pointer"
-                                                onSelect={() =>
-                                                    setSelectedMood(mood)
-                                                }>
-                                                {mood}
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-
-                            {/* Year Filter */}
-                            <div className="relative flex-1 min-w-[120px]">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
-                                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-4 w-4 text-[#A0A0A0]"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                />
-                                            </svg>
-                                        </div>
-                                        <span className="truncate">
-                                            {selectedYear || "Year"}
-                                        </span>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="max-h-60 overflow-y-auto bg-[#FFFFF0] border border-[#D9D9D9]">
-                                        {years.map((year) => (
-                                            <DropdownMenuItem
-                                                key={year}
-                                                className="hover:bg-[#F2F3EF] cursor-pointer"
-                                                onSelect={() =>
-                                                    setSelectedYear(year)
-                                                }>
-                                                {year}
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-
-                            {/* Rating Filter */}
-                            <div className="relative flex-1 min-w-[150px]">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className="w-full h-full pl-10 pr-4 py-2 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773] text-left flex items-center">
-                                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                            <Star className="h-4 w-4 text-[#A0A0A0]" />
-                                        </div>
-                                        <span className="truncate">
-                                            {selectedRating || "Rating"}
-                                        </span>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="bg-[#FFFFF0] border border-[#D9D9D9]">
-                                        {[
-                                            "All Ratings",
-                                            "4+ Stars",
-                                            "3+ Stars",
-                                            "2+ Stars",
-                                        ].map((rating) => (
-                                            <DropdownMenuItem
-                                                key={rating}
-                                                className="hover:bg-[#F2F3EF] cursor-pointer"
-                                                onSelect={() =>
-                                                    setSelectedRating(rating)
-                                                }>
-                                                {rating}
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        </div>
-
-                        {/* Search - Right-aligned */}
-                        <div className="w-full lg:w-[320px]">
-                            <div className="relative h-full">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#A0A0A0] w-5 h-5" />
-                                <input
-                                    type="text"
-                                    placeholder="Search tracks, artists, albums..."
-                                    value={searchTerm}
-                                    onChange={(e) => {
-                                        setSearchTerm(e.target.value);
-                                        searchSpotify(e.target.value);
-                                    }}
-                                    className="w-full h-full pl-10 pr-4 py-3 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773]"
-                                />
-                                {isSearching && (
-                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#6D9773]"></div>
-                                    </div>
-                                )}
-                            </div>
-                            {searchError && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    {searchError}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                <Filters
+                    selectedGenre={selectedGenre}
+                    setSelectedGenre={setSelectedGenre}
+                    selectedMood={selectedMood}
+                    setSelectedMood={setSelectedMood}
+                    selectedYear={selectedYear}
+                    setSelectedYear={setSelectedYear}
+                    selectedRating={selectedRating}
+                    setSelectedRating={setSelectedRating}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    isSearching={isSearching}
+                    searchError={searchError}
+                    searchSpotify={searchSpotify}
+                />
 
                 {/* Search Results */}
                 {showSearchResults && (
@@ -922,6 +483,23 @@ const Songs = () => {
                                     <SpotifyTrackCard
                                         key={`spotify-${track.id}`}
                                         track={track}
+                                        isLiked={likes[track.id] || false}
+                                        isLoading={
+                                            isLoadingLikes[track.id] || false
+                                        }
+                                        onLikeClick={handleLikeClick}
+                                        onReviewClick={(track) => {
+                                            setReviewTrack(
+                                                spotifyToTrack(track)
+                                            );
+                                            setShowReviewForm(true);
+                                        }}
+                                        onAnnotationClick={(track) => {
+                                            setAnnotationTrack(
+                                                spotifyToTrack(track)
+                                            );
+                                            setShowAnnotationForm(true);
+                                        }}
                                     />
                                 ))}
                             </div>
@@ -951,6 +529,21 @@ const Songs = () => {
                                         <TrackCard
                                             key={`trending-${track.id}`}
                                             track={track}
+                                            viewMode={viewMode}
+                                            isLiked={likes[track.id] || false}
+                                            isLoading={
+                                                isLoadingLikes[track.id] ||
+                                                false
+                                            }
+                                            onLikeClick={handleLikeClick}
+                                            onReviewClick={(track) => {
+                                                setReviewTrack(track);
+                                                setShowReviewForm(true);
+                                            }}
+                                            onAnnotationClick={(track) => {
+                                                setAnnotationTrack(track);
+                                                setShowAnnotationForm(true);
+                                            }}
                                         />
                                     ))}
                                 </div>
@@ -966,14 +559,82 @@ const Songs = () => {
                                         Recently Reviewed
                                     </h2>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {recentlyReviewed.map((track) => (
-                                        <CompactTrackCard
-                                            key={`reviewed-${track.id}`}
-                                            track={track}
-                                        />
-                                    ))}
-                                </div>
+                                {isLoadingRecentlyReviewed ? (
+                                    <div className="flex justify-center items-center h-32">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6D9773]"></div>
+                                    </div>
+                                ) : recentlyReviewedError ? (
+                                    <p className="text-red-500">
+                                        {recentlyReviewedError}
+                                    </p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {recentlyReviewedTracks.map((review) => {
+                                            const track = reviewToTrack(review);
+                                            return (
+                                                <div
+                                                    key={review.id}
+                                                    className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
+                                                            <img
+                                                                src={
+                                                                    track.coverArt
+                                                                }
+                                                                alt={`${track.title} cover`}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <div className="font-medium text-[#1F2C24]">
+                                                                    {
+                                                                        review
+                                                                            .users
+                                                                            .name
+                                                                    }
+                                                                </div>
+                                                                {renderStars(
+                                                                    review.rating
+                                                                )}
+                                                            </div>
+                                                            <h3 className="font-semibold text-[#1F2C24]">
+                                                                {
+                                                                    track.title
+                                                                }
+                                                            </h3>
+                                                            <p className="text-[#A0A0A0] text-sm truncate">
+                                                                {
+                                                                    track.artist
+                                                                }
+                                                            </p>
+                                                            {review.text && (
+                                                                <p className="text-[#1F2C24] text-sm mt-2 line-clamp-2">
+                                                                    {
+                                                                        review.text
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                            <div className="flex justify-between items-center mt-2">
+                                                                <span className="text-xs text-[#A0A0A0]">
+                                                                    {new Date(
+                                                                        review.created_at
+                                                                    ).toLocaleDateString()}
+                                                                </span>
+                                                                <Link
+                                                                    href={`/songs/${track.id}`}
+                                                                    className="text-xs text-[#6D9773] hover:text-[#5C8769]">
+                                                                    View
+                                                                    track
+                                                                </Link>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Recently Annotated */}
@@ -1054,9 +715,10 @@ const Songs = () => {
                                                       artist: reviewTrack.artist,
                                                       album: reviewTrack.album,
                                                       coverArt:
-                                                      reviewTrack.coverArt,
+                                                          reviewTrack.coverArt,
                                                   }
-                                                : undefined}
+                                                : undefined
+                                        }
                                     />
                                 </div>
                             </div>
