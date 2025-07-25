@@ -35,7 +35,10 @@ export async function GET(req: NextRequest) {
             return NextResponse.json(review);
         } catch (error) {
             console.error("GET review error:", error);
-            return NextResponse.json({ error: "Review not found" }, { status: 404 });
+            return NextResponse.json(
+                { error: "Review not found" },
+                { status: 404 }
+            );
         }
     }
 
@@ -53,12 +56,17 @@ export async function GET(req: NextRequest) {
             return NextResponse.json(review ? review : null);
         } catch (error) {
             console.error("GET review error:", error);
-            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+            return NextResponse.json(
+                { error: "Internal server error" },
+                { status: 500 }
+            );
         }
     }
 
     return NextResponse.json(
-        { error: "Missing parameters. Provide either review id or user+item ids" },
+        {
+            error: "Missing parameters. Provide either review id or user+item ids",
+        },
         { status: 400 }
     );
 }
@@ -88,16 +96,23 @@ async function handleReviewRequest(
     }
 
     if (!authUser) {
-        return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+        return NextResponse.json(
+            { error: "Authentication required" },
+            { status: 401 }
+        );
     }
 
     try {
         if (method === "POST") return createReview(body, supabase, authUser.id);
         if (method === "PUT") return updateReview(body, supabase, authUser.id);
-        if (method === "DELETE") return deleteReview(body, supabase, authUser.id);
+        if (method === "DELETE")
+            return deleteReview(body, supabase, authUser.id);
     } catch (error) {
         console.error("Review API error:", error);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Internal server error" },
+            { status: 500 }
+        );
     }
 }
 
@@ -116,9 +131,10 @@ async function createReview(body: any, supabase: any, userId: string) {
             { status: 400 }
         );
     }
-    if (rating < 1 || rating > 5) {
+    // In createReview and updateReview functions:
+    if (rating < 0.5 || rating > 5 || !Number.isInteger(rating * 2)) {
         return NextResponse.json(
-            { error: "Rating must be between 1 and 5" },
+            { error: "Rating must be between 0.5 and 5 in 0.5 increments" },
             { status: 400 }
         );
     }
@@ -151,6 +167,15 @@ async function createReview(body: any, supabase: any, userId: string) {
 
     // RPC to increment review count
     await supabase.rpc("increment_review_count", { item_id: itemId });
+    const { error: rpcError } = await supabase.rpc("update_avg_rating", {
+        item_id: itemId,
+        new_rating: rating,
+    });
+
+    if (rpcError) {
+        console.error("Failed to update average rating:", rpcError);
+        throw rpcError;
+    }
 
     return NextResponse.json(review, { status: 201 });
 }
@@ -198,6 +223,19 @@ async function updateReview(body: any, supabase: any, userId: string) {
         .single();
     if (updateError) throw updateError;
 
+    if (rating !== undefined) {
+        await supabase.rpc("update_avg_rating", {
+            item_id: existingReview.item_id,
+            new_rating: existingReview.rating,
+            is_delete: true,
+        });
+
+        await supabase.rpc("update_avg_rating", {
+            item_id: existingReview.item_id,
+            new_rating: rating,
+        });
+    }
+
     return NextResponse.json(updatedReview);
 }
 
@@ -217,7 +255,10 @@ async function deleteReview(body: any, supabase: any, userId: string) {
         .eq("id", reviewId)
         .single();
     if (fetchError) {
-        return NextResponse.json({ error: "Review not found" }, { status: 404 });
+        return NextResponse.json(
+            { error: "Review not found" },
+            { status: 404 }
+        );
     }
     if (existingReview.user_id !== userId) {
         return NextResponse.json(
@@ -233,7 +274,14 @@ async function deleteReview(body: any, supabase: any, userId: string) {
     if (deleteError) throw deleteError;
 
     // RPC to decrement review count
-    await supabase.rpc("decrement_review_count", { item_id: existingReview.item_id });
+    await supabase.rpc("decrement_review_count", {
+        item_id: existingReview.item_id,
+    });
+    await supabase.rpc("update_avg_rating", {
+        item_id: existingReview.item_id,
+        new_rating: existingReview.rating,
+        is_delete: true,
+    });
 
     return NextResponse.json({ success: true });
 }
