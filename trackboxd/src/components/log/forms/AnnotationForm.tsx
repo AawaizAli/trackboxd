@@ -4,6 +4,11 @@ import React, { useState, useEffect } from "react";
 import { Search, X, Music, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import useUser from "@/hooks/useUser";
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import PublicIcon from '@mui/icons-material/Public';
+import LockIcon from '@mui/icons-material/Lock';
 
 interface SimplifiedTrack {
   id: string;
@@ -22,6 +27,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
   onClose, 
   initialTrack 
 }) => {
+  const { user, loading: userLoading, error: userError } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTrack, setSelectedTrack] = useState<SimplifiedTrack | null>(
     initialTrack || null
@@ -33,6 +39,9 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
   const [searchError, setSearchError] = useState<string | null>(null);
   const [trendingTracks, setTrendingTracks] = useState<SimplifiedTrack[]>([]);
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
 
   // Fetch trending tracks on mount
   useEffect(() => {
@@ -109,14 +118,75 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting annotation:", { 
-      trackId: selectedTrack?.id,
-      timestamp, 
-      annotationText 
-    });
-    onClose();
+    
+    if (!selectedTrack) return;
+    
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      // Convert timestamp from mm:ss to seconds
+      const timeParts = timestamp.split(':');
+      let timestampInSeconds = 0;
+      
+      if (timeParts.length === 1) {
+        // Only seconds provided
+        timestampInSeconds = parseFloat(timeParts[0]);
+      } else if (timeParts.length === 2) {
+        // Minutes and seconds provided
+        timestampInSeconds = (parseInt(timeParts[0]) * 60) + parseFloat(timeParts[1]);
+      } else {
+        throw new Error('Invalid timestamp format. Use mm:ss or ss');
+      }
+
+      if (isNaN(timestampInSeconds)) {
+        throw new Error('Invalid timestamp value');
+      }
+
+      const response = await fetch('/api/annotate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trackId: selectedTrack.id,
+          timestamp: timestampInSeconds,
+          text: annotationText,
+          isPublic: visibility === 'public',
+          userId: user?.id
+        })
+      });
+
+      // Handle non-JSON responses
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`Invalid response: ${text.substring(0, 100)}`);
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create annotation');
+      }
+
+      const annotationData = await response.json();
+      console.log('Annotation created:', annotationData);
+      onClose();
+    } catch (error) {
+      console.error('Annotation submission error:', error);
+      
+      // Simplify error message for HTML responses
+      let errorMessage = 'Failed to create annotation';
+      if (error instanceof Error) {
+        errorMessage = error.message.includes('Invalid response: <!DOCTYPE')
+          ? 'Server error: Please try again later'
+          : error.message;
+      }
+
+      setSubmitError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -279,17 +349,17 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[#1F2C24] mb-2">
-                Timestamp (mm:ss)
+                Timestamp (mm:ss or ss)
               </label>
               <Input
                 type="text"
                 value={timestamp}
                 onChange={(e) => setTimestamp(e.target.value)}
-                placeholder="e.g., 1:23"
+                placeholder="e.g., 1:23 or 83"
                 className="w-32"
               />
               <p className="text-xs text-[#A0A0A0] mt-1">
-                Enter the time in the track where your annotation applies
+                Enter the time where your annotation applies
               </p>
             </div>
 
@@ -304,24 +374,70 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
                 className="w-full p-4 rounded-lg border border-[#D9D9D9] bg-[#FFFFE7] min-h-[120px] focus:outline-none focus:ring-2 focus:ring-[#0C3B2E]"
               />
             </div>
+
+            {/* Visibility Toggle */}
+            <div className="pt-2">
+              <label className="block text-sm font-small text-[#1F2C24] mb-2">
+                Visibility
+              </label>
+              <ToggleButtonGroup
+                value={visibility}
+                exclusive
+                onChange={(e, newVisibility) => {
+                  if (newVisibility) setVisibility(newVisibility);
+                }}
+                aria-label="annotation visibility"
+                className="w-full"
+              >
+                <ToggleButton
+                  value="public"
+                  className={`flex-1 py-3 ${visibility === 'public' ? 'bg-[#0C3B2E] text-white' : 'bg-[#FFFFE7] text-[#1F2C24]'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <PublicIcon fontSize="small" />
+                    <span>Public</span>
+                  </div>
+                </ToggleButton>
+                <ToggleButton
+                  value="private"
+                  className={`flex-1 py-3 ${visibility === 'private' ? 'bg-[#0C3B2E] text-white' : 'bg-[#FFFFE7] text-[#1F2C24]'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <LockIcon fontSize="small" />
+                    <span>Private</span>
+                  </div>
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="border-[#D9D9D9] text-[#1F2C24] hover:bg-[#FFFFD5]"
-              onClick={onClose}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="bg-[#0C3B2E] hover:bg-[#0a3328] text-[#F9F9F9]"
-              disabled={!timestamp || !annotationText}
-            >
-              Post Annotation
-            </Button>
+          <div className="flex flex-col gap-3 pt-4">
+            {submitError && (
+              <p className="text-red-500 text-sm">{submitError}</p>
+            )}
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="border-[#D9D9D9] text-[#1F2C24] hover:bg-[#FFFFD5]"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-[#0C3B2E] hover:bg-[#0a3328] text-[#F9F9F9]"
+                disabled={!timestamp || !annotationText || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Posting...
+                  </div>
+                ) : "Post Annotation"}
+              </Button>
+            </div>
           </div>
         </div>
       )}
