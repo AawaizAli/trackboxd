@@ -11,8 +11,8 @@ export async function GET(req: NextRequest) {
         const cookieStore = cookies();
         const supabase = createClient(cookieStore);
 
-        // Get the last 4 track reviews, ordered by creation date
-        const { data: reviews, error } = await supabase
+        // Base query for public reviews
+        let query = supabase
             .from("reviews")
             .select(`
                 id,
@@ -21,23 +21,27 @@ export async function GET(req: NextRequest) {
                 created_at,
                 user_id,
                 item_id,
+                is_public,
                 spotify_items:item_id(type, id),
                 users:user_id(id, name, image_url)
             `)
             .eq("spotify_items.type", "track")  // Only get track reviews
+            .eq("is_public", true)  // Only public reviews
             .order("created_at", { ascending: false })
             .limit(4);
 
-        if (error) throw error;
+        // If userId is provided, get their public reviews
+        if (userId) {
+            query = query.eq("user_id", userId);
+        }
 
-        // If a userId is provided, filter to only that user's reviews
-        const filteredReviews = userId 
-            ? reviews.filter(review => review.user_id === userId)
-            : reviews;
+        const { data: reviews, error } = await query;
+
+        if (error) throw error;
 
         // Fetch additional track details from Spotify for each review
         const reviewsWithTrackDetails = await Promise.all(
-            filteredReviews.map(async (review) => {
+            reviews.map(async (review) => {
                 try {
                     const trackDetails = await getTrackDetails(review.item_id);
                     return {
@@ -51,7 +55,7 @@ export async function GET(req: NextRequest) {
             })
         );
 
-        return NextResponse.json(reviewsWithTrackDetails.slice(0, 4));  // Ensure we only return 4
+        return NextResponse.json(reviewsWithTrackDetails);
     } catch (error) {
         console.error("GET last reviews error:", error);
         return NextResponse.json(

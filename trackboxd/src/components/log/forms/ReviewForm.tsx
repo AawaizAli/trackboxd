@@ -5,6 +5,12 @@ import { Search, X, Music, Disc, Disc3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useUser from "@/hooks/useUser";
+import Rating from '@mui/material/Rating';
+import StarIcon from '@mui/icons-material/Star';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import PublicIcon from '@mui/icons-material/Public';
+import LockIcon from '@mui/icons-material/Lock';
 
 interface SimplifiedTrack {
   id: string;
@@ -84,6 +90,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose, initialTrack }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [trendingTracks, setTrendingTracks] = useState<SimplifiedTrack[]>([]);
   const [isLoadingTrending, setIsLoadingTrending] = useState(false);
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
+  const [hover, setHover] = useState(-1);
 
   const { user, loading: userLoading, error: userError } = useUser();
 
@@ -190,7 +198,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose, initialTrack }) => {
           itemType: selectedItem?.type,
           rating: rating,
           text: reviewText,
-          isPublic: true,
+          isPublic: visibility === 'public',
           userId: user?.id
         })
       });
@@ -223,64 +231,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose, initialTrack }) => {
 
   const getAlbumName = (item: SpotifyItem) => {
     return item.album?.name || "Album";
-  };
-
-  const StarRating = () => {
-    const handleStarClick = (rating: number) => {
-      setRating(rating);
-    };
-
-    const handleStarHover = (e: React.MouseEvent<HTMLButtonElement>, rating: number) => {
-      const button = e.currentTarget;
-      const rect = button.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const half = rect.width / 2;
-      
-      if (x < half) {
-        setRating(rating - 0.5);
-      } else {
-        setRating(rating);
-      }
-    };
-
-    return (
-      <div>
-        <label className="block text-sm font-medium text-[#1F2C24] mb-2">
-          Rating
-        </label>
-        <div className="flex space-x-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              type="button"
-              onClick={(e) => handleStarHover(e, star)}
-              onMouseMove={(e) => handleStarHover(e, star)}
-              onMouseLeave={() => handleStarClick(rating)}
-              className="relative w-8 h-8 text-2xl"
-            >
-              <span className="absolute inset-0 flex items-center justify-center text-[#D9D9D9]">
-                ★
-              </span>
-              <span 
-                className="absolute inset-0 flex items-center justify-center text-[#FFBA00] overflow-hidden"
-                style={{
-                  width: rating >= star 
-                    ? '100%' 
-                    : rating > star - 1 
-                      ? '50%' 
-                      : '0%'
-                }}
-              >
-                ★
-              </span>
-            </button>
-          ))}
-          <span className="ml-2 text-sm text-[#1F2C24]">
-            {rating.toFixed(1)}
-          </span>
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -474,10 +424,32 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose, initialTrack }) => {
           </div>
 
           <div className="space-y-4">
-            <StarRating />
+            <div className="flex flex-col gap-2">
+              <label className="block text-sm font-medium text-[#1F2C24]">
+                Rating
+              </label>
+              <div className="flex items-center gap-4">
+                <Rating
+                  name="review-rating"
+                  value={rating}
+                  precision={0.5}
+                  size="large"
+                  onChange={(event, newValue) => {
+                    setRating(newValue || 0);
+                  }}
+                  onChangeActive={(event, newHover) => {
+                    setHover(newHover);
+                  }}
+                  emptyIcon={
+                    <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
+                  }
+                  icon={<StarIcon className="text-[#FFBA00]" fontSize="inherit" />}
+                />
+              </div>
+            </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1F2C24] mb-2">
+              <label className="block text-sm font-medium text-[#1F2C24]">
                 Review
               </label>
               <textarea
@@ -486,6 +458,40 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose, initialTrack }) => {
                 placeholder="Share your thoughts..."
                 className="w-full p-4 rounded-lg border border-[#D9D9D9] bg-[#FFFFE7] min-h-[120px] focus:outline-none focus:ring-2 focus:ring-[#0C3B2E]"
               />
+            </div>
+
+            <div className="pt-2">
+              <label className="block text-sm font-small text-[#1F2C24] mb-2">
+                Visibility
+              </label>
+              <ToggleButtonGroup
+                value={visibility}
+                exclusive
+                onChange={(e, newVisibility) => {
+                  if (newVisibility) setVisibility(newVisibility);
+                }}
+                aria-label="review visibility"
+                className="w-full"
+              >
+                <ToggleButton
+                  value="public"
+                  className={`flex-1 py-3 ${visibility === 'public' ? 'bg-[#0C3B2E] text-white' : 'bg-[#FFFFE7] text-[#1F2C24]'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <PublicIcon fontSize="small" />
+                    <span>Public</span>
+                  </div>
+                </ToggleButton>
+                <ToggleButton
+                  value="private"
+                  className={`flex-1 py-3 ${visibility === 'private' ? 'bg-[#0C3B2E] text-white' : 'bg-[#FFFFE7] text-[#1F2C24]'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <LockIcon fontSize="small" />
+                    <span>Private</span>
+                  </div>
+                </ToggleButton>
+              </ToggleButtonGroup>
             </div>
           </div>
 
