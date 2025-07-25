@@ -34,24 +34,32 @@ export interface Track {
     created_at: string;
     user_id: string;
     item_id: string;
+    like_count: number;
+    is_public: boolean;
     spotify_items: {
-      id: string;
-      type: string;
+        id: string;
+        type: string;
     };
     users: {
-      id: string;
-      name: string;
-      image_url: string;
+        id: string;
+        name: string;
+        image_url: string;
     };
     track_details: {
-      id: string;
-      name: string;
-      album: {
+        id: string
         name: string;
-        images: { url: string }[];
-        release_date: string;
-      };
-      artists: { name: string }[];
+        album: {
+            images: {
+                url: string;
+                width: number;
+                height: number;
+            }[];
+            name: string;
+            release_date: string;
+        };
+        artists: {
+            name: string;
+        }[];
     };
   }
   

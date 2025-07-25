@@ -24,144 +24,6 @@ import {
     SpotifyPlaylistTrack,
 } from "./types";
 
-const reviews: Review[] = [
-    {
-        id: "r1",
-        rating: 3.5,
-        text: "Good but not their best work. Some tracks feel filler.",
-        created_at: "4 days ago",
-        user_id: "5",
-        item_id: "5",
-        spotify_items: {
-            id: "5",
-            type: "track",
-        },
-        users: {
-            id: "5",
-            name: "Alex Turner",
-            image_url: "/default-avatar.png",
-        },
-        track_details: {
-            id: "5",
-            name: "Track Name",
-            album: {
-                name: "Album Name",
-                images: [{ url: "/default-album.png" }],
-                release_date: "2023",
-            },
-            artists: [{ name: "Artist Name" }],
-        },
-    },
-    {
-        id: "r2",
-        rating: 3.5,
-        text: "Good but not their best work. Some tracks feel filler.",
-        created_at: "4 days ago",
-        user_id: "5",
-        item_id: "5",
-        spotify_items: {
-            id: "5",
-            type: "track",
-        },
-        users: {
-            id: "5",
-            name: "Alex Turner",
-            image_url: "/default-avatar.png",
-        },
-        track_details: {
-            id: "5",
-            name: "Track Name",
-            album: {
-                name: "Album Name",
-                images: [{ url: "/default-album.png" }],
-                release_date: "2023",
-            },
-            artists: [{ name: "Artist Name" }],
-        },
-    },
-    {
-        id: "r3",
-        rating: 3.5,
-        text: "Good but not their best work. Some tracks feel filler.",
-        created_at: "4 days ago",
-        user_id: "5",
-        item_id: "5",
-        spotify_items: {
-            id: "5",
-            type: "track",
-        },
-        users: {
-            id: "5",
-            name: "Alex Turner",
-            image_url: "/default-avatar.png",
-        },
-        track_details: {
-            id: "5",
-            name: "Track Name",
-            album: {
-                name: "Album Name",
-                images: [{ url: "/default-album.png" }],
-                release_date: "2023",
-            },
-            artists: [{ name: "Artist Name" }],
-        },
-    },
-    {
-        id: "r4",
-        rating: 3.5,
-        text: "Good but not their best work. Some tracks feel filler.",
-        created_at: "4 days ago",
-        user_id: "5",
-        item_id: "5",
-        spotify_items: {
-            id: "5",
-            type: "track",
-        },
-        users: {
-            id: "5",
-            name: "Alex Turner",
-            image_url: "/default-avatar.png",
-        },
-        track_details: {
-            id: "5",
-            name: "Track Name",
-            album: {
-                name: "Album Name",
-                images: [{ url: "/default-album.png" }],
-                release_date: "2023",
-            },
-            artists: [{ name: "Artist Name" }],
-        },
-    },
-    {
-        id: "r5",
-        rating: 3.5,
-        text: "Good but not their best work. Some tracks feel filler.",
-        created_at: "4 days ago",
-        user_id: "5",
-        item_id: "5",
-        spotify_items: {
-            id: "5",
-            type: "track",
-        },
-        users: {
-            id: "5",
-            name: "Alex Turner",
-            image_url: "/default-avatar.png",
-        },
-        track_details: {
-            id: "5",
-            name: "Track Name",
-            album: {
-                name: "Album Name",
-                images: [{ url: "/default-album.png" }],
-                release_date: "2023",
-            },
-            artists: [{ name: "Artist Name" }],
-        },
-    },
-];
-
 const annotations: Annotation[] = [
     {
         id: "a1",
@@ -235,6 +97,39 @@ const Songs = () => {
     const [recentlyReviewedError, setRecentlyReviewedError] = useState<
         string | null
     >(null);
+
+    const [popularReviews, setPopularReviews] = useState<Review[]>([]);
+    const [isLoadingPopularReviews, setIsLoadingPopularReviews] =
+        useState(false);
+    const [popularReviewsError, setPopularReviewsError] = useState<
+        string | null
+    >(null);
+
+    const fetchPopularReviews = async () => {
+        setIsLoadingPopularReviews(true);
+        setPopularReviewsError(null);
+
+        try {
+            const res = await fetch("/api/review/popular-this-week");
+            if (!res.ok) {
+                throw new Error("Failed to fetch popular reviews");
+            }
+            const data = await res.json();
+            setPopularReviews(data);
+            console.log("Popular reviews:", data);
+        } catch (error) {
+            console.error("Error fetching popular reviews:", error);
+            setPopularReviewsError("Failed to load popular reviews");
+        } finally {
+            setIsLoadingPopularReviews(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!showSearchResults) {
+            fetchPopularReviews();
+        }
+    }, [showSearchResults]);
 
     const fetchRecentlyReviewedTracks = async () => {
         setIsLoadingRecentlyReviewed(true);
@@ -569,70 +464,73 @@ const Songs = () => {
                                     </p>
                                 ) : (
                                     <div className="space-y-4">
-                                        {recentlyReviewedTracks.map((review) => {
-                                            const track = reviewToTrack(review);
-                                            return (
-                                                <div
-                                                    key={review.id}
-                                                    className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
-                                                    <div className="flex items-start gap-3">
-                                                        <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
-                                                            <img
-                                                                src={
-                                                                    track.coverArt
-                                                                }
-                                                                alt={`${track.title} cover`}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <div className="font-medium text-[#1F2C24]">
-                                                                    {
-                                                                        review
-                                                                            .users
-                                                                            .name
+                                        {recentlyReviewedTracks.map(
+                                            (review) => {
+                                                const track =
+                                                    reviewToTrack(review);
+                                                return (
+                                                    <div
+                                                        key={review.id}
+                                                        className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
+                                                        <div className="flex items-start gap-3">
+                                                            <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
+                                                                <img
+                                                                    src={
+                                                                        track.coverArt
                                                                     }
-                                                                </div>
-                                                                {renderStars(
-                                                                    review.rating
-                                                                )}
+                                                                    alt={`${track.title} cover`}
+                                                                    className="w-full h-full object-cover"
+                                                                />
                                                             </div>
-                                                            <h3 className="font-semibold text-[#1F2C24]">
-                                                                {
-                                                                    track.title
-                                                                }
-                                                            </h3>
-                                                            <p className="text-[#A0A0A0] text-sm truncate">
-                                                                {
-                                                                    track.artist
-                                                                }
-                                                            </p>
-                                                            {review.text && (
-                                                                <p className="text-[#1F2C24] text-sm mt-2 line-clamp-2">
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <div className="font-medium text-[#1F2C24]">
+                                                                        {
+                                                                            review
+                                                                                .users
+                                                                                .name
+                                                                        }
+                                                                    </div>
+                                                                    {renderStars(
+                                                                        review.rating
+                                                                    )}
+                                                                </div>
+                                                                <h3 className="font-semibold text-[#1F2C24]">
                                                                     {
-                                                                        review.text
+                                                                        track.title
+                                                                    }
+                                                                </h3>
+                                                                <p className="text-[#A0A0A0] text-sm truncate">
+                                                                    {
+                                                                        track.artist
                                                                     }
                                                                 </p>
-                                                            )}
-                                                            <div className="flex justify-between items-center mt-2">
-                                                                <span className="text-xs text-[#A0A0A0]">
-                                                                    {new Date(
-                                                                        review.created_at
-                                                                    ).toLocaleDateString()}
-                                                                </span>
-                                                                <Link
-                                                                    href={`/songs/${track.id}`}
-                                                                    className="text-xs text-[#6D9773] hover:text-[#5C8769]">
-                                                                    View
-                                                                    track
-                                                                </Link>
+                                                                {review.text && (
+                                                                    <p className="text-[#1F2C24] text-sm mt-2 line-clamp-2">
+                                                                        {
+                                                                            review.text
+                                                                        }
+                                                                    </p>
+                                                                )}
+                                                                <div className="flex justify-between items-center mt-2">
+                                                                    <span className="text-xs text-[#A0A0A0]">
+                                                                        {new Date(
+                                                                            review.created_at
+                                                                        ).toLocaleDateString()}
+                                                                    </span>
+                                                                    <Link
+                                                                        href={`/songs/${track.id}`}
+                                                                        className="text-xs text-[#6D9773] hover:text-[#5C8769]">
+                                                                        View
+                                                                        track
+                                                                    </Link>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            );
-                                        })}
+                                                );
+                                            }
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -662,14 +560,29 @@ const Songs = () => {
                                     Popular Reviews This Week
                                 </h2>
                             </div>
-                            <div className="space-y-4">
-                                {reviews.map((review) => (
-                                    <ReviewCard
-                                        key={review.id}
-                                        review={review}
-                                    />
-                                ))}
-                            </div>
+
+                            {isLoadingPopularReviews ? (
+                                <div className="flex justify-center items-center h-32">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6D9773]"></div>
+                                </div>
+                            ) : popularReviewsError ? (
+                                <p className="text-red-500">
+                                    {popularReviewsError}
+                                </p>
+                            ) : popularReviews.length > 0 ? (
+                                <div className="space-y-4">
+                                    {popularReviews.map((review) => (
+                                        <ReviewCard
+                                            key={review.id}
+                                            review={review}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-[#A0A0A0]">
+                                    No popular reviews yet
+                                </p>
+                            )}
                         </div>
 
                         {/* Popular Annotations This Week */}
