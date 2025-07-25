@@ -1,18 +1,28 @@
-import { Track, SpotifyTrack, Review } from "@/app/songs/types";
+import { Track, SpotifyTrack, Review, SpotifyPlaylistTrack } from "@/app/songs/types";
 
-export const spotifyToTrack = (track: SpotifyTrack): Track => {
+export const spotifyToTrack = (trackData: any): Track => {
   return {
-    id: track.id,
-    title: track.name,
-    artist: track.artists.map(a => a.name).join(", "),
-    album: track.album.name,
-    coverArt: track.album.images[0]?.url || "/default-album.png",
-    avgRating: 0, // Default value since Spotify doesn't provide ratings
-    saveCount: 0, // Default value since Spotify doesn't provide save counts
+    id: trackData.track?.id || trackData.id,
+    title: trackData.track?.name || trackData.name,
+    artist: (trackData.track?.artists || trackData.artists)?.map((a: any) => a.name).join(", "),
+    album: trackData.track?.album?.name || trackData.album?.name,
+    coverArt: trackData.track?.album?.images[0]?.url || trackData.album?.images[0]?.url || "/default-album.png",
+    avgRating: trackData.track?.stats?.avg_rating || trackData.stats?.avg_rating || 0,
+    saveCount: trackData.track?.stats?.like_count || trackData.stats?.like_count || 0,
     genre: "Pop", // Default value
-    year: track.album.release_date ? parseInt(track.album.release_date.substring(0, 4)) : new Date().getFullYear(),
+    year: trackData.track?.album?.release_date ? 
+      parseInt(trackData.track.album.release_date.substring(0, 4)) : 
+      trackData.album?.release_date ? 
+        parseInt(trackData.album.release_date.substring(0, 4)) : 
+        new Date().getFullYear(),
     mood: "Energetic", // Default value
-    isSaved: false
+    isSaved: false,
+    stats: {
+      like_count: trackData.track?.stats?.like_count || trackData.stats?.like_count || 0,
+      review_count: trackData.track?.stats?.review_count || trackData.stats?.review_count || 0,
+      annotation_count: trackData.track?.stats?.annotation_count || trackData.stats?.annotation_count || 0,
+      avg_rating: trackData.track?.stats?.avg_rating || trackData.stats?.avg_rating || 0
+    }
   };
 };
 

@@ -23,6 +23,7 @@ const TrackCard: React.FC<TrackCardProps> = ({
     onReviewClick,
     onAnnotationClick,
 }) => {
+
     const renderStars = (rating: number) => {
         return (
             <div className="flex items-center gap-1">
@@ -91,7 +92,7 @@ const TrackCard: React.FC<TrackCardProps> = ({
                                 </p>
                             </div>
 
-                            <div
+                            {/* <div
                                 className={`${
                                     viewMode === "list"
                                         ? "flex items-center space-x-6"
@@ -104,54 +105,76 @@ const TrackCard: React.FC<TrackCardProps> = ({
                                         {track.saveCount}
                                     </span>
                                 </div>
-                            </div>
-                        </div>
+                            </div> */}
 
-                        <div
-                            className={`${
-                                viewMode === "list" ? "mt-2" : "mt-3"
-                            } flex flex-wrap gap-2`}>
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    onLikeClick(track.id);
-                                }}
-                                disabled={isLoading}
-                                className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
-                                    isLiked
-                                        ? "bg-[#FFBA00] text-[#1F2C24]"
-                                        : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
-                                }`}>
-                                {isLoading ? (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                ) : (
-                                    <>
-                                        <Heart className="w-3 h-3" />
-                                        <span>
-                                            {isLiked ? "Liked" : "Like"}
-                                        </span>
-                                    </>
-                                )}
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    onReviewClick(track);
-                                }}
-                                className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                                <Star className="w-3 h-3" />
-                                <span>Review</span>
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    onAnnotationClick(track);
-                                }}
-                                className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
-                                <MessageCircle className="w-3 h-3" />
-                                <span>Annotate</span>
-                            </button>
+                            {/* Add to the card's stats section */}
+                            <div className="flex items-center space-x-4 mt-2">
+                                <div className="flex items-center space-x-1 text-[#A0A0A0]">
+                                    <Heart className="w-4 h-4" />
+                                    <span className="text-sm">
+                                        {track.stats?.like_count || 0}
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-1 text-[#A0A0A0]">
+                                    <Star className="w-4 h-4" />
+                                    <span className="text-sm">
+                                        {track.stats?.review_count || 0}
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-1 text-[#A0A0A0]">
+                                    <MessageCircle className="w-4 h-4" />
+                                    <span className="text-sm">
+                                        {track.stats?.annotation_count || 0}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {renderStars(track.stats?.avg_rating || 0)}
                         </div>
+                    </div>
+
+                    <div
+                        className={`${
+                            viewMode === "list" ? "mt-2" : "mt-3"
+                        } flex flex-wrap gap-2`}>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onLikeClick(track.id);
+                            }}
+                            disabled={isLoading}
+                            className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                                isLiked
+                                    ? "bg-[#FFBA00] text-[#1F2C24]"
+                                    : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
+                            }`}>
+                            {isLoading ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : (
+                                <>
+                                    <Heart className="w-3 h-3" />
+                                    <span>{isLiked ? "Liked" : "Like"}</span>
+                                </>
+                            )}
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onReviewClick(track);
+                            }}
+                            className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                            <Star className="w-3 h-3" />
+                            <span>Review</span>
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onAnnotationClick(track);
+                            }}
+                            className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                            <MessageCircle className="w-3 h-3" />
+                            <span>Annotate</span>
+                        </button>
                     </div>
                 </div>
             </div>

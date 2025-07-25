@@ -189,7 +189,7 @@ const Songs = () => {
 
     const trendingTracks =
         globalTopTracks.length > 0
-            ? globalTopTracks.slice(0, 4).map(spotifyToTrack)
+            ? globalTopTracks.map((trackData) => spotifyToTrack(trackData))
             : [];
 
     const recentlyAnnotated =
@@ -242,11 +242,9 @@ const Songs = () => {
                     throw new Error("Failed to fetch global top tracks");
                 }
                 const data = await res.json();
-                const tracks = data.map(
-                    (item: SpotifyPlaylistTrack) => item.track
-                );
-                setGlobalTopTracks(tracks);
-                console.log("Global top tracks:", tracks);
+                // Each item already contains track and stats
+                setGlobalTopTracks(data);
+                console.log("Global top tracks with stats:", data);
             } catch (error) {
                 console.error("Error fetching global top tracks:", error);
                 setTopTracksError("Failed to load global top tracks");
@@ -260,14 +258,15 @@ const Songs = () => {
 
     useEffect(() => {
         if (user && globalTopTracks.length > 0) {
-            const trackIds = globalTopTracks.map((t) => t.id);
+            // Extract track IDs properly from the nested structure
+            const trackIds = globalTopTracks.map(item => item.id).filter(Boolean);
             fetchLikeStatuses(trackIds);
         }
     }, [user, globalTopTracks]);
 
     useEffect(() => {
         if (user && searchResults.length > 0) {
-            const trackIds = searchResults.map((t) => t.id);
+            const trackIds = searchResults.map(track => track.id).filter(Boolean);
             fetchLikeStatuses(trackIds);
         }
     }, [user, searchResults]);

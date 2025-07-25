@@ -10,6 +10,12 @@ export interface Track {
     year: number;
     mood: string;
     isSaved: boolean;
+    stats?: {
+      like_count: number;
+      review_count: number;
+      annotation_count: number;
+      avg_rating: number;
+    };
   }
   
   export interface SpotifyTrack {
@@ -73,4 +79,10 @@ export interface Track {
   
   export interface SpotifyPlaylistTrack {
     track: SpotifyTrack;
+    stats?: {
+      like_count: number;
+      review_count: number;
+      annotation_count: number;
+      avg_rating: number;
+    };
   }
