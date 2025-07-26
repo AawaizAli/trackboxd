@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
@@ -45,7 +45,7 @@ const Songs = () => {
     const [isLoadingLikes, setIsLoadingLikes] = useState<
         Record<string, boolean>
     >({});
-    const [fetchedTracks, setFetchedTracks] = useState<Set<string>>(new Set());
+    // const [fetchedTracks, setFetchedTracks] = useState<Set<string>>(new Set());
     const [showAnnotationForm, setShowAnnotationForm] = useState(false);
     const [annotationTrack, setAnnotationTrack] = useState<Track | null>(null);
     const { user, loading: userLoading, error: userError } = useUser();
@@ -223,7 +223,9 @@ const Songs = () => {
 
     const trendingTracks =
         globalTopTracks.length > 0
-            ? globalTopTracks.map((trackData) => spotifyToTrack(trackData))
+            ? globalTopTracks.map((trackData: SpotifyTrack) =>
+                  spotifyToTrack(trackData)
+              )
             : [];
 
     const recentlyAnnotated =
@@ -231,42 +233,39 @@ const Songs = () => {
             ? globalTopTracks.slice(2, 6).map(spotifyToTrack)
             : [];
 
-    const fetchLikeStatuses = async (trackIds: string[]) => {
-        if (!user) return;
+    const fetchLikeStatuses = useCallback(
+        async (trackIds: string[]) => {
+            if (!user) return;
 
-        try {
-            const tracksToFetch = trackIds.filter(
-                (id) => !fetchedTracks.has(id)
-            );
-            if (tracksToFetch.length === 0) return;
-
-            setFetchedTracks((prev) => {
-                const newSet = new Set(prev);
-                tracksToFetch.forEach((id) => newSet.add(id));
-                return newSet;
-            });
-
-            const likeStatuses = await Promise.all(
-                tracksToFetch.map((trackId) =>
-                    fetch(
-                        `/api/like/track?userId=${user.id}&trackId=${trackId}`
+            try {
+                // Remove fetchedTracks check
+                const likeStatuses = await Promise.all(
+                    trackIds.map((trackId) =>
+                        fetch(
+                            `/api/like/track?userId=${user.id}&trackId=${trackId}`
+                        )
+                            .then((res) => res.json())
+                            .then((data) => ({
+                                trackId,
+                                isLiked: data.isLiked,
+                            }))
+                            .catch(() => ({ trackId, isLiked: false }))
                     )
-                        .then((res) => res.json())
-                        .then((data) => ({ trackId, isLiked: data.isLiked }))
-                )
-            );
+                );
 
-            setLikes((prev) => {
-                const newLikes = { ...prev };
-                likeStatuses.forEach(({ trackId, isLiked }) => {
-                    newLikes[trackId] = isLiked;
+                setLikes((prev) => {
+                    const newLikes = { ...prev };
+                    likeStatuses.forEach(({ trackId, isLiked }) => {
+                        newLikes[trackId] = isLiked;
+                    });
+                    return newLikes;
                 });
-                return newLikes;
-            });
-        } catch (error) {
-            console.error("Failed to fetch like statuses:", error);
-        }
-    };
+            } catch (error) {
+                console.error("Failed to fetch like statuses:", error);
+            }
+        },
+        [user] // Remove fetchedTracks dependency
+    );
 
     useEffect(() => {
         const fetchGlobalTopTracks = async () => {
@@ -275,10 +274,18 @@ const Songs = () => {
                 if (!res.ok) {
                     throw new Error("Failed to fetch global top tracks");
                 }
-                const data = await res.json();
-                // Each item already contains track and stats
-                setGlobalTopTracks(data);
-                console.log("Global top tracks with stats:", data);
+                const data = (await res.json()) as SpotifyPlaylistTrack[];
+                // Extract the actual track objects from playlist items
+                const tracks = data.map(item => item.track);
+                setGlobalTopTracks(tracks);
+                console.log("Global top tracks:", tracks);
+    
+                if (user && tracks.length > 0) {
+                    const trackIds = tracks
+                        .map((track) => track.id)
+                        .filter(Boolean);
+                    fetchLikeStatuses(trackIds);
+                }
             } catch (error) {
                 console.error("Error fetching global top tracks:", error);
                 setTopTracksError("Failed to load global top tracks");
@@ -286,35 +293,33 @@ const Songs = () => {
                 setIsLoadingTopTracks(false);
             }
         };
-
+    
         fetchGlobalTopTracks();
-    }, []);
+    }, []); 
 
     useEffect(() => {
         if (user && globalTopTracks.length > 0) {
-            // Extract track IDs properly from the nested structure
+            console.log("Global top tracks changed, fetching likes...");
+            // Now globalTopTracks contains direct track objects
             const trackIds = globalTopTracks
-                .map((item) => item.id)
-                .filter(Boolean);
-            fetchLikeStatuses(trackIds);
-        }
-    }, [user, globalTopTracks]);
-
-    useEffect(() => {
-        if (user && searchResults.length > 0) {
-            const trackIds = searchResults
                 .map((track) => track.id)
                 .filter(Boolean);
+            console.log("Fetching likes for track IDs:", trackIds);
             fetchLikeStatuses(trackIds);
         }
-    }, [user, searchResults]);
+    }, [globalTopTracks, user, fetchLikeStatuses]);
 
+    // Add this useEffect right after your existing useEffects
     useEffect(() => {
-        if (!user) {
-            setLikes({});
-            setFetchedTracks(new Set());
+        if (user && globalTopTracks.length > 0) {
+            console.log("Global top tracks changed, fetching likes...");
+            const trackIds = globalTopTracks
+                .map((track) => track.id)
+                .filter(Boolean);
+            console.log("Fetching likes for track IDs:", trackIds);
+            fetchLikeStatuses(trackIds);
         }
-    }, [user]);
+    }, [globalTopTracks, user, fetchLikeStatuses]);
 
     const renderStars = (rating: number) => {
         return (
@@ -416,14 +421,20 @@ const Songs = () => {
                                         key={`spotify-${track.id}`}
                                         track={track}
                                         isLiked={likes[track.id] || false}
-                                        isLoading={isLoadingLikes[track.id] || false}
+                                        isLoading={
+                                            isLoadingLikes[track.id] || false
+                                        }
                                         onLikeClick={handleLikeClick}
                                         onReviewClick={(track) => {
-                                            setReviewTrack(spotifyToTrack(track));
+                                            setReviewTrack(
+                                                spotifyToTrack(track)
+                                            );
                                             setShowReviewForm(true);
                                         }}
                                         onAnnotationClick={(track) => {
-                                            setAnnotationTrack(spotifyToTrack(track));
+                                            setAnnotationTrack(
+                                                spotifyToTrack(track)
+                                            );
                                             setShowAnnotationForm(true);
                                         }}
                                     />

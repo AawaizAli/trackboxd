@@ -353,11 +353,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                 </a>
                             ))}
 
-                            {/* Log + Button - Mobile (inside menu) */}
-                            <button className="flex items-center gap-2 justify-center bg-[#0C3B2E] hover:bg-[#0a3328] text-[#F9F9F9] py-3 px-4 rounded-lg transition-all duration-200 mt-2">
-                                <Plus className="w-5 h-5" />
-                                <span className="font-medium">Log</span>
-                            </button>
+
                         </nav>
                     </div>
 
