@@ -131,7 +131,6 @@ async function createReview(body: any, supabase: any, userId: string) {
             { status: 400 }
         );
     }
-    // In createReview and updateReview functions:
     if (rating < 0.5 || rating > 5 || !Number.isInteger(rating * 2)) {
         return NextResponse.json(
             { error: "Rating must be between 0.5 and 5 in 0.5 increments" },
@@ -139,45 +138,65 @@ async function createReview(body: any, supabase: any, userId: string) {
         );
     }
 
-    const { error: upsertError } = await supabase
-        .from("spotify_items")
-        .upsert({ id: itemId, type: itemType }, { onConflict: "id" });
-    if (upsertError) throw upsertError;
+    // Start a transaction
+    const { data, error } = await supabase.rpc('begin');
 
-    const { data: review, error: reviewError } = await supabase
-        .from("reviews")
-        .insert({
-            user_id: userId,
-            item_id: itemId,
-            rating,
-            text: text || null,
-            is_public: isPublic !== false,
-        })
-        .select()
-        .single();
-    if (reviewError) {
-        if (reviewError.code === "23505") {
-            return NextResponse.json(
-                { error: "You have already reviewed this item" },
-                { status: 400 }
-            );
+    try {
+        // Upsert the spotify item
+        const { error: upsertError } = await supabase
+            .from("spotify_items")
+            .upsert({ id: itemId, type: itemType }, { onConflict: "id" });
+        if (upsertError) throw upsertError;
+
+        // Create the review
+        const { data: review, error: reviewError } = await supabase
+            .from("reviews")
+            .insert({
+                user_id: userId,
+                item_id: itemId,
+                rating,
+                text: text || null,
+                is_public: isPublic !== false,
+            })
+            .select()
+            .single();
+        if (reviewError) {
+            if (reviewError.code === "23505") {
+                await supabase.rpc('rollback');
+                return NextResponse.json(
+                    { error: "You have already reviewed this item" },
+                    { status: 400 }
+                );
+            }
+            throw reviewError;
         }
-        throw reviewError;
+
+        // Increment review count
+        const { error: incrementError } = await supabase.rpc("increment_review_count", { 
+            item_id: itemId 
+        });
+        if (incrementError) throw incrementError;
+
+        // Then update the average rating (is_delete=false for creation)
+        const { error: ratingError } = await supabase.rpc("update_avg_rating", {
+            item_id: itemId,
+            rating_to_adjust: rating,
+            is_delete: false
+        });
+        if (ratingError) throw ratingError;
+
+        // Commit the transaction
+        await supabase.rpc('commit');
+
+        return NextResponse.json(review, { status: 201 });
+    } catch (error) {
+        await supabase.rpc('rollback');
+        console.error("Review creation error:", error);
+        return NextResponse.json(
+            { error: "Internal server error" },
+            { status: 500 }
+        );
     }
-
-    // RPC to increment review count
-    await supabase.rpc("increment_review_count", { item_id: itemId });
-    const { error: rpcError } = await supabase.rpc("update_avg_rating", {
-        item_id: itemId,
-        new_rating: rating,
-    });
-
-    if (rpcError) {
-        console.error("Failed to update average rating:", rpcError);
-        throw rpcError;
-    }
-
-    return NextResponse.json(review, { status: 201 });
 }
 
 async function updateReview(body: any, supabase: any, userId: string) {
@@ -224,15 +243,18 @@ async function updateReview(body: any, supabase: any, userId: string) {
     if (updateError) throw updateError;
 
     if (rating !== undefined) {
+        // First remove the old rating from the average (is_delete=true)
         await supabase.rpc("update_avg_rating", {
             item_id: existingReview.item_id,
-            new_rating: existingReview.rating,
-            is_delete: true,
+            rating_to_adjust: existingReview.rating,
+            is_delete: true
         });
 
+        // Then add the new rating to the average (is_delete=false)
         await supabase.rpc("update_avg_rating", {
             item_id: existingReview.item_id,
-            new_rating: rating,
+            rating_to_adjust: rating,
+            is_delete: false
         });
     }
 
@@ -277,10 +299,12 @@ async function deleteReview(body: any, supabase: any, userId: string) {
     await supabase.rpc("decrement_review_count", {
         item_id: existingReview.item_id,
     });
+
+    // Then update the average by removing this review's rating
     await supabase.rpc("update_avg_rating", {
         item_id: existingReview.item_id,
-        new_rating: existingReview.rating,
-        is_delete: true,
+        rating_to_adjust: existingReview.rating,
+        is_delete: true
     });
 
     return NextResponse.json({ success: true });

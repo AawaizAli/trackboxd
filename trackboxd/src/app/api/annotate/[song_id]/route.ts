@@ -1,4 +1,3 @@
-// app/api/annotation/[song_id]/route.ts
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
@@ -20,7 +19,6 @@ export async function GET(
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    // Query to get all public annotations for the song, sorted by newest first
     const { data: annotations, error } = await supabase
       .from('annotations')
       .select(`
@@ -34,11 +32,6 @@ export async function GET(
           id,
           name,
           image_url
-        ),
-        track:track_id (
-          id,
-          name,
-          artists:artists(name)
         )
       `)
       .eq('track_id', songId)
@@ -46,6 +39,7 @@ export async function GET(
       .order('created_at', { ascending: false });
 
     if (error) throw error;
+
 
     return NextResponse.json(annotations);
 
