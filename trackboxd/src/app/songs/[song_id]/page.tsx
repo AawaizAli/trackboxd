@@ -88,6 +88,180 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [showAnnotationForm, setShowAnnotationForm] = useState(false);
 
+    const [reviewLikes, setReviewLikes] = useState<Record<string, boolean>>({});
+    const [reviewLikeCounts, setReviewLikeCounts] = useState<
+        Record<string, number>
+    >({});
+    const [reviewLoading, setReviewLoading] = useState<Record<string, boolean>>(
+        {}
+    );
+
+    // State for annotation likes
+    const [annotationLikes, setAnnotationLikes] = useState<
+        Record<string, boolean>
+    >({});
+    const [annotationLikeCounts, setAnnotationLikeCounts] = useState<
+        Record<string, number>
+    >({});
+    const [annotationLoading, setAnnotationLoading] = useState<
+        Record<string, boolean>
+    >({});
+
+    // Fetch like status for reviews
+    useEffect(() => {
+        if (!user || reviews.length === 0) return;
+
+        const fetchReviewLikes = async () => {
+            const newLikes: Record<string, boolean> = {};
+            const newCounts: Record<string, number> = {};
+
+            for (const review of reviews) {
+                try {
+                    const res = await fetch(
+                        `/api/like/review?userId=${user.id}&reviewId=${review.id}`
+                    );
+                    if (res.ok) {
+                        const data = await res.json();
+                        newLikes[review.id] = data.isLiked;
+                        newCounts[review.id] = review.like_count;
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch review like status", error);
+                    newLikes[review.id] = false;
+                    newCounts[review.id] = review.like_count;
+                }
+            }
+
+            setReviewLikes(newLikes);
+            setReviewLikeCounts(newCounts);
+        };
+
+        fetchReviewLikes();
+    }, [user, reviews]);
+
+    // Fetch like status for annotations
+    useEffect(() => {
+        if (!user || annotations.length === 0) return;
+
+        const fetchAnnotationLikes = async () => {
+            const newLikes: Record<string, boolean> = {};
+            const newCounts: Record<string, number> = {};
+
+            for (const annotation of annotations) {
+                try {
+                    const res = await fetch(
+                        `/api/like/annotation?userId=${user.id}&annotationId=${annotation.id}`
+                    );
+                    if (res.ok) {
+                        const data = await res.json();
+                        newLikes[annotation.id] = data.isLiked;
+                        newCounts[annotation.id] = annotation.like_count;
+                    }
+                } catch (error) {
+                    console.error(
+                        "Failed to fetch annotation like status",
+                        error
+                    );
+                    newLikes[annotation.id] = false;
+                    newCounts[annotation.id] = annotation.like_count;
+                }
+            }
+
+            setAnnotationLikes(newLikes);
+            setAnnotationLikeCounts(newCounts);
+        };
+
+        fetchAnnotationLikes();
+    }, [user, annotations]);
+
+    const handleReviewLikeClick = async (reviewId: string) => {
+        if (!user || reviewLoading[reviewId]) return;
+
+        setReviewLoading((prev) => ({ ...prev, [reviewId]: true }));
+        const newIsLiked = !reviewLikes[reviewId];
+        const newCount = newIsLiked
+            ? (reviewLikeCounts[reviewId] || 0) + 1
+            : Math.max(0, (reviewLikeCounts[reviewId] || 0) - 1);
+
+        // Optimistic update
+        setReviewLikes((prev) => ({ ...prev, [reviewId]: newIsLiked }));
+        setReviewLikeCounts((prev) => ({ ...prev, [reviewId]: newCount }));
+
+        try {
+            const response = await fetch("/api/like/review", {
+                method: newIsLiked ? "POST" : "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: user.id,
+                    reviewId: reviewId,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update review like");
+            }
+        } catch (error) {
+            console.error("Review like operation failed:", error);
+            // Revert optimistic update
+            setReviewLikes((prev) => ({ ...prev, [reviewId]: !newIsLiked }));
+            setReviewLikeCounts((prev) => ({
+                ...prev,
+                [reviewId]: reviewLikeCounts[reviewId],
+            }));
+        } finally {
+            setReviewLoading((prev) => ({ ...prev, [reviewId]: false }));
+        }
+    };
+
+    // Handle annotation like click
+    const handleAnnotationLikeClick = async (annotationId: string) => {
+        if (!user || annotationLoading[annotationId]) return;
+
+        setAnnotationLoading((prev) => ({ ...prev, [annotationId]: true }));
+        const newIsLiked = !annotationLikes[annotationId];
+        const newCount = newIsLiked
+            ? (annotationLikeCounts[annotationId] || 0) + 1
+            : Math.max(0, (annotationLikeCounts[annotationId] || 0) - 1);
+
+        // Optimistic update
+        setAnnotationLikes((prev) => ({ ...prev, [annotationId]: newIsLiked }));
+        setAnnotationLikeCounts((prev) => ({
+            ...prev,
+            [annotationId]: newCount,
+        }));
+
+        try {
+            const response = await fetch("/api/like/annotation", {
+                method: newIsLiked ? "POST" : "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: user.id,
+                    annotationId: annotationId,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update annotation like");
+            }
+        } catch (error) {
+            console.error("Annotation like operation failed:", error);
+            // Revert optimistic update
+            setAnnotationLikes((prev) => ({
+                ...prev,
+                [annotationId]: !newIsLiked,
+            }));
+            setAnnotationLikeCounts((prev) => ({
+                ...prev,
+                [annotationId]: annotationLikeCounts[annotationId],
+            }));
+        } finally {
+            setAnnotationLoading((prev) => ({
+                ...prev,
+                [annotationId]: false,
+            }));
+        }
+    };
+
     // Fetch like status
     useEffect(() => {
         const fetchLikeStatus = async () => {
@@ -413,7 +587,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                             <button
                                 onClick={handleLikeClick}
                                 disabled={likeLoading}
-                                className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                                className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors cursor-pointer ${
                                     isLiked
                                         ? "bg-[#FFBA00] text-[#1F2C24]"
                                         : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
@@ -432,8 +606,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
 
                             <button
                                 onClick={() => track && setShowReviewForm(true)}
-                                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF]">
-                                <Star className="w-3 h-3" />
+                                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] cursor-pointer">
                                 <span>Review</span>
                             </button>
 
@@ -441,8 +614,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                 onClick={() =>
                                     track && setShowAnnotationForm(true)
                                 }
-                                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF]">
-                                <MessageCircle className="w-3 h-3" />
+                                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] cursor-pointer">
                                 <span>Annotate</span>
                             </button>
                         </div>
@@ -525,7 +697,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                 activeTab === "reviews"
                                     ? "text-[#6D9773] border-b-2 border-[#6D9773]"
                                     : "text-[#A0A0A0]"
-                            }`}
+                            } cursor-pointer`}
                             onClick={() => setActiveTab("reviews")}>
                             Reviews ({reviews.length})
                         </button>
@@ -534,7 +706,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                 activeTab === "annotations"
                                     ? "text-[#6D9773] border-b-2 border-[#6D9773]"
                                     : "text-[#A0A0A0]"
-                            }`}
+                            } cursor-pointer`}
                             onClick={() => setActiveTab("annotations")}>
                             Annotations ({annotations.length})
                         </button>
@@ -546,26 +718,46 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                 <div
                                     key={review.id}
                                     className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl p-4">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="flex items-center gap-2">
+                                    {/* Consistent user section with fixed min-height */}
+                                    <div className="flex justify-between items-start min-h-[3.5rem]">
+                                        <div className="flex items-start gap-3">
                                             <img
                                                 src={review.users.image_url}
                                                 alt={review.users.name}
-                                                className="w-8 h-8 rounded-full"
+                                                className="w-10 h-10 rounded-full mt-0.5"
                                             />
                                             <div>
-                                                <div className="font-medium text-sm text-[#1F2C24] mb-1">
+                                                <div className="font-medium text-sm text-[#1F2C24]">
                                                     {review.users.name}
                                                 </div>
-                                                <div className="flex items-center">
+                                                <div className="mt-1">
                                                     {renderStars(review.rating)}
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center space-x-1 text-[#A0A0A0] text-xs">
-                                            <Heart className="w-3 h-3" />
-                                            <span>{review.like_count}</span>
-                                        </div>
+                                        <button
+                                            onClick={() =>
+                                                handleReviewLikeClick(review.id)
+                                            }
+                                            disabled={reviewLoading[review.id]}
+                                            className="group flex items-center space-x-1 focus:outline-none cursor-pointer">
+                                            <Heart
+                                                className={`w-4 h-4 transition-all duration-200 ${
+                                                    reviewLikes[review.id]
+                                                        ? "text-[#6D9773] fill-[#6D9773]"
+                                                        : "text-[#A0A0A0] group-hover:text-[#6D9773]"
+                                                }`}
+                                            />
+                                            <span
+                                                className={`text-sm transition-colors duration-200 ${
+                                                    reviewLikes[review.id]
+                                                        ? "text-[#6D9773] font-medium"
+                                                        : "text-[#A0A0A0] group-hover:text-[#6D9773]"
+                                                }`}>
+                                                {reviewLikeCounts[review.id] ||
+                                                    review.like_count}
+                                            </span>
+                                        </button>
                                     </div>
                                     <p className="text-sm text-[#1F2C24] mb-3 line-clamp-2">
                                         {review.text}
@@ -574,9 +766,9 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                         <span className="text-[#A0A0A0]">
                                             {formatDate(review.created_at)}
                                         </span>
-                                        <button className="text-[#6D9773] hover:text-[#5C8769]">
+                                        {/* <button className="text-[#6D9773] hover:text-[#5C8769]">
                                             Read full
-                                        </button>
+                                        </button> */}
                                     </div>
                                 </div>
                             ))}
@@ -585,85 +777,93 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
 
                     {activeTab === "annotations" && (
                         <div className="mt-4 space-y-4">
-                            {loadingAnnotations ? (
-                                <div className="flex justify-center py-4">
-                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#6D9773]"></div>
-                                </div>
-                            ) : annotationsError ? (
-                                <p className="text-red-500 py-4 text-center">
-                                    {annotationsError}
-                                </p>
-                            ) : annotations.length === 0 ? (
-                                <p className="text-[#A0A0A0] py-4 text-center">
-                                    No annotations yet
-                                </p>
-                            ) : (
-                                annotations.map((annotation) => {
-                                    // Format timestamp to MM:SS format
-                                    const minutes = Math.floor(
-                                        annotation.timestamp / 60
-                                    );
-                                    const seconds = Math.floor(
-                                        annotation.timestamp % 60
-                                    );
-                                    const timestampStr = `${minutes}:${seconds
-                                        .toString()
-                                        .padStart(2, "0")}`;
+                            {annotations.map((annotation) => {
+                                const minutes = Math.floor(
+                                    annotation.timestamp / 60
+                                );
+                                const seconds = Math.floor(
+                                    annotation.timestamp % 60
+                                );
+                                const timestampStr = `${minutes}:${seconds
+                                    .toString()
+                                    .padStart(2, "0")}`;
 
-                                    return (
-                                        <div
-                                            key={annotation.id}
-                                            className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl p-4">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <img
-                                                        src={
-                                                            annotation.users
-                                                                .image_url ||
-                                                            "/default-avatar.png"
-                                                        }
-                                                        alt={
-                                                            annotation.users
-                                                                .name
-                                                        }
-                                                        className="w-8 h-8 rounded-full"
-                                                    />
-                                                    <div>
-                                                        <div className="font-medium text-sm text-[#1F2C24]">
-                                                            {
-                                                                annotation.users
-                                                                    .name
-                                                            }
-                                                        </div>
-                                                        <div className="text-xs text-[#6D9773]">
-                                                            At {timestampStr}
-                                                        </div>
+                                return (
+                                    <div
+                                        key={annotation.id}
+                                        className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl p-4">
+                                        {/* Consistent user section with fixed min-height */}
+                                        <div className="flex justify-between items-start min-h-[3.5rem]">
+                                            <div className="flex items-start gap-3">
+                                                <img
+                                                    src={
+                                                        annotation.users
+                                                            .image_url ||
+                                                        "/default-avatar.png"
+                                                    }
+                                                    alt={annotation.users.name}
+                                                    className="w-10 h-10 rounded-full mt-0.5"
+                                                />
+                                                <div>
+                                                    <div className="font-medium text-sm text-[#1F2C24]">
+                                                        {annotation.users.name}
+                                                    </div>
+                                                    <div className="text-xs text-[#6D9773] mt-1">
+                                                        At {timestampStr}
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center space-x-1 text-[#A0A0A0] text-xs">
-                                                    <Heart className="w-3 h-3" />
-                                                    <span>
-                                                        {annotation.like_count}
-                                                    </span>
-                                                </div>
                                             </div>
-                                            <p className="text-sm text-[#1F2C24] mb-3">
-                                                {annotation.text}
-                                            </p>
-                                            <div className="flex justify-between items-center text-xs">
-                                                <span className="text-[#A0A0A0]">
-                                                    {formatDate(
-                                                        annotation.created_at
-                                                    )}
+                                            <button
+                                                onClick={() =>
+                                                    handleAnnotationLikeClick(
+                                                        annotation.id
+                                                    )
+                                                }
+                                                disabled={
+                                                    annotationLoading[
+                                                        annotation.id
+                                                    ]
+                                                }
+                                                className="group flex items-center space-x-1 focus:outline-none cursor-pointer">
+                                                <Heart
+                                                    className={`w-4 h-4 transition-all duration-200 ${
+                                                        annotationLikes[
+                                                            annotation.id
+                                                        ]
+                                                            ? "text-[#6D9773] fill-[#6D9773]"
+                                                            : "text-[#A0A0A0] group-hover:text-[#6D9773]"
+                                                    }`}
+                                                />
+                                                <span
+                                                    className={`text-sm transition-colors duration-200 ${
+                                                        annotationLikes[
+                                                            annotation.id
+                                                        ]
+                                                            ? "text-[#6D9773] font-medium"
+                                                            : "text-[#A0A0A0] group-hover:text-[#6D9773]"
+                                                    }`}>
+                                                    {annotationLikeCounts[
+                                                        annotation.id
+                                                    ] || annotation.like_count}
                                                 </span>
-                                                <button className="text-[#6D9773] hover:text-[#5C8769]">
-                                                    View annotation
-                                                </button>
-                                            </div>
+                                            </button>
                                         </div>
-                                    );
-                                })
-                            )}
+                                        <p className="text-sm text-[#1F2C24] mb-3">
+                                            {annotation.text}
+                                        </p>
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="text-[#A0A0A0]">
+                                                {formatDate(
+                                                    annotation.created_at
+                                                )}
+                                            </span>
+                                            {/* <button className="text-[#6D9773] hover:text-[#5C8769]">
+                                                View annotation
+                                            </button> */}
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
 
