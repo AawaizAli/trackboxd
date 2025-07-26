@@ -12,6 +12,8 @@ import Filters from "@/components/songs/Filters";
 import TrackCard from "@/components/songs/TrackCard";
 import SpotifyTrackCard from "@/components/songs/SpotifyTrackCard";
 import CompactTrackCard from "@/components/songs/CompactTrackCard";
+import CompactAnnotationCard from "@/components/songs/CompactAnnotationCard";
+import CompactReviewCard from "@/components/songs/CompactReviewCard";
 import ReviewCard from "@/components/songs/ReviewCard";
 import AnnotationCard from "@/components/songs/AnnotationCard";
 import { spotifyToTrack, reviewToTrack } from "@/utils/trackConverters";
@@ -23,44 +25,6 @@ import {
     Annotation,
     SpotifyPlaylistTrack,
 } from "./types";
-
-const annotations: Annotation[] = [
-    {
-        id: "a1",
-        user: "Taylor Swift",
-        content: "The bridge at 2:45 gives me chills every time! Pure emotion.",
-        timestamp: "1 day ago",
-        likes: 24,
-    },
-    {
-        id: "a2",
-        user: "John Mayer",
-        content: "Listen to the guitar solo at 3:15 - absolute perfection!",
-        timestamp: "2 days ago",
-        likes: 32,
-    },
-    {
-        id: "a3",
-        user: "Beyoncé",
-        content: "The vocal harmonies at 1:30 are everything! Queen behavior.",
-        timestamp: "3 days ago",
-        likes: 41,
-    },
-    {
-        id: "a4",
-        user: "Bruno Mars",
-        content: "The bassline at 0:45 is so funky! Can't stop grooving.",
-        timestamp: "1 day ago",
-        likes: 27,
-    },
-    {
-        id: "a5",
-        user: "Adele",
-        content: "The lyrics at 4:10 hit me right in the feels. So raw!",
-        timestamp: "2 days ago",
-        likes: 35,
-    },
-];
 
 const Songs = () => {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -104,6 +68,76 @@ const Songs = () => {
     const [popularReviewsError, setPopularReviewsError] = useState<
         string | null
     >(null);
+
+    const [popularAnnotations, setPopularAnnotations] = useState<Annotation[]>(
+        []
+    );
+    const [isLoadingPopularAnnotations, setIsLoadingPopularAnnotations] =
+        useState(false);
+    const [popularAnnotationsError, setPopularAnnotationsError] = useState<
+        string | null
+    >(null);
+
+    const [recentlyAnnotatedTracks, setRecentlyAnnotatedTracks] = useState<
+        Annotation[]
+    >([]);
+    const [isLoadingRecentlyAnnotated, setIsLoadingRecentlyAnnotated] =
+        useState(false);
+    const [recentlyAnnotatedError, setRecentlyAnnotatedError] = useState<
+        string | null
+    >(null);
+
+    const fetchRecentlyAnnotatedTracks = async () => {
+        setIsLoadingRecentlyAnnotated(true);
+        setRecentlyAnnotatedError(null);
+
+        try {
+            const res = await fetch("/api/annotate/last-annotated-tracks");
+            if (!res.ok) {
+                throw new Error("Failed to fetch recently annotated tracks");
+            }
+            const data = await res.json();
+            setRecentlyAnnotatedTracks(data);
+            console.log("Recently annotated tracks:", data);
+        } catch (error) {
+            console.error("Error fetching recently annotated tracks:", error);
+            setRecentlyAnnotatedError(
+                "Failed to load recently annotated tracks"
+            );
+        } finally {
+            setIsLoadingRecentlyAnnotated(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchRecentlyAnnotatedTracks();
+    }, []);
+
+    const fetchPopularAnnotations = async () => {
+        setIsLoadingPopularAnnotations(true);
+        setPopularAnnotationsError(null);
+
+        try {
+            const res = await fetch("/api/annotate/popular-this-week");
+            if (!res.ok) {
+                throw new Error("Failed to fetch popular annotations");
+            }
+            const data = await res.json();
+            setPopularAnnotations(data);
+            console.log("Popular annotations:", data);
+        } catch (error) {
+            console.error("Error fetching popular annotations:", error);
+            setPopularAnnotationsError("Failed to load popular annotations");
+        } finally {
+            setIsLoadingPopularAnnotations(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!showSearchResults) {
+            fetchPopularAnnotations();
+        }
+    }, [showSearchResults]);
 
     const fetchPopularReviews = async () => {
         setIsLoadingPopularReviews(true);
@@ -259,14 +293,18 @@ const Songs = () => {
     useEffect(() => {
         if (user && globalTopTracks.length > 0) {
             // Extract track IDs properly from the nested structure
-            const trackIds = globalTopTracks.map(item => item.id).filter(Boolean);
+            const trackIds = globalTopTracks
+                .map((item) => item.id)
+                .filter(Boolean);
             fetchLikeStatuses(trackIds);
         }
     }, [user, globalTopTracks]);
 
     useEffect(() => {
         if (user && searchResults.length > 0) {
-            const trackIds = searchResults.map(track => track.id).filter(Boolean);
+            const trackIds = searchResults
+                .map((track) => track.id)
+                .filter(Boolean);
             fetchLikeStatuses(trackIds);
         }
     }, [user, searchResults]);
@@ -378,20 +416,14 @@ const Songs = () => {
                                         key={`spotify-${track.id}`}
                                         track={track}
                                         isLiked={likes[track.id] || false}
-                                        isLoading={
-                                            isLoadingLikes[track.id] || false
-                                        }
+                                        isLoading={isLoadingLikes[track.id] || false}
                                         onLikeClick={handleLikeClick}
                                         onReviewClick={(track) => {
-                                            setReviewTrack(
-                                                spotifyToTrack(track)
-                                            );
+                                            setReviewTrack(spotifyToTrack(track));
                                             setShowReviewForm(true);
                                         }}
                                         onAnnotationClick={(track) => {
-                                            setAnnotationTrack(
-                                                spotifyToTrack(track)
-                                            );
+                                            setAnnotationTrack(spotifyToTrack(track));
                                             setShowAnnotationForm(true);
                                         }}
                                     />
@@ -447,108 +479,51 @@ const Songs = () => {
                         {/* Recently Reviewed & Annotated - Side by side */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                             {/* Recently Reviewed */}
-                            <div>
+
+                            <div className="space-y-4">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-bold text-[#0C3B2E]">
                                         Recently Reviewed
                                     </h2>
                                 </div>
-                                {isLoadingRecentlyReviewed ? (
-                                    <div className="flex justify-center items-center h-32">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6D9773]"></div>
-                                    </div>
-                                ) : recentlyReviewedError ? (
-                                    <p className="text-red-500">
-                                        {recentlyReviewedError}
-                                    </p>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {recentlyReviewedTracks.map(
-                                            (review) => {
-                                                const track =
-                                                    reviewToTrack(review);
-                                                return (
-                                                    <div
-                                                        key={review.id}
-                                                        className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
-                                                        <div className="flex items-start gap-3">
-                                                            <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
-                                                                <img
-                                                                    src={
-                                                                        track.coverArt
-                                                                    }
-                                                                    alt={`${track.title} cover`}
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-2 mb-1">
-                                                                    <div className="font-medium text-[#1F2C24]">
-                                                                        {
-                                                                            review
-                                                                                .users
-                                                                                .name
-                                                                        }
-                                                                    </div>
-                                                                    {renderStars(
-                                                                        review.rating
-                                                                    )}
-                                                                </div>
-                                                                <h3 className="font-semibold text-[#1F2C24]">
-                                                                    {
-                                                                        track.title
-                                                                    }
-                                                                </h3>
-                                                                <p className="text-[#A0A0A0] text-sm truncate">
-                                                                    {
-                                                                        track.artist
-                                                                    }
-                                                                </p>
-                                                                {review.text && (
-                                                                    <p className="text-[#1F2C24] text-sm mt-2 line-clamp-2">
-                                                                        {
-                                                                            review.text
-                                                                        }
-                                                                    </p>
-                                                                )}
-                                                                <div className="flex justify-between items-center mt-2">
-                                                                    <span className="text-xs text-[#A0A0A0]">
-                                                                        {new Date(
-                                                                            review.created_at
-                                                                        ).toLocaleDateString()}
-                                                                    </span>
-                                                                    <Link
-                                                                        href={`/songs/${track.id}`}
-                                                                        className="text-xs text-[#6D9773] hover:text-[#5C8769]">
-                                                                        View
-                                                                        track
-                                                                    </Link>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }
-                                        )}
-                                    </div>
-                                )}
+                                {recentlyReviewedTracks.map((review) => (
+                                    <CompactReviewCard
+                                        key={`reviewed-${review.id}`}
+                                        review={review}
+                                    />
+                                ))}
                             </div>
 
-                            {/* Recently Annotated */}
                             <div>
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-bold text-[#0C3B2E]">
                                         Recently Annotated
                                     </h2>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {recentlyAnnotated.map((track) => (
-                                        <CompactTrackCard
-                                            key={`annotated-${track.id}`}
-                                            track={track}
-                                        />
-                                    ))}
-                                </div>
+                                {isLoadingRecentlyAnnotated ? (
+                                    <div className="flex justify-center items-center h-32">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6D9773]"></div>
+                                    </div>
+                                ) : recentlyAnnotatedError ? (
+                                    <p className="text-red-500">
+                                        {recentlyAnnotatedError}
+                                    </p>
+                                ) : recentlyAnnotatedTracks.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {recentlyAnnotatedTracks.map(
+                                            (annotation) => (
+                                                <CompactAnnotationCard
+                                                    key={`annotated-${annotation.id}`}
+                                                    annotation={annotation}
+                                                />
+                                            )
+                                        )}
+                                    </div>
+                                ) : (
+                                    <p className="text-[#A0A0A0]">
+                                        No recently annotated tracks
+                                    </p>
+                                )}
                             </div>
                         </div>
 
@@ -591,14 +566,29 @@ const Songs = () => {
                                     Popular Annotations This Week
                                 </h2>
                             </div>
-                            <div className="space-y-4">
-                                {annotations.map((annotation) => (
-                                    <AnnotationCard
-                                        key={annotation.id}
-                                        annotation={annotation}
-                                    />
-                                ))}
-                            </div>
+
+                            {isLoadingPopularAnnotations ? (
+                                <div className="flex justify-center items-center h-32">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6D9773]"></div>
+                                </div>
+                            ) : popularAnnotationsError ? (
+                                <p className="text-red-500">
+                                    {popularAnnotationsError}
+                                </p>
+                            ) : popularAnnotations.length > 0 ? (
+                                <div className="space-y-4">
+                                    {popularAnnotations.map((annotation) => (
+                                        <AnnotationCard
+                                            key={annotation.id}
+                                            annotation={annotation}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-[#A0A0A0]">
+                                    No popular annotations yet
+                                </p>
+                            )}
                         </div>
 
                         {/* Review Form Popup */}

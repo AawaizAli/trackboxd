@@ -71,11 +71,31 @@ export interface Track {
   
   export interface Annotation {
     id: string;
-    user: string;
-    content: string;
-    timestamp: string;
-    likes: number;
-  }
+    text: string;
+    created_at: string;
+    like_count: number;
+    item_id: string;
+    timestamp: number; // Add this field
+    users: {
+        id: string;
+        name: string;
+        image_url: string;
+    };
+    track_details: {
+        name: string;
+        artists: {
+            name: string;
+        }[];
+        album: {
+            name: string;
+            images: {
+                url: string;
+                width: number;
+                height: number;
+            }[];
+        };
+    };
+}
   
   export interface SpotifyPlaylistTrack {
     track: SpotifyTrack;
