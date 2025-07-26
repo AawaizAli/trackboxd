@@ -52,6 +52,34 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
     const [activeTab, setActiveTab] = useState<"reviews" | "annotations">(
         "reviews"
     );
+    const [ratingDistribution, setRatingDistribution] = useState([
+        0, 0, 0, 0, 0,
+    ]);
+
+    useEffect(() => {
+        const fetchRatingDistribution = async () => {
+            try {
+                const res = await fetch(
+                    `/api/review/distribution/${params.song_id}`
+                );
+                if (res.ok) {
+                    const data = await res.json();
+                    // Convert to array format [1-star%, 2-star%, ...]
+                    setRatingDistribution([
+                        data.percentages[1],
+                        data.percentages[2],
+                        data.percentages[3],
+                        data.percentages[4],
+                        data.percentages[5],
+                    ]);
+                }
+            } catch (error) {
+                console.error("Failed to fetch rating distribution:", error);
+            }
+        };
+
+        fetchRatingDistribution();
+    }, []);
 
     const trackStats = {
         likes: track?.stats?.like_count || 0,
@@ -333,12 +361,16 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                         <div
                                             className="bg-[#6D9773] h-2 rounded-full"
                                             style={{
-                                                width: `${trackStats.ratingDistribution[index]}%`,
+                                                width: `${
+                                                    ratingDistribution[
+                                                        5 - stars
+                                                    ]
+                                                }%`,
                                             }}></div>
                                     </div>
                                 </div>
                                 <div className="w-10 text-right text-xs text-[#A0A0A0]">
-                                    {trackStats.ratingDistribution[index]}%
+                                    {ratingDistribution[5 - stars]}%
                                 </div>
                             </div>
                         ))}
