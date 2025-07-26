@@ -91,7 +91,7 @@ const CompactAnnotationCard: React.FC<CompactAnnotationCardProps> = ({
                                 {timeAgo}
                             </span>
                             <Link
-                                href={`/songs/${annotation.item_id}`}
+                                href={`/songs/${annotation.track_id}`}
                                 className="text-xs text-[#6D9773] hover:text-[#5C8769]">
                                 View track
                             </Link>

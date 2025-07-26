@@ -81,6 +81,7 @@ export interface Track {
         name: string;
         image_url: string;
     };
+    track_id: string;
     track_details: {
         name: string;
         artists: {
