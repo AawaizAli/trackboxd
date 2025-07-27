@@ -346,9 +346,16 @@ const Songs = () => {
             if (!res.ok) {
                 throw new Error("Failed to search");
             }
+
+
             const data = await res.json();
             setSearchResults(data.tracks?.items || []);
             setShowSearchResults(true);
+
+            if (user && searchResults.length > 0) {
+                const trackIds = searchResults.map(track => track.id);
+                fetchLikeStatuses(trackIds);
+            }
         } catch (error) {
             console.error("Spotify search error:", error);
             setSearchError("Failed to search. Please try again.");
