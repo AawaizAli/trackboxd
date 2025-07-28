@@ -9,11 +9,11 @@ interface PlaylistCardProps {
     onLikeToggle: (id: string) => void;
 }
 
-export const PlaylistCard = ({ 
-    playlist, 
+export const PlaylistCard = ({
+    playlist,
     isLiked,
     isLoading,
-    onLikeToggle 
+    onLikeToggle,
 }: PlaylistCardProps) => {
     const [isAnimating, setIsAnimating] = useState(false);
 
@@ -45,29 +45,40 @@ export const PlaylistCard = ({
                             by {playlist.creator}
                         </p>
                     </div>
-                    <button
-                        onClick={handleLikeClick}
-                        disabled={isLoading}
-                        className={`group flex-shrink-0 p-2 rounded-full transition-colors ${
-                            !isLoading
-                                ? "hover:bg-[#6D9773]/10"
-                                : "cursor-not-allowed"
-                        }`}
-                    >
-                        {isLoading ? (
-                            <div className="w-5 h-5 flex items-center justify-center">
-                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#6D9773]"></div>
-                            </div>
-                        ) : (
-                            <Heart
-                                className={`w-5 h-5 transition-colors ${
-                                    isLiked
-                                        ? "text-[#6D9773] fill-[#6D9773]"
-                                        : "text-[#A0A0A0] group-hover:text-[#6D9773]"
-                                }`}
-                            />
-                        )}
-                    </button>
+
+                    {/* Like button and count */}
+                    <div className="flex items-center ">
+                        <button
+                            onClick={handleLikeClick}
+                            disabled={isLoading}
+                            className={`group flex-shrink-0 p-2 rounded-full transition-colors ${
+                                !isLoading
+                                    ? "hover:bg-[#6D9773]/10 cursor-pointer"
+                                    : "cursor-not-allowed"
+                            }`}>
+                            {isLoading ? (
+                                <div className="w-5 h-5 flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#6D9773]"></div>
+                                </div>
+                            ) : (
+                                <Heart
+                                    className={`w-5 h-5 transition-colors ${
+                                        isLiked
+                                            ? "text-[#6D9773] fill-[#6D9773]"
+                                            : "text-[#A0A0A0] group-hover:text-[#6D9773]"
+                                    }`}
+                                />
+                            )}
+                        </button>
+                        <span
+                            className={`text-sm ${
+                                isLiked
+                                    ? "text-[#6D9773] font-medium"
+                                    : "text-[#A0A0A0]"
+                            }`}>
+                            {playlist.like_count}
+                        </span>
+                    </div>
                 </div>
 
                 {/* Description */}
@@ -85,8 +96,7 @@ export const PlaylistCard = ({
                             className="h-4 w-4"
                             fill="none"
                             viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
+                            stroke="currentColor">
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -95,16 +105,6 @@ export const PlaylistCard = ({
                             />
                         </svg>
                         <span>{playlist.tracks} tracks</span>
-                    </div>
-                    
-                    <div className="flex items-center space-x-1 text-sm">
-                        <span className={`transition-colors duration-200 ${
-                            isLiked 
-                                ? 'text-[#6D9773] font-medium' 
-                                : 'text-[#A0A0A0]'
-                        }`}>
-                            {playlist.like_count}
-                        </span>
                     </div>
                 </div>
             </div>
