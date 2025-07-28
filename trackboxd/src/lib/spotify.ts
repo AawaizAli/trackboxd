@@ -262,3 +262,48 @@ export const searchTracksAndAlbums = async (
     throw error;
   }
 };
+
+export const getPlaylistDetails = async (
+  playlistId: string,
+  options: {
+    market?: string;
+    fields?: string;
+  } = {}
+) => {
+  try {
+    const { access_token } = await getAccessToken();
+    
+    // Set default options
+    const { market = 'US', fields } = options;
+
+    // Create URL
+    const url = new URL(`${PLAYLIST_ITEMS_ENDPOINT}/${playlistId}`);
+    
+    // Add query parameters
+    if (market) url.searchParams.append('market', market);
+    if (fields) url.searchParams.append('fields', fields);
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    // Detailed error handling
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Spotify API error ${response.status}: ${response.statusText}`, {
+        url: url.toString(),
+        status: response.status,
+        errorBody
+      });
+      throw new Error(`Spotify API error: ${response.status} ${response.statusText}`);
+    }
+
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Spotify getPlaylistDetails error:', error);
+    throw error;
+  }
+};

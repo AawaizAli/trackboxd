@@ -6,7 +6,7 @@ import { getTrackDetails } from "@/lib/spotify";
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
-    
+
     try {
         const cookieStore = cookies();
         const supabase = createClient(cookieStore);
@@ -14,19 +14,22 @@ export async function GET(req: NextRequest) {
         // Base query for public reviews
         let query = supabase
             .from("reviews")
-            .select(`
-                id,
-                rating,
-                text,
-                created_at,
-                user_id,
-                item_id,
-                is_public,
-                spotify_items:item_id(type, id),
-                users:user_id(id, name, image_url)
-            `)
-            .eq("spotify_items.type", "track")  // Only get track reviews
-            .eq("is_public", true)  // Only public reviews
+            .select(
+                `
+        id,
+        rating,
+        text,
+        created_at,
+        user_id,
+        item_id,
+        is_public,
+        spotify_items!inner (id, type),
+        users:user_id(id, name, image_url)
+    `
+            )
+            // Ensure only tracks by filtering on the joined spotify_items table
+            .eq("spotify_items.type", "track")
+            .eq("is_public", true)
             .order("created_at", { ascending: false })
             .limit(4);
 
@@ -44,12 +47,16 @@ export async function GET(req: NextRequest) {
             reviews.map(async (review) => {
                 try {
                     const trackDetails = await getTrackDetails(review.item_id);
+                    console.log(`Fetched details for track ${review.item_id}`);
                     return {
                         ...review,
-                        track_details: trackDetails
+                        track_details: trackDetails,
                     };
                 } catch (error) {
-                    console.error(`Failed to fetch details for track ${review.item_id}:`, error);
+                    console.error(
+                        `Failed to fetch details for track ${review.item_id}:`,
+                        error
+                    );
                     return review; // Return review without track details if fetch fails
                 }
             })
