@@ -171,6 +171,16 @@ async function createReview(body: any, supabase: any, userId: string) {
             throw reviewError;
         }
 
+        const { error: activityError } = await supabase
+            .from("activity")
+            .insert({
+                user_id: userId,
+                action: "review",
+                target_table: "review",  // Changed to target_table
+                target_id: review.id
+            });
+        if (activityError) throw activityError;
+
         // Increment review count
         const { error: incrementError } = await supabase.rpc("increment_review_count", { 
             item_id: itemId 
@@ -242,6 +252,20 @@ async function updateReview(body: any, supabase: any, userId: string) {
         .single();
     if (updateError) throw updateError;
 
+    // Record activity for update
+    const { error: activityError } = await supabase
+        .from("activity")
+        .insert({
+            user_id: userId,
+            action: "review_update",
+            target_table: "review", // Changed to target_table
+            target_id: reviewId
+        });
+
+    if (activityError) {
+        console.error("Activity creation error:", activityError);
+    }
+
     if (rating !== undefined) {
         // First remove the old rating from the average (is_delete=true)
         await supabase.rpc("update_avg_rating", {
@@ -288,6 +312,13 @@ async function deleteReview(body: any, supabase: any, userId: string) {
             { status: 403 }
         );
     }
+
+    // Delete activity first
+    await supabase
+        .from("activity")
+        .delete()
+        .eq("target_id", reviewId)
+        .eq("target_table", "review");
 
     const { error: deleteError } = await supabase
         .from("reviews")

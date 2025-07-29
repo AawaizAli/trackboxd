@@ -115,9 +115,9 @@ async function handleAnnotationRequest(
 }
 
 async function createAnnotation(body: any, supabase: any, userId: string) {
-    const { trackId, timestamp, text, isPublic } = body;
+    const { trackId, timestamp, text: rawText, isPublic } = body;
 
-    if (!trackId || timestamp === undefined || !text) {
+    if (!trackId || timestamp === undefined || !rawText) {
         return NextResponse.json(
             { error: "Missing required fields: trackId, timestamp, text" },
             { status: 400 }
@@ -131,40 +131,101 @@ async function createAnnotation(body: any, supabase: any, userId: string) {
         );
     }
 
-    // Ensure the track exists in spotify_items
-    const { error: upsertError } = await supabase
-        .from("spotify_items")
-        .upsert({ id: trackId, type: "track" }, { onConflict: "id" });
-    if (upsertError) throw upsertError;
-
-    const { data: annotation, error: annotationError } = await supabase
-        .from("annotations")
-        .insert({
-            user_id: userId,
-            track_id: trackId,
-            timestamp,
-            text,
-            is_public: isPublic !== false,
-        })
-        .select()
-        .single();
-    if (annotationError) {
-        throw annotationError;
+    // Clean and validate text
+    const text = rawText.trim();
+    if (text.length === 0) {
+        return NextResponse.json(
+            { error: "Annotation text cannot be empty" },
+            { status: 400 }
+        );
+    }
+    
+    // Add minimum length validation (5 characters)
+    if (text.length < 5) {
+        return NextResponse.json(
+            { error: "Annotation text must be at least 5 characters" },
+            { status: 400 }
+        );
     }
 
-    // RPC to increment annotation count
-    await supabase.rpc("increment_annotation_count", { item_id: trackId });
+    try {
+        // Start transaction
+        await supabase.rpc('begin');
 
-    return NextResponse.json(annotation, { status: 201 });
+        // Ensure the track exists in spotify_items
+        const { error: upsertError } = await supabase
+            .from("spotify_items")
+            .upsert({ id: trackId, type: "track" }, { onConflict: "id" });
+        if (upsertError) throw upsertError;
+
+        // Create annotation
+        const { data: annotation, error: annotationError } = await supabase
+            .from("annotations")
+            .insert({
+                user_id: userId,
+                track_id: trackId,
+                timestamp,
+                text,
+                is_public: isPublic !== false,
+            })
+            .select()
+            .single();
+        if (annotationError) throw annotationError;
+
+        // Record activity within the same transaction
+        const { error: activityError } = await supabase
+            .from("activity")
+            .insert({
+                user_id: userId,
+                action: "annotation",
+                target_table: "annotation",  // Changed to target_table
+                target_id: annotation.id
+            });
+        if (activityError) throw activityError;
+
+        // Commit transaction
+        await supabase.rpc('commit');
+
+        // RPC to increment annotation count (outside transaction)
+        await supabase.rpc("increment_annotation_count", { item_id: trackId });
+
+        return NextResponse.json(annotation, { status: 201 });
+    } catch (error) {
+        await supabase.rpc('rollback');
+        console.error("Annotation creation error:", error);
+        return NextResponse.json(
+            { error: "Internal server error" },
+            { status: 500 }
+        );
+    }
 }
 
 async function updateAnnotation(body: any, supabase: any, userId: string) {
-    const { annotationId, timestamp, text, isPublic } = body;
+    const { annotationId, timestamp, text: rawText, isPublic } = body;
     if (!annotationId) {
         return NextResponse.json(
             { error: "Annotation ID is required" },
             { status: 400 }
         );
+    }
+
+    // Clean and validate text if provided
+    let text = rawText;
+    if (text !== undefined) {
+        text = rawText.trim();
+        if (text.length === 0) {
+            return NextResponse.json(
+                { error: "Annotation text cannot be empty" },
+                { status: 400 }
+            );
+        }
+        // Add minimum length validation (5 characters)
+        if (text.length < 5) {
+            return NextResponse.json(
+                { error: "Annotation text must be at least 5 characters" },
+                { status: 400 }
+            );
+        }
     }
 
     const { data: existingAnnotation, error: fetchError } = await supabase
@@ -201,6 +262,20 @@ async function updateAnnotation(body: any, supabase: any, userId: string) {
         .single();
     if (updateError) throw updateError;
 
+    // Record activity for update
+    const { error: activityError } = await supabase
+        .from("activity")
+        .insert({
+            user_id: userId,
+            action: "annotation_update",
+            target_table: "annotation", // Changed to target_table
+            target_id: annotationId
+        });
+
+    if (activityError) {
+        console.error("Activity creation error:", activityError);
+    }
+
     return NextResponse.json(updatedAnnotation);
 }
 
@@ -231,6 +306,13 @@ async function deleteAnnotation(body: any, supabase: any, userId: string) {
             { status: 403 }
         );
     }
+
+    // Delete activity first
+    await supabase
+        .from("activity")
+        .delete()
+        .eq("target_id", annotationId)
+        .eq("target_table", "annotation");
 
     const { error: deleteError } = await supabase
         .from("annotations")

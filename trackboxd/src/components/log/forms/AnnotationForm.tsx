@@ -118,6 +118,9 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
     }
   };
 
+
+
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
