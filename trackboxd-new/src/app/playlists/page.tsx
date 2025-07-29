@@ -80,35 +80,6 @@ const Playlists = () => {
         [user]
     );
 
-    const toggleLike = (id: string) => {
-        // Update popular playlists
-        setPopularPlaylists((prev) =>
-            prev.map((playlist) =>
-                playlist.id === id
-                    ? { ...playlist, isLiked: !playlist.isLiked }
-                    : playlist
-            )
-        );
-
-        // Update recently liked playlists
-        setRecentlyLikedPlaylists((prev) =>
-            prev.map((playlist) =>
-                playlist.id === id
-                    ? { ...playlist, isLiked: !playlist.isLiked }
-                    : playlist
-            )
-        );
-
-        // Update search results
-        setSearchResults((prev) =>
-            prev.map((playlist) =>
-                playlist.id === id
-                    ? { ...playlist, isLiked: !playlist.isLiked }
-                    : playlist
-            )
-        );
-    };
-
     const transformPlaylist = (data: any): Playlist => {
         // Common properties
         const base = {
@@ -171,8 +142,8 @@ const Playlists = () => {
                         ? {
                               ...p,
                               likeCount: currentLikedStatus
-                                  ? p.likeCount - 1
-                                  : p.likeCount + 1,
+                                  ? p.like_count - 1
+                                  : p.like_count + 1,
                           }
                         : p
                 );
