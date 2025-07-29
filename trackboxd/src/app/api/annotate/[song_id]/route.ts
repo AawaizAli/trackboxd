@@ -4,12 +4,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { song_id: string | string[] } }
+  { params }: { params: { song_id: string } }
 ) {
-  // Handle both string and string[] cases
-  const songId = Array.isArray(params.song_id) 
-    ? params.song_id[0] 
-    : params.song_id;
+  const songId = params.song_id;
 
   if (!songId) {
     return NextResponse.json(
