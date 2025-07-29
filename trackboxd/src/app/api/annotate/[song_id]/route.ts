@@ -4,9 +4,12 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { song_id: string } }
+  { params }: { params: { song_id: string | string[] } }
 ) {
-  const songId = params.song_id;
+  // Handle both string and string[] cases
+  const songId = Array.isArray(params.song_id) 
+    ? params.song_id[0] 
+    : params.song_id;
 
   if (!songId) {
     return NextResponse.json(
@@ -39,7 +42,6 @@ export async function GET(
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-
 
     return NextResponse.json(annotations);
 
