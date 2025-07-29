@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";  // Fallback font
+import { GeistSans, GeistMono } from "geist/font";  // Correct Geist import
 import "./globals.css";
 import { getServerSession } from "next-auth";
 import SessionProvider from "@/components/SessionProvider";
 import { authOptions } from "@/lib/auth";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Fallback fonts in case Geist fails
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -29,8 +27,8 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
 
   return (
-    <html lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#FFFFF0] text-[#1F2C24]`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${inter.variable}`}>
+      <body className="antialiased bg-[#FFFFF0] text-[#1F2C24] font-sans">
         <SessionProvider session={session}>
           {children}
         </SessionProvider>
