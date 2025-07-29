@@ -41,9 +41,9 @@ export const getAccessToken = async () => {
   return response.json();
 };
 
-export const searchTracks = async (query: string) => {
+export const searchTracks = async (accessToken: string, query: string) => {
   try {
-    const { access_token } = await getAccessToken();
+    const access_token = await accessToken;
     
     const response = await fetch(
       `${SEARCH_ENDPOINT}?q=${encodeURIComponent(query)}&type=track&limit=5`,
@@ -65,9 +65,9 @@ export const searchTracks = async (query: string) => {
   }
 };
 
-export const getCurrentUserProfile = async () => {
+export const getCurrentUserProfile = async (accessToken: string) => {
   try {
-    const { access_token } = await getAccessToken();
+    const access_token = await accessToken;
     
     const response = await fetch(USER_PROFILE_ENDPOINT, {
       headers: {
@@ -147,6 +147,7 @@ export const getTrackDetails = async (trackId: string) => {
 };
 
 export const searchPlaylists = async (
+  accessToken: string,
   query: string,
   options: {
     limit?: number;
@@ -155,7 +156,7 @@ export const searchPlaylists = async (
   } = {}
 ) => {
   try {
-    const { access_token } = await getAccessToken();
+    const access_token = await accessToken;
     
     // Set default options
     const { limit = 20, offset = 0, market = 'US' } = options;

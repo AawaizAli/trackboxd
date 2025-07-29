@@ -4,10 +4,22 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { getCurrentUserProfile, createPlaylist, addItemsToPlaylist } from "@/lib/spotify";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+
 export async function POST(req: Request) {
   try {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
+
+    const session = await getServerSession(authOptions);
+  
+  if (!session?.accessToken) {
+    return NextResponse.json(
+      { error: "Not authenticated" },
+      { status: 401 }
+    );
+  }
     
     // Parse request body
     const body = await req.json();
@@ -30,7 +42,7 @@ export async function POST(req: Request) {
     console.log(trackUris, "tracks to add");
 
     // Get current user's Spotify ID
-    const userProfile = await getCurrentUserProfile();
+    const userProfile = await getCurrentUserProfile(session.accessToken);
     const spotifyUserId = userProfile.id;
 
     // Create the playlist
