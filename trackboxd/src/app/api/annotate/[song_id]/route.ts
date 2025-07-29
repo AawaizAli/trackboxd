@@ -1,30 +1,22 @@
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Record<string, string | string[]> }
+  request: Request,
+  { params }: { params: Promise<{ song_id: string }> }
 ) {
-  if (!params || !params.song_id) {
-    return NextResponse.json(
-      { error: "Song ID is required" },
-      { status: 400 }
-    );
-  }
-
-  const songId = Array.isArray(params.song_id) 
-    ? params.song_id[0] 
-    : params.song_id;
-
-  if (!songId) {
-    return NextResponse.json(
-      { error: "Song ID is required" },
-      { status: 400 }
-    );
-  }
-
   try {
+    const { song_id } = await params;
+    const songId = song_id;
+
+    if (!songId) {
+      return NextResponse.json(
+        { error: "Song ID is required" },
+        { status: 400 }
+      );
+    }
+
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
