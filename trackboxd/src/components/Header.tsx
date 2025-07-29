@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import LogModal from "./log/LogModal";
+import { useRouter } from "next/navigation"; // Added for logout redirect
 
 interface HeaderProps {
     user?: {
@@ -37,13 +38,12 @@ interface SpotifyUser {
 }
 
 const Header: React.FC<HeaderProps> = ({}) => {
+    const router = useRouter(); // Initialize router
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
-
     const [isLogModalOpen, setIsLogModalOpen] = useState(false);
-
     const [spotifyUser, setSpotifyUser] = useState<SpotifyUser | null>(null);
     const [trackDetails, setTrackDetails] = useState<any>(null);
     const searchRef = useRef<HTMLInputElement>(null);
@@ -63,8 +63,6 @@ const Header: React.FC<HeaderProps> = ({}) => {
 
         fetchSpotifyUser();
     }, []);
-
-   
 
     const getInitials = (name: string) => {
         return name
@@ -118,6 +116,21 @@ const Header: React.FC<HeaderProps> = ({}) => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
+    // Added logout handler
+    const handleLogout = async () => {
+        try {
+            const response = await fetch("/api/auth/logout");
+            if (response.ok) {
+                router.push("/");
+                router.refresh();
+            } else {
+                console.error("Logout failed");
+            }
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    };
+
     const navItems = [
         { label: "Activity", href: "/activity", active: false },
         { label: "Songs", href: "/songs", active: false },
@@ -133,7 +146,8 @@ const Header: React.FC<HeaderProps> = ({}) => {
         { label: "My Annotations", href: "/my-annotations", icon: FileText },
         { type: "divider" },
         { label: "Settings", href: "/settings", icon: Settings },
-        { label: "Logout", href: "/logout", icon: LogOut },
+        // Updated logout item to use handler instead of href
+        { label: "Logout", onClick: handleLogout, icon: LogOut },
     ];
 
     return (
@@ -262,18 +276,18 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                     className="h-px bg-[#D9D9D9] my-2"
                                                 />
                                             ) : (
-                                                <a
+                                                <button
                                                     key={item.label}
-                                                    href={item.href}
-                                                    className="flex items-center gap-3 px-4 py-3 text-sm text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200"
-                                                    onClick={() =>
-                                                        setIsDropdownOpen(false)
-                                                    }>
+                                                    onClick={item.onClick || (() => {})}
+                                                    className={`flex items-center gap-3 w-full px-4 py-3 text-sm text-left text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 ${
+                                                        item.onClick ? "cursor-pointer" : ""
+                                                    }`}
+                                                >
                                                     {item.icon && (
                                                         <item.icon className="w-4 h-4 text-[#A0A0A0]" />
                                                     )}
                                                     {item.label}
-                                                </a>
+                                                </button>
                                             )
                                         )}
                                     </div>
@@ -352,8 +366,6 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                     {item.label}
                                 </a>
                             ))}
-
-
                         </nav>
                     </div>
 
@@ -397,18 +409,18 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                         className="h-px bg-[#D9D9D9] my-2"
                                     />
                                 ) : (
-                                    <a
+                                    <button
                                         key={item.label}
-                                        href={item.href}
-                                        className="flex items-center gap-3 px-3 py-3 text-base text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 rounded-lg"
-                                        onClick={() =>
-                                            setIsMobileMenuOpen(false)
-                                        }>
+                                        onClick={item.onClick || (() => {})}
+                                        className={`flex items-center gap-3 px-3 py-3 text-base text-left text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 rounded-lg ${
+                                            item.onClick ? "cursor-pointer" : ""
+                                        }`}
+                                    >
                                         {item.icon && (
                                             <item.icon className="w-5 h-5 text-[#A0A0A0]" />
                                         )}
                                         {item.label}
-                                    </a>
+                                    </button>
                                 )
                             )}
                         </div>
