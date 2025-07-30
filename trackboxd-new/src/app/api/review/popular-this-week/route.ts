@@ -2,8 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { getTrackDetails } from "@/lib/spotify";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 export async function GET(req: NextRequest) {
+
+    const session = await getServerSession(authOptions);
+
+    if (!session?.accessToken) {
+        return NextResponse.json(
+            { error: "Not authenticated" },
+            { status: 401 }
+        );
+    }
+
+    const accessToken = session.accessToken;
+
     try {
         const cookieStore = cookies();
         const supabase = createClient(cookieStore);
@@ -41,9 +55,10 @@ export async function GET(req: NextRequest) {
 
         // Fetch additional track details from Spotify for each review
         const reviewsWithTrackDetails = await Promise.all(
+            
             reviews.map(async (review) => {
                 try {
-                    const trackDetails = await getTrackDetails(review.item_id);
+                    const trackDetails = await getTrackDetails(accessToken, review.item_id);
                     return {
                         ...review,
                         track_details: trackDetails

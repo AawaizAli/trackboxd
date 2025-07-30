@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+
 // Workaround for Next.js 13 App Router limitation
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +13,17 @@ export async function GET(
   request: Request,
   { params }: { params: { song_id: string } }
 ) {
+
+  const session = await getServerSession(authOptions);
+
+  if (!session?.accessToken) {
+      return NextResponse.json(
+          { error: "Not authenticated" },
+          { status: 401 }
+      );
+  }
+
+
   try {
     const param = await params;
     const trackId = param.song_id;
@@ -22,7 +36,7 @@ export async function GET(
     }
 
     // 1. Get track details from Spotify
-    const trackDetails = await getTrackDetails(trackId);
+    const trackDetails = await getTrackDetails(session.accessToken,trackId);
 
     // 2. Initialize Supabase client with cookies
     const cookieStore = cookies();

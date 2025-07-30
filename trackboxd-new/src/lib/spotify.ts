@@ -120,9 +120,9 @@ export const getPlaylistTracks = async (playlistId: string, limit: number = 4) =
   }
 };
 
-export const getTrackDetails = async (trackId: string) => {
+export const getTrackDetails = async (accessToken: string, trackId: string) => {
   try {
-    const { access_token } = await getAccessToken();
+    const access_token = await accessToken;
 
     if (!trackId) {
       throw new Error('Track ID is required');
