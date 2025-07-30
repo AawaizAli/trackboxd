@@ -135,7 +135,7 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
               {activity.cover_url ? (
                 <img 
                   src={activity.cover_url} 
-                  alt={activity.track}
+                  alt={activity.title}
                   className="w-12 h-12 rounded-md"
                 />
               ) : (
@@ -145,7 +145,7 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
               )}
               <div>
                 <h4 className="font-medium text-[#1F2C24]">
-                  {activity.track}
+                  {activity.title}
                 </h4>
                 <p className="text-sm text-[#A0A0A0]">
                   by {activity.artist} {activity.timestamp !== undefined && 
@@ -183,8 +183,8 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
           </span>
           <div className="flex items-center gap-4">
             <button className="flex items-center gap-1 text-sm text-[#A0A0A0] hover:text-[#6D9773]">
-              <span className="text-xs">❤️</span>
-              0
+              <span className="text-xs"></span>
+              
             </button>
           </div>
         </div>

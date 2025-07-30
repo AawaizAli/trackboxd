@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
+import { getTrackDetails } from "@/lib/spotify";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 interface User {
   id: string;
@@ -19,7 +22,7 @@ interface Review {
   rating: number;
   text: string;
   item_id: string;
-  spotify_items: SpotifyItem[]; // Changed to array
+  spotify_items: SpotifyItem[];
 }
 
 interface Annotation {
@@ -27,7 +30,8 @@ interface Annotation {
   text: string;
   timestamp: number;
   track_id: string;
-  spotify_items: SpotifyItem[]; // Changed to array
+  is_public: boolean;
+  spotify_items: SpotifyItem[];
 }
 
 interface Activity {
@@ -45,6 +49,13 @@ export async function GET(req: NextRequest) {
   const supabase = createClient(cookieStore);
 
   try {
+    // Get server session for Spotify access
+    const session = await getServerSession(authOptions);
+    if (!session?.accessToken) {
+      return new NextResponse("Not authenticated", { status: 401 });
+    }
+    const accessToken = session.accessToken;
+
     // Fetch activity data
     const { data: activities, error: activityError } = await supabase
       .from("activity")
@@ -93,7 +104,7 @@ export async function GET(req: NextRequest) {
       reviewsData = reviews as unknown as Review[] || [];
     }
 
-    // Fetch annotations
+    // Fetch annotations - ONLY PUBLIC ONES
     let annotationsData: Annotation[] = [];
     if (annotationIds.length > 0) {
       const { data: annotations, error: annotationError } = await supabase
@@ -103,64 +114,80 @@ export async function GET(req: NextRequest) {
           text,
           timestamp,
           track_id,
+          is_public,
           spotify_items:track_id (id, cover_url, spotify_url)
         `)
-        .in("id", annotationIds);
+        .in("id", annotationIds)
+        .eq("is_public", true);  // ONLY PUBLIC ANNOTATIONS
       
       if (annotationError) throw annotationError;
       annotationsData = annotations as unknown as Annotation[] || [];
     }
 
     // Format activities for frontend
-    const formattedActivities = activities.map((activity: any) => {
-      const base = {
-        id: activity.id,
-        user: activity.users,
-        created_at: activity.created_at,
-      };
-
-      if (activity.action === "review" && activity.target_table === "review") {
-        const review = reviewsData.find(r => r.id === activity.target_id);
-        if (!review) return base;
-        
-        // Get first spotify item (should only have one)
-        const spotifyItem = review.spotify_items?.[0] || null;
-        
-        return {
-          ...base,
-          type: "review",
-          title: "Track Title", // Placeholder
-          artist: "Artist Name", // Placeholder
-          cover_url: spotifyItem?.cover_url || "",
-          spotify_url: spotifyItem?.spotify_url || "",
-          rating: review.rating,
-          content: review.text,
+    const formattedActivities = await Promise.all(
+      activities.map(async (activity: any) => {
+        const base = {
+          id: activity.id,
+          user: activity.users,
+          created_at: activity.created_at,
         };
-      }
 
-      if (activity.action === "annotation" && activity.target_table === "annotation") {
-        const annotation = annotationsData.find(a => a.id === activity.target_id);
-        if (!annotation) return base;
-        
-        // Get first spotify item (should only have one)
-        const spotifyItem = annotation.spotify_items?.[0] || null;
-        
-        return {
-          ...base,
-          type: "annotation",
-          track: "Track Title", // Placeholder
-          artist: "Artist Name", // Placeholder
-          cover_url: spotifyItem?.cover_url || "",
-          spotify_url: spotifyItem?.spotify_url || "",
-          content: annotation.text,
-          timestamp: annotation.timestamp,
-        };
-      }
+        if (activity.action === "review" && activity.target_table === "review") {
+          const review = reviewsData.find(r => r.id === activity.target_id);
+          if (!review) return null;
+          
+          try {
+            // Fetch track details from Spotify
+            const trackDetails = await getTrackDetails(accessToken, review.item_id);
+            
+            return {
+              ...base,
+              type: "review",
+              title: trackDetails.name,
+              artist: trackDetails.artists.map((a: any) => a.name).join(", "),
+              cover_url: trackDetails.album.images[0]?.url,
+              spotify_url: trackDetails.external_urls.spotify,
+              rating: review.rating,
+              content: review.text,
+            };
+          } catch (error) {
+            console.error("Error fetching track details:", error);
+            return null;
+          }
+        }
 
-      return base;
-    });
+        if (activity.action === "annotation" && activity.target_table === "annotation") {
+          const annotation = annotationsData.find(a => a.id === activity.target_id);
+          // Skip if not public or not found
+          if (!annotation || !annotation.is_public) return null;
+          
+          try {
+            // Fetch track details from Spotify
+            const trackDetails = await getTrackDetails(accessToken, annotation.track_id);
+            
+            return {
+              ...base,
+              type: "annotation",
+              title: trackDetails.name,
+              artist: trackDetails.artists.map((a: any) => a.name).join(", "),
+              cover_url: trackDetails.album.images[0]?.url,
+              spotify_url: trackDetails.external_urls.spotify,
+              content: annotation.text,
+              timestamp: annotation.timestamp,
+            };
+          } catch (error) {
+            console.error("Error fetching track details:", error);
+            return null;
+          }
+        }
 
-    return NextResponse.json(formattedActivities);
+        return null;
+      })
+    );
+
+    // Filter out null values and return
+    return NextResponse.json(formattedActivities.filter(activity => activity !== null));
   } catch (error) {
     console.error("Activity fetch error:", error);
     return new NextResponse("Internal server error", { status: 500 });
