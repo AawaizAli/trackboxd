@@ -122,7 +122,7 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
           <>
             <div className="flex items-center gap-2 mb-3">
               <img 
-                src={activity.user.image_url} 
+                src={activity.user.image_url || '/default-avatar.jpg' } 
                 alt={activity.user.name}
                 className="w-6 h-6 rounded-full"
               />
@@ -173,7 +173,7 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
         style={{ height: isLast ? "2.5rem" : "100%" }}
       />
       {/* Timeline dot */}
-      <div className="absolute left-0 top-0 transform -translate-x-2/5 w-3 h-3 rounded-full bg-[#FFBA00] border-2 border-[#F9F9F6]" />
+      <div className="absolute left-4/5 top-0 transform -translate-x-4 w-3 h-3 rounded-full bg-[#FFBA00] border-2 border-[#F9F9F6]" />
 
       <div className="p-4 space-y-1">
         {renderContent()}
