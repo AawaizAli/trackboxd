@@ -63,7 +63,7 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
       case "review":
         return (
           <>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-3">
               <img 
                 src={activity.user.image_url} 
                 alt={activity.user.name}
@@ -74,7 +74,7 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
               </span>
               <Music className="w-4 h-4 text-[#FFBA00]" />
             </div>
-            <div className="mb-2 flex items-start gap-3">
+            <div className="mb-3 flex items-start gap-3">
               {activity.cover_url ? (
                 <img 
                   src={activity.cover_url} 
@@ -120,7 +120,7 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
       case "annotation":
         return (
           <>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-3">
               <img 
                 src={activity.user.image_url} 
                 alt={activity.user.name}

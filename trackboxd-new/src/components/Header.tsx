@@ -145,7 +145,6 @@ const Header: React.FC<HeaderProps> = ({}) => {
         { label: "My Reviews", href: "/my-reviews", icon: MessageSquare },
         { label: "My Annotations", href: "/my-annotations", icon: FileText },
         { type: "divider" },
-        { label: "Settings", href: "/settings", icon: Settings },
         // Updated logout item to use handler instead of href
         { label: "Logout", onClick: handleLogout, icon: LogOut },
     ];
