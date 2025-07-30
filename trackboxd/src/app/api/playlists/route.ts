@@ -33,11 +33,17 @@ export async function POST(req: Request) {
     const userProfile = await getCurrentUserProfile();
     const spotifyUserId = userProfile.id;
 
-    // Create the playlist
+    // Add Trackboxd signature to description
+    const trackboxdSignature = "\n\nCreated with Trackboxd";
+    const fullDescription = description 
+      ? `${description}${trackboxdSignature}`
+      : trackboxdSignature.trim();
+
+    // Create the playlist with the updated description
     const newPlaylist = await createPlaylist(spotifyUserId, name, {
       public: isPublic,
       collaborative: isCollaborative,
-      description
+      description: fullDescription
     });
 
     // Add tracks if any were provided
