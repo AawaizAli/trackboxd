@@ -301,7 +301,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                         {/* Log + Button - Mobile (always visible) */}
                         <button
                             onClick={() => setIsLogModalOpen(true)}
-                            className="flex md:hidden ml-2 items-center gap-1 bg-[#FFBA00] text-[#1F2C24] p-2 rounded-lg transition-all duration-200 ease-in-out">
+                            className="flex md:hidden ml-2 mr-2 items-center gap-1 bg-[#FFBA00] text-[#1F2C24] p-2 rounded-lg transition-all duration-200 ease-in-out">
                             <Plus className="w-4 h-4" />
                         </button>
 

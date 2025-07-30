@@ -32,8 +32,9 @@ export const PlaylistListItem = ({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-start">
-            <div>
+          <div className="flex justify-between items-start gap-2">
+            {/* Truncated title and creator */}
+            <div className="min-w-0">
               <h3 className="font-bold text-[#0C3B2E] truncate">
                 {playlist.name}
               </h3>
@@ -42,9 +43,8 @@ export const PlaylistListItem = ({
               </p>
             </div>
             
-            {/* Like button and count */}
-            <div className="flex items-center gap-1">
-              
+            {/* Like button and count - now always visible on mobile */}
+            <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={() => !isLoading && onLikeToggle(playlist.id)}
                 disabled={isLoading}
@@ -55,6 +55,7 @@ export const PlaylistListItem = ({
                     ? "text-[#6D9773]"
                     : "text-[#A0A0A0] hover:text-[#6D9773]"
                 }`}
+                aria-label={isLiked ? "Unlike playlist" : "Like playlist"}
               >
                 {isLoading ? (
                   <div className="w-5 h-5 flex items-center justify-center">
