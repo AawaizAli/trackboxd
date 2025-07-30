@@ -17,7 +17,7 @@ const Footer = ({ variant = "dark" }: FooterProps) => {
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className={`${textColor} text-sm`}>
-            © 2024 Trackboxd. For music lovers, by music lovers.
+            © 2025 Trackboxd. Made with love ❤️
           </div>
           <div className="flex gap-6 text-sm">
             {["About", "Privacy", "Contact"].map((item, index) => (
