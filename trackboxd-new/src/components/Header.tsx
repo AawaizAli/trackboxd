@@ -141,7 +141,6 @@ const Header: React.FC<HeaderProps> = ({}) => {
         { label: "Profile", href: `/profile/${user.username}`, icon: User },
         { type: "divider" },
         { label: "My Likes", href: "/my-likes", icon: Heart },
-        { label: "My Playlists", href: "/my-playlists", icon: Users },
         { label: "My Reviews", href: "/my-reviews", icon: MessageSquare },
         { label: "My Annotations", href: "/my-annotations", icon: FileText },
         { type: "divider" },
