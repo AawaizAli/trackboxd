@@ -1,6 +1,7 @@
 import { Heart } from "lucide-react";
 import { useState } from "react";
 import { Playlist } from "@/app/playlists/types";
+import Link from "next/link";
 
 interface PlaylistCardProps {
     playlist: Playlist;
@@ -24,6 +25,7 @@ export const PlaylistCard = ({
     };
 
     return (
+        <Link href={`/playlists/${playlist.id}`} className="group">
         <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200 h-full flex flex-col">
             {/* Cover Art */}
             <div className="relative">
@@ -109,5 +111,6 @@ export const PlaylistCard = ({
                 </div>
             </div>
         </div>
+        </Link>
     );
 };

@@ -424,3 +424,67 @@ export const addItemsToPlaylist = async (
     throw error;
   }
 };
+
+export const getPlaylistItems = async (
+  playlistId: string,
+  options: {
+    market?: string;
+    fields?: string;
+    limit: 50; // Changed from limit?: 50 to limit: 50
+    offset?: number;
+    additional_types?: string;
+  } = {
+    limit: 50  // Set default value to 50
+  }
+) => {
+  try {
+    // Validate playlist ID
+    if (!playlistId) {
+      throw new Error("Playlist ID is required");
+    }
+
+    // Get access token using our internal mechanism
+    const { access_token } = await getAccessToken();
+
+    // Set default options
+    const {
+      market = 'US',
+      fields = '',
+      limit = 50, // Changed default to 50
+      offset = 0,
+      additional_types = 'track'
+    } = options;
+
+    // Remove limit validation since it's now fixed at 50
+    
+    // Create URL with query parameters
+    const url = new URL(`${PLAYLIST_ITEMS_ENDPOINT}/${playlistId}/tracks`);
+    url.searchParams.append('market', market);
+    if (fields) url.searchParams.append('fields', fields);
+    url.searchParams.append('limit', limit.toString());
+    url.searchParams.append('offset', offset.toString());
+    url.searchParams.append('additional_types', additional_types);
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    // Detailed error handling
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Spotify API error ${response.status}: ${response.statusText}`, {
+        url: url.toString(),
+        status: response.status,
+        errorBody
+      });
+      throw new Error(`Spotify API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Spotify getPlaylistItems error:', error);
+    throw error;
+  }
+};
