@@ -30,6 +30,34 @@ interface Playlist {
     weekly_likes?: number;
 }
 
+const SkeletonPlaylistCard = () => (
+    <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl p-4">
+        <div className="animate-pulse">
+            <div className="bg-gray-200 rounded-xl h-48 w-full mb-4"></div>
+            <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+            </div>
+        </div>
+    </div>
+);
+
+const SkeletonPlaylistListItem = () => (
+    <div className="flex items-center p-4">
+        <div className="animate-pulse flex items-center w-full">
+            <div className="bg-gray-200 rounded-lg w-16 h-16"></div>
+            <div className="ml-4 flex-1">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div className="w-20">
+                <div className="h-3 bg-gray-200 rounded w-full"></div>
+            </div>
+        </div>
+    </div>
+);
+
 const Playlists = () => {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [searchTerm, setSearchTerm] = useState("");
@@ -49,6 +77,9 @@ const Playlists = () => {
         Record<string, boolean>
     >({});
     const { user } = useUser(); // Add useUser hook
+
+    const [loadingPopular, setLoadingPopular] = useState(true);
+    const [loadingRecent, setLoadingRecent] = useState(true);
 
     const fetchLikeStatuses = useCallback(
         async (playlistIds: string[]) => {
@@ -90,7 +121,7 @@ const Playlists = () => {
             tracks: data.tracks?.total || data.tracks || 0,
             like_count: data.like_count || 0,
         };
-    
+
         // Handle Spotify API responses
         if (data.images) {
             return {
@@ -100,7 +131,7 @@ const Playlists = () => {
                 weekly_likes: data.weekly_likes,
             };
         }
-        
+
         // Handle our database responses
         return {
             ...base,
@@ -162,38 +193,37 @@ const Playlists = () => {
     useEffect(() => {
         const fetchPlaylists = async () => {
             try {
+                setLoadingPopular(true);
+                setLoadingRecent(true);
+
                 // Fetch popular playlists
                 const popularRes = await fetch("/api/playlists/popular");
                 const popularData = await popularRes.json();
-                
-                // Transform to unified format
-                const transformedPopular = Array.isArray(popularData) 
-                    ? popularData.map(transformPlaylist) 
+                const transformedPopular = Array.isArray(popularData)
+                    ? popularData.map(transformPlaylist)
                     : [];
-                
                 setPopularPlaylists(transformedPopular);
-                console.log("Popular playlists:", transformedPopular);
+                setLoadingPopular(false);
 
                 // Fetch recently liked
                 const recentRes = await fetch("/api/playlists/recently-liked");
                 const recentData = await recentRes.json();
-                
-                // Transform to unified format
-                const transformedRecent = Array.isArray(recentData) 
-                    ? recentData.map(transformPlaylist) 
+                const transformedRecent = Array.isArray(recentData)
+                    ? recentData.map(transformPlaylist)
                     : [];
-                
                 setRecentlyLikedPlaylists(transformedRecent);
-                console.log("Recently liked playlists:", transformedRecent);
+                setLoadingRecent(false);
 
                 // Fetch likes for both
                 const allIds = [
-                    ...transformedPopular.map(p => p.id),
-                    ...transformedRecent.map(p => p.id),
+                    ...transformedPopular.map((p) => p.id),
+                    ...transformedRecent.map((p) => p.id),
                 ];
                 fetchLikeStatuses(allIds);
             } catch (error) {
                 console.error("Failed to fetch playlists:", error);
+                setLoadingPopular(false);
+                setLoadingRecent(false);
             }
         };
 
@@ -309,10 +339,9 @@ const Playlists = () => {
                             )}
                         </div>
 
-                        <button 
+                        <button
                             onClick={() => setShowCreateModal(true)}
-                            className="bg-[#FFBA00] text-[#1F2C24] px-4 py-3 rounded-lg font-bold hover:bg-[#FFBA00]/90 transition-colors flex items-center gap-2 shadow-md"
-                        >
+                            className="bg-[#FFBA00] text-[#1F2C24] px-4 py-3 rounded-lg font-bold hover:bg-[#FFBA00]/90 transition-colors flex items-center gap-2 shadow-md">
                             <Plus className="w-5 h-5" />
                             Create Playlist
                         </button>
@@ -371,19 +400,32 @@ const Playlists = () => {
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {popularPlaylists.map((playlist) => (
-                                    <PlaylistCard
-                                        key={`search-${playlist.id}`}
-                                        playlist={playlist}
-                                        isLiked={likes[playlist.id] || false}
-                                        isLoading={
-                                            isLoadingLikes[playlist.id] || false
-                                        }
-                                        onLikeToggle={handleLikeClick}
-                                    />
-                                ))}
-                            </div>
+                            {loadingPopular ? (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {[...Array(3)].map((_, i) => (
+                                        <SkeletonPlaylistCard
+                                            key={`skeleton-popular-${i}`}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {popularPlaylists.map((playlist) => (
+                                        <PlaylistCard
+                                            key={`popular-${playlist.id}`}
+                                            playlist={playlist}
+                                            isLiked={
+                                                likes[playlist.id] || false
+                                            }
+                                            isLoading={
+                                                isLoadingLikes[playlist.id] ||
+                                                false
+                                            }
+                                            onLikeToggle={handleLikeClick}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Recently Liked Section */}
@@ -394,35 +436,46 @@ const Playlists = () => {
                                 </h2>
                             </div>
 
-                            <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl overflow-hidden">
-                                {recentlyLikedPlaylists.map(
-                                    (playlist, index) => (
-                                        <PlaylistListItem
-                                            key={`liked-${playlist.id}`}
-                                            playlist={playlist}
-                                            isLiked={
-                                                likes[playlist.id] || false
-                                            }
-                                            isLoading={
-                                                isLoadingLikes[playlist.id] ||
-                                                false
-                                            }
-                                            onLikeToggle={handleLikeClick}
-                                            isLastItem={
-                                                index ===
-                                                recentlyLikedPlaylists.length -
-                                                    1
-                                            }
+                            {loadingRecent ? (
+                                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl overflow-hidden">
+                                    {[...Array(3)].map((_, i) => (
+                                        <SkeletonPlaylistListItem
+                                            key={`skeleton-recent-${i}`}
                                         />
-                                    )
-                                )}
-                            </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl overflow-hidden">
+                                    {recentlyLikedPlaylists.map(
+                                        (playlist, index) => (
+                                            <PlaylistListItem
+                                                key={`recent-${playlist.id}`}
+                                                playlist={playlist}
+                                                isLiked={
+                                                    likes[playlist.id] || false
+                                                }
+                                                isLoading={
+                                                    isLoadingLikes[
+                                                        playlist.id
+                                                    ] || false
+                                                }
+                                                onLikeToggle={handleLikeClick}
+                                                isLastItem={
+                                                    index ===
+                                                    recentlyLikedPlaylists.length -
+                                                        1
+                                                }
+                                            />
+                                        )
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </>
                 )}
             </div>
             <Footer variant="light" />
-            <CreatePlaylistModal 
+            <CreatePlaylistModal
                 isOpen={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
             />
