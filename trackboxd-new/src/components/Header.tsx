@@ -135,6 +135,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
         { label: "Activity", href: "/activity", active: false },
         { label: "Songs", href: "/songs", active: false },
         { label: "Playlists", href: "/playlists", active: false },
+        { label: "Albums", href: "/albums", active: false },
     ];
 
     const dropdownItems = [
