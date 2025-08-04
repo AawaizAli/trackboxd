@@ -423,3 +423,44 @@ export const addItemsToPlaylist = async (
     throw error;
   }
 };
+
+export const searchAlbums = async (
+  query: string,
+  options: {
+    limit?: number;
+    market?: string;
+  } = {}
+) => {
+  try {
+    const { access_token } = await getAccessToken();
+    const { limit = 3, market = 'US' } = options;
+
+    const url = new URL(SEARCH_ENDPOINT);
+    url.searchParams.append('q', query);
+    url.searchParams.append('type', 'album');
+    url.searchParams.append('limit', limit.toString());
+    url.searchParams.append('market', market);
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Spotify API error ${response.status}: ${response.statusText}`, {
+        url: url.toString(),
+        status: response.status,
+        errorBody
+      });
+      throw new Error(`Spotify API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.albums?.items || [];
+  } catch (error) {
+    console.error('Spotify album search error:', error);
+    throw error;
+  }
+};

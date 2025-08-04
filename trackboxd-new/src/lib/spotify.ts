@@ -488,3 +488,103 @@ export const getPlaylistItems = async (
     throw error;
   }
 };
+
+export const getAlbumDetails = async (
+  albumId: string,
+  options: {
+    market?: string;
+  } = {}
+) => {
+  try {
+    // Validate album ID
+    if (!albumId) {
+      throw new Error("Album ID is required");
+    }
+
+    // Get access token
+    const { access_token } = await getAccessToken();
+    
+    // Set default options
+    const { market = 'US' } = options;
+
+    // Create URL
+    const url = new URL(`https://api.spotify.com/v1/albums/${albumId}`);
+    
+    // // Add query parameters
+    // if (market) {
+    //   url.searchParams.append('market', market);
+    // }
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    // Detailed error handling
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Spotify API error ${response.status}: ${response.statusText}`, {
+        url: url.toString(),
+        status: response.status,
+        errorBody
+      });
+      throw new Error(`Spotify API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Spotify getAlbumDetails error:', error);
+    throw error;
+  }
+};
+
+export const searchAlbums = async (
+  accessToken: string,
+  query: string,
+  options: {
+    limit?: number;
+    offset?: number;
+    market?: string;
+  } = {}
+) => {
+  try {
+    const access_token = accessToken; // No need to await a string
+    
+    // Set default options
+    const { limit = 20, offset = 0, market = 'US' } = options;
+
+    // Create URL with query parameters
+    const url = new URL(SEARCH_ENDPOINT);
+    url.searchParams.append('q', query);
+    url.searchParams.append('type', 'album');
+    url.searchParams.append('limit', "4");
+    url.searchParams.append('offset', offset.toString());
+    url.searchParams.append('market', market);
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    // Add detailed error logging
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Spotify API error ${response.status}: ${response.statusText}`, {
+        url: url.toString(),
+        status: response.status,
+        errorBody
+      });
+      throw new Error(`Spotify API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // FIX: Return albums instead of playlists
+    return data.albums?.items || [];
+  } catch (error) {
+    console.error('Spotify album search error:', error);
+    throw error;
+  }
+};
