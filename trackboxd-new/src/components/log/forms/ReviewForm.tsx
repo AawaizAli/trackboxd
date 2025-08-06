@@ -20,9 +20,18 @@ interface SimplifiedTrack {
   coverArt: string;
 }
 
+interface SimplifiedAlbum {
+  id: string;
+  name: string;
+  artist: string;
+  coverArt: string;
+  release_date: string;
+}
+
 interface ReviewFormProps {
   onClose: () => void;
   initialTrack?: SimplifiedTrack;
+  initialAlbum?: SimplifiedAlbum;
 }
 
 interface SpotifyItem {
@@ -67,7 +76,7 @@ interface SpotifyImage {
   url: string;
 }
 
-const ReviewForm: React.FC<ReviewFormProps> = ({ onClose, initialTrack }) => {
+const ReviewForm: React.FC<ReviewFormProps> = ({ onClose, initialTrack, initialAlbum }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItem, setSelectedItem] = useState<SpotifyItem | null>(
     initialTrack ? {
@@ -79,6 +88,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onClose, initialTrack }) => {
         images: initialTrack.coverArt ? [{ url: initialTrack.coverArt }] : []
       },
       type: 'track'
+    } : initialAlbum ? {
+      id: initialAlbum.id,
+      name: initialAlbum.name,
+      artists: [{ name: initialAlbum.artist }],
+      images: initialAlbum.coverArt ? [{ url: initialAlbum.coverArt }] : [],
+      type: 'album'
     } : null
   );
   const [rating, setRating] = useState<number>(0);

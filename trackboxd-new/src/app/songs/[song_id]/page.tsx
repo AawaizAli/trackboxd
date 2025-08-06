@@ -665,7 +665,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                         Rating Distribution
                     </h2>
                     <div className="space-y-2">
-                        {[5, 4, 3, 2, 1].map((stars, index) => (
+                        {[1, 2, 3, 4, 5].map((stars, index) => (
                             <div key={stars} className="flex items-center">
                                 <div className="w-12 text-sm">{stars}★</div>
                                 <div className="flex-1 ml-2">
@@ -675,14 +675,14 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                             style={{
                                                 width: `${
                                                     ratingDistribution[
-                                                        5 - stars
+                                                        stars - 1
                                                     ]
                                                 }%`,
                                             }}></div>
                                     </div>
                                 </div>
                                 <div className="w-10 text-right text-xs text-[#A0A0A0]">
-                                    {ratingDistribution[5 - stars]}%
+                                    {ratingDistribution[stars - 1]}%
                                 </div>
                             </div>
                         ))}

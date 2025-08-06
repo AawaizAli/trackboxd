@@ -41,8 +41,20 @@ export async function GET(req: NextRequest) {
                 item_id,
                 like_count,
                 is_public,
-                spotify_items:item_id(type, id),
-                users:user_id(id, name, image_url)
+                spotify_items!inner (
+                    id,
+                    type,
+                    name,
+                    artist,
+                    album,
+                    cover_url,
+                    spotify_url
+                ),
+                users!inner (
+                    id, 
+                    name, 
+                    image_url
+                )
             `)
             .eq("spotify_items.type", "track")  // Only get track reviews
             .eq("is_public", true)  // Only public reviews

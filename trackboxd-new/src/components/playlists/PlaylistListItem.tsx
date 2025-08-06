@@ -1,5 +1,6 @@
 import { Heart } from "lucide-react";
 import { Playlist } from "@/app/playlists/types";
+import Link from "next/link";
 
 interface PlaylistListItemProps {
   playlist: Playlist;
@@ -17,6 +18,7 @@ export const PlaylistListItem = ({
   isLoading = false,
 }: PlaylistListItemProps) => {
   return (
+    <Link href={`/playlists/${playlist.id}`} className="group">
     <div
       className={`p-4 hover:bg-[#F9F9F6] transition-colors ${
         !isLastItem ? "border-b border-[#D9D9D9]" : ""
@@ -99,5 +101,6 @@ export const PlaylistListItem = ({
         </div>
       </div>
     </div>
+    </Link>
   );
 };

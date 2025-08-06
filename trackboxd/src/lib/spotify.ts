@@ -464,3 +464,59 @@ export const searchAlbums = async (
     throw error;
   }
 };
+
+export const getAlbumTracks = async (
+  albumId: string,
+  options: {
+    market?: string;
+    limit?: number;
+    offset?: number;
+  } = {}
+) => {
+  try {
+    // Validate album ID
+    if (!albumId) {
+      throw new Error("Album ID is required");
+    }
+
+    // Get access token
+    const { access_token } = await getAccessToken();
+    
+    // Set default options
+    const { 
+      market = 'US', 
+      limit = 20, 
+      offset = 0 
+    } = options;
+
+    // Create URL
+    const url = new URL(`https://api.spotify.com/v1/albums/${albumId}/tracks`);
+    
+    // Add query parameters
+    if (market) url.searchParams.append('market', market);
+    url.searchParams.append('limit', Math.min(50, Math.max(1, limit)).toString());
+    url.searchParams.append('offset', offset.toString());
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    // Detailed error handling
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Spotify API error ${response.status}: ${response.statusText}`, {
+        url: url.toString(),
+        status: response.status,
+        errorBody
+      });
+      throw new Error(`Spotify API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Spotify getAlbumTracks error:', error);
+    throw error;
+  }
+};
