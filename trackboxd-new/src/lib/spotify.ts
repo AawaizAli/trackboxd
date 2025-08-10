@@ -644,3 +644,93 @@ export const getAlbumTracks = async (
     throw error;
   }
 };
+
+export const searchTracksAlbumsAndPlaylists = async (
+  query: string,
+  options: {
+    trackLimit?: number;
+    albumLimit?: number;
+    playlistLimit?: number;
+    market?: string;
+  } = {}
+) => {
+  try {
+    const { access_token } = await getAccessToken();
+    const { 
+      trackLimit = 7, 
+      albumLimit = 4, 
+      playlistLimit = 4,
+      market = 'US' 
+    } = options;
+
+    // Create URLs for all three endpoints
+    const tracksUrl = new URL(SEARCH_ENDPOINT);
+    tracksUrl.searchParams.append('q', query);
+    tracksUrl.searchParams.append('type', 'track');
+    tracksUrl.searchParams.append('limit', trackLimit.toString());
+    tracksUrl.searchParams.append('market', market);
+
+    const albumsUrl = new URL(SEARCH_ENDPOINT);
+    albumsUrl.searchParams.append('q', query);
+    albumsUrl.searchParams.append('type', 'album');
+    albumsUrl.searchParams.append('limit', albumLimit.toString());
+    albumsUrl.searchParams.append('market', market);
+
+    const playlistsUrl = new URL(SEARCH_ENDPOINT);
+    playlistsUrl.searchParams.append('q', query);
+    playlistsUrl.searchParams.append('type', 'playlist');
+    playlistsUrl.searchParams.append('limit', playlistLimit.toString());
+    playlistsUrl.searchParams.append('market', market);
+
+    // Execute all requests in parallel
+    const [tracksResponse, albumsResponse, playlistsResponse] = await Promise.all([
+      fetch(tracksUrl.toString(), {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }),
+      fetch(albumsUrl.toString(), {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }),
+      fetch(playlistsUrl.toString(), {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }),
+    ]);
+
+    // Check for errors
+    if (!tracksResponse.ok || !albumsResponse.ok || !playlistsResponse.ok) {
+      const tracksError = !tracksResponse.ok ? await tracksResponse.text() : null;
+      const albumsError = !albumsResponse.ok ? await albumsResponse.text() : null;
+      const playlistsError = !playlistsResponse.ok ? await playlistsResponse.text() : null;
+      
+      console.error('Spotify API errors:', {
+        tracksError,
+        albumsError,
+        playlistsError,
+      });
+      
+      throw new Error(
+        `Spotify API errors: ${tracksError || ''} ${albumsError || ''} ${playlistsError || ''}`
+      );
+    }
+
+    const [tracksData, albumsData, playlistsData] = await Promise.all([
+      tracksResponse.json(),
+      albumsResponse.json(),
+      playlistsResponse.json(),
+    ]);
+
+    return {
+      tracks: tracksData.tracks?.items || [],
+      albums: albumsData.albums?.items || [],
+      playlists: playlistsData.playlists?.items || [],
+    };
+  } catch (error) {
+    console.error('Spotify combined search error:', error);
+    throw error;
+  }
+};
