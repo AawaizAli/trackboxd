@@ -631,8 +631,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
 
                                         {/* Mobile search results dropdown - ADDED */}
                                         {showResults && (
-                                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 bg-[#FFFFE7] border border-[#D9D9D9] rounded-lg shadow-lg z-50 max-h-[400px] overflow-y-auto w-[90vw]">
-                                                {" "}
+                                            <div className="fixed top-16 left-0 right-0 mx-auto bg-[#FFFFE7] border border-[#D9D9D9] rounded-lg shadow-lg z-50 max-h-[70vh] overflow-y-auto w-[90vw]">
                                                 {/* Added width */}
                                                 {isSearching ? (
                                                     <div className="p-4 text-center text-[#A0A0A0]">
