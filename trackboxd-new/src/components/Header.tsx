@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import LogModal from "./log/LogModal";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface HeaderProps {
     user?: {
@@ -259,10 +260,19 @@ const Header: React.FC<HeaderProps> = ({}) => {
         { label: "Profile", href: `/profile/${user.username}`, icon: User },
         { type: "divider" },
         { label: "My Likes", href: "/my-likes", icon: Heart },
-        { label: "My Reviews", href: "/my-reviews", icon: MessageSquare },
-        { label: "My Annotations", href: "/my-annotations", icon: FileText },
+        {
+            label: "My Reviews",
+            href: "/my-reviews",
+            icon: MessageSquare,
+            link: true, // Add this flag to indicate it should use Link
+        },
+        {
+            label: "My Annotations",
+            href: "/my-annotations",
+            icon: FileText,
+            link: true, // Add this flag to indicate it should use Link
+        },
         { type: "divider" },
-        // Updated logout item to use handler instead of href
         { label: "Logout", onClick: handleLogout, icon: LogOut },
     ];
 
@@ -405,113 +415,124 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                 )}
 
                                 {/* Search Results Dropdown */}
-                                {showResults && (
-                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 bg-[#FFFFE7] border border-[#D9D9D9] rounded-lg shadow-lg z-50 max-h-[700px] overflow-y-auto min-w-[400px] max-w-[600px]">
-                                        {isSearching ? (
-                                            <div className="p-4 text-center text-[#A0A0A0]">
-                                                Searching...
-                                            </div>
-                                        ) : searchResults ? (
-                                            <div className="py-2">
-                                                {/* Filter out null items before mapping */}
-                                                {searchResults.tracks.filter(
-                                                    Boolean
-                                                ).length > 0 && (
-                                                    <>
-                                                        <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
-                                                            Tracks
-                                                        </div>
-                                                        <div className="mb-2">
-                                                            {searchResults.tracks
-                                                                .filter(Boolean)
-                                                                .map(
-                                                                    (track) => (
-                                                                        <SearchResultItem
-                                                                            key={`track-${track.id}`}
-                                                                            item={
-                                                                                track
-                                                                            }
-                                                                        />
+                                {showResults &&
+                                    (isSearching || searchQuery) && ( // Add this condition
+                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 bg-[#FFFFE7] border border-[#D9D9D9] rounded-lg shadow-lg z-50 max-h-[700px] overflow-y-auto min-w-[400px] max-w-[600px]">
+                                            {isSearching ? (
+                                                <div className="p-4 text-center text-[#A0A0A0]">
+                                                    Searching...
+                                                </div>
+                                            ) : searchResults ? (
+                                                <div className="py-2">
+                                                    {/* Filter out null items before mapping */}
+                                                    {searchResults.tracks.filter(
+                                                        Boolean
+                                                    ).length > 0 && (
+                                                        <>
+                                                            <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                                Tracks
+                                                            </div>
+                                                            <div className="mb-2">
+                                                                {searchResults.tracks
+                                                                    .filter(
+                                                                        Boolean
                                                                     )
-                                                                )}
-                                                        </div>
-                                                    </>
-                                                )}
+                                                                    .map(
+                                                                        (
+                                                                            track
+                                                                        ) => (
+                                                                            <SearchResultItem
+                                                                                key={`track-${track.id}`}
+                                                                                item={
+                                                                                    track
+                                                                                }
+                                                                            />
+                                                                        )
+                                                                    )}
+                                                            </div>
+                                                        </>
+                                                    )}
 
-                                                {searchResults.albums.filter(
-                                                    Boolean
-                                                ).length > 0 && (
-                                                    <>
-                                                        <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
-                                                        <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
-                                                            Albums
-                                                        </div>
-                                                        <div className="mb-2">
-                                                            {searchResults.albums
-                                                                .filter(Boolean)
-                                                                .map(
-                                                                    (album) => (
-                                                                        <SearchResultItem
-                                                                            key={`album-${album.id}`}
-                                                                            item={
-                                                                                album
-                                                                            }
-                                                                        />
+                                                    {searchResults.albums.filter(
+                                                        Boolean
+                                                    ).length > 0 && (
+                                                        <>
+                                                            <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
+                                                            <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                                Albums
+                                                            </div>
+                                                            <div className="mb-2">
+                                                                {searchResults.albums
+                                                                    .filter(
+                                                                        Boolean
                                                                     )
-                                                                )}
-                                                        </div>
-                                                    </>
-                                                )}
+                                                                    .map(
+                                                                        (
+                                                                            album
+                                                                        ) => (
+                                                                            <SearchResultItem
+                                                                                key={`album-${album.id}`}
+                                                                                item={
+                                                                                    album
+                                                                                }
+                                                                            />
+                                                                        )
+                                                                    )}
+                                                            </div>
+                                                        </>
+                                                    )}
 
-                                                {searchResults.playlists.filter(
-                                                    Boolean
-                                                ).length > 0 && (
-                                                    <>
-                                                        <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
-                                                        <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
-                                                            Playlists
-                                                        </div>
-                                                        <div className="mb-2">
-                                                            {searchResults.playlists
-                                                                .filter(Boolean)
-                                                                .map(
-                                                                    (
-                                                                        playlist
-                                                                    ) => (
-                                                                        <SearchResultItem
-                                                                            key={`playlist-${playlist.id}`}
-                                                                            item={
-                                                                                playlist
-                                                                            }
-                                                                        />
+                                                    {searchResults.playlists.filter(
+                                                        Boolean
+                                                    ).length > 0 && (
+                                                        <>
+                                                            <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
+                                                            <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                                Playlists
+                                                            </div>
+                                                            <div className="mb-2">
+                                                                {searchResults.playlists
+                                                                    .filter(
+                                                                        Boolean
                                                                     )
-                                                                )}
-                                                        </div>
-                                                    </>
-                                                )}
+                                                                    .map(
+                                                                        (
+                                                                            playlist
+                                                                        ) => (
+                                                                            <SearchResultItem
+                                                                                key={`playlist-${playlist.id}`}
+                                                                                item={
+                                                                                    playlist
+                                                                                }
+                                                                            />
+                                                                        )
+                                                                    )}
+                                                            </div>
+                                                        </>
+                                                    )}
 
-                                                {/* Updated no results condition */}
-                                                {searchResults.tracks.filter(
-                                                    Boolean
-                                                ).length === 0 &&
-                                                    searchResults.albums.filter(
+                                                    {/* Updated no results condition */}
+                                                    {searchResults.tracks.filter(
                                                         Boolean
                                                     ).length === 0 &&
-                                                    searchResults.playlists.filter(
-                                                        Boolean
-                                                    ).length === 0 && (
-                                                        <div className="px-4 py-8 text-center text-[#A0A0A0]">
-                                                            No results found
-                                                        </div>
-                                                    )}
-                                            </div>
-                                        ) : searchQuery ? (
-                                            <div className="px-4 py-8 text-center text-[#A0A0A0]">
-                                                No results found
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                )}
+                                                        searchResults.albums.filter(
+                                                            Boolean
+                                                        ).length === 0 &&
+                                                        searchResults.playlists.filter(
+                                                            Boolean
+                                                        ).length === 0 && (
+                                                            <div className="px-4 py-8 text-center text-[#A0A0A0]">
+                                                                No results found
+                                                            </div>
+                                                        )}
+                                                </div>
+                                            ) : searchQuery ? (
+                                                <div className="px-4 py-8 text-center text-[#A0A0A0]">
+                                                    No results found
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    )}
                             </div>
                         </div>
                     </nav>
@@ -574,6 +595,19 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                     key={index}
                                                     className="h-px bg-[#D9D9D9] my-2"
                                                 />
+                                            ) : item.link ? (
+                                                <Link
+                                                    key={item.label}
+                                                    href={item.href || "#"}
+                                                    className="flex items-center gap-3 w-full px-4 py-3 text-sm text-left text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200"
+                                                    onClick={() =>
+                                                        setIsDropdownOpen(false)
+                                                    }>
+                                                    {item.icon && (
+                                                        <item.icon className="w-4 h-4 text-[#A0A0A0]" />
+                                                    )}
+                                                    {item.label}
+                                                </Link>
                                             ) : (
                                                 <button
                                                     key={item.label}
@@ -581,7 +615,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                         item.onClick ||
                                                         (() => {})
                                                     }
-                                                    className={`flex items-center gap-3 w-full px-4 py-3 text-sm text-left text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 ${
+                                                    className={`flex items-center gap-3 w-full px-4 py-3 text-sm text-left text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 rounded-lg ${
                                                         item.onClick
                                                             ? "cursor-pointer"
                                                             : ""
@@ -630,123 +664,127 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                         />
 
                                         {/* Mobile search results dropdown - ADDED */}
-                                        {showResults && (
-                                            <div className="fixed top-16 left-0 right-0 mx-auto bg-[#FFFFE7] border border-[#D9D9D9] rounded-lg shadow-lg z-50 max-h-[70vh] overflow-y-auto w-[90vw]">
-                                                {/* Added width */}
-                                                {isSearching ? (
-                                                    <div className="p-4 text-center text-[#A0A0A0]">
-                                                        Searching...
-                                                    </div>
-                                                ) : searchResults ? (
-                                                    <div className="py-2">
-                                                        {searchResults.tracks.filter(
-                                                            Boolean
-                                                        ).length > 0 && (
-                                                            <>
-                                                                <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
-                                                                    Tracks
-                                                                </div>
-                                                                <div className="mb-2">
-                                                                    {searchResults.tracks
-                                                                        .filter(
-                                                                            Boolean
-                                                                        )
-                                                                        .map(
-                                                                            (
-                                                                                track
-                                                                            ) => (
-                                                                                <SearchResultItem
-                                                                                    key={`track-${track.id}`}
-                                                                                    item={
-                                                                                        track
-                                                                                    }
-                                                                                />
+                                        {showResults &&
+                                            (isSearching || searchQuery) && ( // Add this condition
+                                                <div className="fixed top-16 left-0 right-0 mx-auto bg-[#FFFFE7] border border-[#D9D9D9] rounded-lg shadow-lg z-50 max-h-[70vh] overflow-y-auto w-[90vw]">
+                                                    {/* Added width */}
+                                                    {isSearching ? (
+                                                        <div className="p-4 text-center text-[#A0A0A0]">
+                                                            Searching...
+                                                        </div>
+                                                    ) : searchResults ? (
+                                                        <div className="py-2">
+                                                            {searchResults.tracks.filter(
+                                                                Boolean
+                                                            ).length > 0 && (
+                                                                <>
+                                                                    <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                                        Tracks
+                                                                    </div>
+                                                                    <div className="mb-2">
+                                                                        {searchResults.tracks
+                                                                            .filter(
+                                                                                Boolean
                                                                             )
-                                                                        )}
-                                                                </div>
-                                                            </>
-                                                        )}
+                                                                            .map(
+                                                                                (
+                                                                                    track
+                                                                                ) => (
+                                                                                    <SearchResultItem
+                                                                                        key={`track-${track.id}`}
+                                                                                        item={
+                                                                                            track
+                                                                                        }
+                                                                                    />
+                                                                                )
+                                                                            )}
+                                                                    </div>
+                                                                </>
+                                                            )}
 
-                                                        {searchResults.albums.filter(
-                                                            Boolean
-                                                        ).length > 0 && (
-                                                            <>
-                                                                <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
-                                                                <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
-                                                                    Albums
-                                                                </div>
-                                                                <div className="mb-2">
-                                                                    {searchResults.albums
-                                                                        .filter(
-                                                                            Boolean
-                                                                        )
-                                                                        .map(
-                                                                            (
-                                                                                album
-                                                                            ) => (
-                                                                                <SearchResultItem
-                                                                                    key={`album-${album.id}`}
-                                                                                    item={
-                                                                                        album
-                                                                                    }
-                                                                                />
+                                                            {searchResults.albums.filter(
+                                                                Boolean
+                                                            ).length > 0 && (
+                                                                <>
+                                                                    <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
+                                                                    <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                                        Albums
+                                                                    </div>
+                                                                    <div className="mb-2">
+                                                                        {searchResults.albums
+                                                                            .filter(
+                                                                                Boolean
                                                                             )
-                                                                        )}
-                                                                </div>
-                                                            </>
-                                                        )}
+                                                                            .map(
+                                                                                (
+                                                                                    album
+                                                                                ) => (
+                                                                                    <SearchResultItem
+                                                                                        key={`album-${album.id}`}
+                                                                                        item={
+                                                                                            album
+                                                                                        }
+                                                                                    />
+                                                                                )
+                                                                            )}
+                                                                    </div>
+                                                                </>
+                                                            )}
 
-                                                        {searchResults.playlists.filter(
-                                                            Boolean
-                                                        ).length > 0 && (
-                                                            <>
-                                                                <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
-                                                                <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
-                                                                    Playlists
-                                                                </div>
-                                                                <div className="mb-2">
-                                                                    {searchResults.playlists
-                                                                        .filter(
-                                                                            Boolean
-                                                                        )
-                                                                        .map(
-                                                                            (
-                                                                                playlist
-                                                                            ) => (
-                                                                                <SearchResultItem
-                                                                                    key={`playlist-${playlist.id}`}
-                                                                                    item={
-                                                                                        playlist
-                                                                                    }
-                                                                                />
+                                                            {searchResults.playlists.filter(
+                                                                Boolean
+                                                            ).length > 0 && (
+                                                                <>
+                                                                    <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
+                                                                    <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                                        Playlists
+                                                                    </div>
+                                                                    <div className="mb-2">
+                                                                        {searchResults.playlists
+                                                                            .filter(
+                                                                                Boolean
                                                                             )
-                                                                        )}
-                                                                </div>
-                                                            </>
-                                                        )}
+                                                                            .map(
+                                                                                (
+                                                                                    playlist
+                                                                                ) => (
+                                                                                    <SearchResultItem
+                                                                                        key={`playlist-${playlist.id}`}
+                                                                                        item={
+                                                                                            playlist
+                                                                                        }
+                                                                                    />
+                                                                                )
+                                                                            )}
+                                                                    </div>
+                                                                </>
+                                                            )}
 
-                                                        {searchResults.tracks.filter(
-                                                            Boolean
-                                                        ).length === 0 &&
-                                                            searchResults.albums.filter(
+                                                            {searchResults.tracks.filter(
                                                                 Boolean
                                                             ).length === 0 &&
-                                                            searchResults.playlists.filter(
-                                                                Boolean
-                                                            ).length === 0 && (
-                                                                <div className="px-4 py-8 text-center text-[#A0A0A0]">
-                                                                    No results
-                                                                    found
-                                                                </div>
-                                                            )}
-                                                    </div>
-                                                ) : searchQuery ? (
-                                                    <div className="px-4 py-8 text-center text-[#A0A0A0]">
-                                                        No results found
-                                                    </div>
-                                                ) : null}
-                                            </div>
-                                        )}
+                                                                searchResults.albums.filter(
+                                                                    Boolean
+                                                                ).length ===
+                                                                    0 &&
+                                                                searchResults.playlists.filter(
+                                                                    Boolean
+                                                                ).length ===
+                                                                    0 && (
+                                                                    <div className="px-4 py-8 text-center text-[#A0A0A0]">
+                                                                        No
+                                                                        results
+                                                                        found
+                                                                    </div>
+                                                                )}
+                                                        </div>
+                                                    ) : searchQuery ? (
+                                                        <div className="px-4 py-8 text-center text-[#A0A0A0]">
+                                                            No results found
+                                                        </div>
+                                                    ) : null}
+                                                </div>
+                                            )}
                                     </div>
                                 ) : (
                                     <button
@@ -841,6 +879,19 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                         key={index}
                                         className="h-px bg-[#D9D9D9] my-2"
                                     />
+                                ) : item.link ? (
+                                    <Link
+                                        key={item.label}
+                                        href={item.href || "#"}
+                                        className="flex items-center gap-3 px-3 py-3 text-base text-left text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 rounded-lg"
+                                        onClick={() =>
+                                            setIsMobileMenuOpen(false)
+                                        }>
+                                        {item.icon && (
+                                            <item.icon className="w-5 h-5 text-[#A0A0A0]" />
+                                        )}
+                                        {item.label}
+                                    </Link>
                                 ) : (
                                     <button
                                         key={item.label}

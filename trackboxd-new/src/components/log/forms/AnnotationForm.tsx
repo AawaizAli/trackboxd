@@ -10,6 +10,14 @@ import ToggleButton from '@mui/material/ToggleButton';
 import PublicIcon from '@mui/icons-material/Public';
 import LockIcon from '@mui/icons-material/Lock';
 
+interface InitialAnnotation {
+  id: string;
+  text: string;
+  timestamp: number;
+  isPublic: boolean;
+  track?: SimplifiedTrack;
+}
+
 interface SimplifiedTrack {
   id: string;
   name: string;
@@ -21,11 +29,15 @@ interface SimplifiedTrack {
 interface AnnotationFormProps {
   onClose: () => void;
   initialTrack?: SimplifiedTrack;
+  initialAnnotation?: InitialAnnotation; // Add this
+  onSave?: (annotation: InitialAnnotation) => void; // Add this
 }
 
 const AnnotationForm: React.FC<AnnotationFormProps> = ({ 
   onClose, 
-  initialTrack 
+  initialTrack, 
+  initialAnnotation,
+  onSave
 }) => {
   const { user, loading: userLoading, error: userError } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,6 +85,26 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
     fetchTrendingTracks();
   }, []);
 
+  useEffect(() => {
+    if (initialAnnotation) {
+      setSelectedTrack({
+        id: initialAnnotation.track?.id || '',
+        name: initialAnnotation.track?.name || '',
+        artist: initialAnnotation.track?.artist || '',
+        album: initialAnnotation.track?.album || '',
+        coverArt: initialAnnotation.track?.coverArt || ''
+      });
+      
+      // Convert seconds to mm:ss format
+      const minutes = Math.floor(initialAnnotation.timestamp / 60);
+      const seconds = Math.floor(initialAnnotation.timestamp % 60);
+      setTimestamp(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+      
+      setAnnotationText(initialAnnotation.text);
+      setVisibility(initialAnnotation.isPublic ? 'public' : 'private');
+    }
+  }, [initialAnnotation]);
+
   // Debounce search requests
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -118,9 +150,6 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
     }
   };
 
-
-
-  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -133,7 +162,6 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
       // Convert timestamp from mm:ss to seconds
       const timeParts = timestamp.split(':');
       let timestampInSeconds = 0;
-      
       if (timeParts.length === 1) {
         // Only seconds provided
         timestampInSeconds = parseFloat(timeParts[0]);
@@ -148,11 +176,18 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
         throw new Error('Invalid timestamp value');
       }
 
-      const response = await fetch('/api/annotate', {
-        method: 'POST',
+      const url = initialAnnotation 
+        ? `/api/annotate/actions/${initialAnnotation.id}`
+        : '/api/annotate';
+      
+      const method = initialAnnotation ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          trackId: selectedTrack.id,
+          // For edit mode, we don't send trackId
+          ...(initialAnnotation ? {} : { trackId: selectedTrack.id }),
           timestamp: timestampInSeconds,
           text: annotationText,
           isPublic: visibility === 'public',
@@ -173,7 +208,17 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
       }
 
       const annotationData = await response.json();
-      console.log('Annotation created:', annotationData);
+      
+      if (initialAnnotation && onSave) {
+        onSave({
+          ...initialAnnotation,
+          text: annotationText,
+          timestamp: timestampInSeconds,
+          isPublic: visibility === 'public'
+        });
+      }
+      
+      console.log('Annotation saved:', annotationData);
       onClose();
     } catch (error) {
       console.error('Annotation submission error:', error);
@@ -191,6 +236,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

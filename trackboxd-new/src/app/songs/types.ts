@@ -43,30 +43,40 @@ export interface Track {
     item_id: string;
     like_count: number;
     is_public: boolean;
-    spotify_items: {
-        id: string;
-        type: string;
-    };
     users: {
-        id: string;
-        name: string;
-        image_url: string;
+      id: string;
+      name: string;
+      image_url: string;
     };
-    track_details: {
-        id: string
-        name: string;
-        album: {
-            images: {
-                url: string;
-                width: number;
-                height: number;
-            }[];
-            name: string;
-            release_date: string;
-        };
-        artists: {
-            name: string;
+    // Add this new property
+    item: {
+      id: string;
+      name: string;
+      artist: string;
+      album: string;
+      cover_url: string;
+      type: string;
+    };
+    // Keep existing properties
+    spotify_items?: {
+      id: string;
+      type: string;
+    };
+    track_details?: {
+      id: string;
+      name: string;
+      album: {
+        images: {
+          url: string;
+          width: number;
+          height: number;
         }[];
+        name: string;
+        release_date: string;
+      };
+      artists: {
+        name: string;
+      }[];
     };
   }
   
@@ -81,6 +91,15 @@ export interface Track {
         id: string;
         name: string;
         image_url: string;
+    };
+    is_public: boolean;
+    item: {
+      id: string;
+      name: string;
+      artist: string;
+      album: string;
+      cover_url: string;
+      type: string;
     };
     track_id: string;
     track_details: {
