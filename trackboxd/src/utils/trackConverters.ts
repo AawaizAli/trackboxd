@@ -28,8 +28,8 @@ export const spotifyToTrack = (trackData: any): Track => {
 
 export const reviewToTrack = (review: Review): Track => {
   const trackDetails = review.track_details;
-  const album = trackDetails.album;
-  const artists = trackDetails.artists;
+  const album = trackDetails?.album;
+  const artists = trackDetails?.artists;
 
   return {
     id: trackDetails.id,
