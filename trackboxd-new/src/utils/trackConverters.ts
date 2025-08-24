@@ -28,6 +28,9 @@ export const spotifyToTrack = (trackData: any): Track => {
 
 export const reviewToTrack = (review: Review): Track => {
   const trackDetails = review.track_details;
+  if (!trackDetails) {
+    throw new Error('Track details are missing from review');
+  }
   const album = trackDetails.album;
   const artists = trackDetails.artists;
 
