@@ -461,7 +461,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
             <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                     <div key={star} className="relative">
-                        <div className="w-4 h-4 mb-2 text-[#D9D9D9]">★</div>
+                        <div className="w-4 h-4 mb-2 text-[#5C5537]/30">★</div>
                         <div
                             className="absolute top-0 left-0 w-5 h-5 text-[#FFBA00] overflow-hidden"
                             style={{
@@ -476,7 +476,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                         </div>
                     </div>
                 ))}
-                <span className="text-sm text-[#1F2C24] ml-1">
+                <span className="text-sm text-[#5C5537] ml-1">
                     {rating.toFixed(1)}
                 </span>
             </div>
@@ -494,10 +494,10 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#FFFFF0]">
+            <div className="min-h-screen bg-[#FFFBEb]">
                 <Header />
                 <div className="max-w-5xl mx-auto px-4 py-8 flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6D9773]"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5C5537]"></div>
                 </div>
                 <Footer variant="light" />
             </div>
@@ -506,7 +506,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-[#FFFFF0]">
+            <div className="min-h-screen bg-[#FFFBEb]">
                 <Header />
                 <div className="max-w-5xl mx-auto px-4 py-8 text-center">
                     <p className="text-red-500">{error}</p>
@@ -518,10 +518,10 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
 
     if (!track) {
         return (
-            <div className="min-h-screen bg-[#FFFFF0]">
+            <div className="min-h-screen bg-[#FFFBEb]">
                 <Header />
                 <div className="max-w-5xl mx-auto px-4 py-8 text-center">
-                    <p>Track not found</p>
+                    <p className="text-[#5C5537]">Track not found</p>
                 </div>
                 <Footer variant="light" />
             </div>
@@ -529,14 +529,14 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
     }
 
     return (
-        <div className="min-h-screen bg-[#FFFFF0]">
+        <div className="min-h-screen bg-[#FFFBEb]">
             <Header />
 
             <div className="max-w-5xl mx-auto px-4 py-6">
                 {/* Compact Track Header */}
                 <div className="flex flex-col md:flex-row gap-6 mb-8">
                     <div className="w-full md:w-1/3 flex justify-center">
-                        <div className="w-56 h-56 relative overflow-hidden rounded-xl shadow border border-[#D9D9D9]">
+                        <div className="w-56 h-56 relative overflow-hidden rounded-xl shadow border border-[#5C5537]/20">
                             <img
                                 src={
                                     track.album.images[0]?.url ||
@@ -544,40 +544,43 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                 }
                                 alt={`${track.name} cover`}
                                 className="w-full h-full object-cover"
+                                onError={(e) => {
+                                    e.currentTarget.src = "/default-album.png";
+                                }}
                             />
                         </div>
                     </div>
 
                     <div className="w-full md:w-2/3">
-                        <h1 className="text-2xl md:text-3xl font-bold text-[#0C3B2E] mb-1">
+                        <h1 className="text-2xl md:text-3xl font-bold text-[#5C5537] mb-1">
                             {track.name}
                         </h1>
-                        <p className="text-lg text-[#6D9773] mb-4">
+                        <p className="text-lg text-[#5C5537]/70 mb-4">
                             {track.artists.map((a) => a.name).join(", ")}
                         </p>
 
                         <div className="grid grid-cols-2 gap-3 mb-6">
                             <div>
-                                <p className="text-xs text-[#A0A0A0]">Album</p>
-                                <p className="text-sm font-medium">
+                                <p className="text-xs text-[#5C5537]/70">Album</p>
+                                <p className="text-sm font-medium text-[#5C5537]">
                                     {track.album.name}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-xs text-[#A0A0A0]">
+                                <p className="text-xs text-[#5C5537]/70">
                                     Release Date
                                 </p>
-                                <p className="text-sm font-medium">
+                                <p className="text-sm font-medium text-[#5C5537]">
                                     {new Date(
                                         track.album.release_date
                                     ).toLocaleDateString()}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-xs text-[#A0A0A0]">
+                                <p className="text-xs text-[#5C5537]/70">
                                     Duration
                                 </p>
-                                <p className="text-sm font-medium">
+                                <p className="text-sm font-medium text-[#5C5537]">
                                     {formatDuration(track.duration_ms)}
                                 </p>
                             </div>
@@ -589,11 +592,11 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                 disabled={likeLoading}
                                 className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors cursor-pointer ${
                                     isLiked
-                                        ? "bg-[#FFBA00] text-[#1F2C24]"
-                                        : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
+                                        ? "bg-[#5C5537] text-[#FFFBEb] border border-[#5C5537]"
+                                        : "bg-[#FFFBEb] text-[#5C5537] border border-[#5C5537]/30 hover:bg-[#5C5537]/10 hover:border-[#5C5537]/50"
                                 }`}>
                                 {likeLoading ? (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#5C5537]"></div>
                                 ) : (
                                     <>
                                         <Heart className="w-3 h-3" />
@@ -606,7 +609,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
 
                             <button
                                 onClick={() => track && setShowReviewForm(true)}
-                                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] cursor-pointer">
+                                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs bg-[#FFFBEb] text-[#5C5537] border border-[#5C5537]/30 hover:bg-[#5C5537]/10 hover:border-[#5C5537]/50 cursor-pointer">
                                 <span>Review</span>
                             </button>
 
@@ -614,7 +617,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                 onClick={() =>
                                     track && setShowAnnotationForm(true)
                                 }
-                                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] cursor-pointer">
+                                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs bg-[#FFFBEb] text-[#5C5537] border border-[#5C5537]/30 hover:bg-[#5C5537]/10 hover:border-[#5C5537]/50 cursor-pointer">
                                 <span>Annotate</span>
                             </button>
                         </div>
@@ -622,37 +625,37 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                 </div>
 
                 <div className="mb-8">
-                    <div className="grid grid-cols-4 gap-2 border-y border-[#D9D9D9] py-5">
+                    <div className="grid grid-cols-4 gap-2 border-y border-[#5C5537]/20 py-5">
                         <div className="text-center">
-                            <div className="text-xl font-bold text-[#0C3B2E]">
+                            <div className="text-xl font-bold text-[#5C5537]">
                                 {trackStats.likes}
                             </div>
-                            <div className="text-xs text-[#A0A0A0] flex items-center justify-center">
+                            <div className="text-xs text-[#5C5537]/70 flex items-center justify-center">
                                 <Heart className="w-3 h-3 mr-1" /> Likes
                             </div>
                         </div>
                         <div className="text-center">
-                            <div className="text-xl font-bold text-[#0C3B2E]">
+                            <div className="text-xl font-bold text-[#5C5537]">
                                 {trackStats.reviews}
                             </div>
-                            <div className="text-xs text-[#A0A0A0] flex items-center justify-center">
+                            <div className="text-xs text-[#5C5537]/70 flex items-center justify-center">
                                 <Star className="w-3 h-3 mr-1" /> Reviews
                             </div>
                         </div>
                         <div className="text-center">
-                            <div className="text-xl font-bold text-[#0C3B2E]">
+                            <div className="text-xl font-bold text-[#5C5537]">
                                 {trackStats.annotations}
                             </div>
-                            <div className="text-xs text-[#A0A0A0] flex items-center justify-center">
+                            <div className="text-xs text-[#5C5537]/70 flex items-center justify-center">
                                 <MessageCircle className="w-3 h-3 mr-1" />{" "}
                                 Annotations
                             </div>
                         </div>
                         <div className="text-center">
-                            <div className="text-xl font-bold text-[#0C3B2E]">
+                            <div className="text-xl font-bold text-[#5C5537]">
                                 {trackStats.avgRating.toFixed(1)}
                             </div>
-                            <div className="text-xs text-[#A0A0A0]">
+                            <div className="text-xs text-[#5C5537]/70">
                                 Avg Rating
                             </div>
                         </div>
@@ -661,17 +664,17 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
 
                 {/* Compact Rating Distribution */}
                 <div className="mb-8">
-                    <h2 className="text-lg font-bold text-[#0C3B2E] mb-3">
+                    <h2 className="text-lg font-bold text-[#5C5537] mb-3">
                         Rating Distribution
                     </h2>
                     <div className="space-y-2">
                         {[1, 2, 3, 4, 5].map((stars, index) => (
                             <div key={stars} className="flex items-center">
-                                <div className="w-12 text-sm">{stars}★</div>
+                                <div className="w-12 text-sm text-[#5C5537]">{stars}★</div>
                                 <div className="flex-1 ml-2">
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div className="w-full bg-[#5C5537]/20 rounded-full h-2">
                                         <div
-                                            className="bg-[#6D9773] h-2 rounded-full"
+                                            className="bg-[#5C5537] h-2 rounded-full"
                                             style={{
                                                 width: `${
                                                     ratingDistribution[
@@ -681,7 +684,7 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                             }}></div>
                                     </div>
                                 </div>
-                                <div className="w-10 text-right text-xs text-[#A0A0A0]">
+                                <div className="w-10 text-right text-xs text-[#5C5537]/70">
                                     {ratingDistribution[stars - 1]}%
                                 </div>
                             </div>
@@ -691,12 +694,12 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
 
                 {/* Reviews & Annotations Tabs */}
                 <div className="mb-6">
-                    <div className="flex border-b border-[#D9D9D9]">
+                    <div className="flex border-b border-[#5C5537]/20">
                         <button
                             className={`py-2 px-4 text-sm font-medium ${
                                 activeTab === "reviews"
-                                    ? "text-[#6D9773] border-b-2 border-[#6D9773]"
-                                    : "text-[#A0A0A0]"
+                                    ? "text-[#5C5537] border-b-2 border-[#5C5537]"
+                                    : "text-[#5C5537]/70"
                             } cursor-pointer`}
                             onClick={() => setActiveTab("reviews")}>
                             Reviews ({reviews.length})
@@ -704,8 +707,8 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                         <button
                             className={`py-2 px-4 text-sm font-medium ${
                                 activeTab === "annotations"
-                                    ? "text-[#6D9773] border-b-2 border-[#6D9773]"
-                                    : "text-[#A0A0A0]"
+                                    ? "text-[#5C5537] border-b-2 border-[#5C5537]"
+                                    : "text-[#5C5537]/70"
                             } cursor-pointer`}
                             onClick={() => setActiveTab("annotations")}>
                             Annotations ({annotations.length})
@@ -717,17 +720,20 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                             {reviews.map((review) => (
                                 <div
                                     key={review.id}
-                                    className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl p-4">
+                                    className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-xl p-4">
                                     {/* Consistent user section with fixed min-height */}
                                     <div className="flex justify-between items-start min-h-[3.5rem]">
                                         <div className="flex items-start gap-3">
                                             <img
-                                                src={review.users.image_url}
+                                                src={review.users.image_url || "/default-avatar.jpg"}
                                                 alt={review.users.name}
                                                 className="w-10 h-10 rounded-full mt-0.5"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = "/default-avatar.jpg";
+                                                }}
                                             />
                                             <div>
-                                                <div className="font-medium text-sm text-[#1F2C24]">
+                                                <div className="font-medium text-sm text-[#5C5537]">
                                                     {review.users.name}
                                                 </div>
                                                 <div className="mt-1">
@@ -744,31 +750,28 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                             <Heart
                                                 className={`w-4 h-4 transition-all duration-200 ${
                                                     reviewLikes[review.id]
-                                                        ? "text-[#6D9773] fill-[#6D9773]"
-                                                        : "text-[#A0A0A0] group-hover:text-[#6D9773]"
+                                                        ? "text-[#5C5537] fill-[#5C5537]"
+                                                        : "text-[#5C5537]/50 group-hover:text-[#5C5537]"
                                                 }`}
                                             />
                                             <span
                                                 className={`text-sm transition-colors duration-200 ${
                                                     reviewLikes[review.id]
-                                                        ? "text-[#6D9773] font-medium"
-                                                        : "text-[#A0A0A0] group-hover:text-[#6D9773]"
+                                                        ? "text-[#5C5537] font-medium"
+                                                        : "text-[#5C5537]/70 group-hover:text-[#5C5537]"
                                                 }`}>
                                                 {reviewLikeCounts[review.id] ||
                                                     review.like_count}
                                             </span>
                                         </button>
                                     </div>
-                                    <p className="text-sm text-[#1F2C24] mb-3 line-clamp-2">
+                                    <p className="text-sm text-[#5C5537] mb-3 line-clamp-2">
                                         {review.text}
                                     </p>
                                     <div className="flex justify-between items-center text-xs">
-                                        <span className="text-[#A0A0A0]">
+                                        <span className="text-[#5C5537]/70">
                                             {formatDate(review.created_at)}
                                         </span>
-                                        {/* <button className="text-[#6D9773] hover:text-[#5C8769]">
-                                            Read full
-                                        </button> */}
                                     </div>
                                 </div>
                             ))}
@@ -791,24 +794,25 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                 return (
                                     <div
                                         key={annotation.id}
-                                        className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl p-4">
+                                        className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-xl p-4">
                                         {/* Consistent user section with fixed min-height */}
                                         <div className="flex justify-between items-start min-h-[3.5rem]">
                                             <div className="flex items-start gap-3">
                                                 <img
                                                     src={
-                                                        annotation.users
-                                                            .image_url ||
-                                                        "/default-avatar.png"
+                                                        annotation.users.image_url || "/default-avatar.jpg"
                                                     }
                                                     alt={annotation.users.name}
                                                     className="w-10 h-10 rounded-full mt-0.5"
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = "/default-avatar.jpg";
+                                                    }}
                                                 />
                                                 <div>
-                                                    <div className="font-medium text-sm text-[#1F2C24]">
+                                                    <div className="font-medium text-sm text-[#5C5537]">
                                                         {annotation.users.name}
                                                     </div>
-                                                    <div className="text-xs text-[#6D9773] mt-1">
+                                                    <div className="text-xs text-[#5C5537]/70 mt-1">
                                                         At {timestampStr}
                                                     </div>
                                                 </div>
@@ -830,8 +834,8 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                                         annotationLikes[
                                                             annotation.id
                                                         ]
-                                                            ? "text-[#6D9773] fill-[#6D9773]"
-                                                            : "text-[#A0A0A0] group-hover:text-[#6D9773]"
+                                                            ? "text-[#5C5537] fill-[#5C5537]"
+                                                            : "text-[#5C5537]/50 group-hover:text-[#5C5537]"
                                                     }`}
                                                 />
                                                 <span
@@ -839,8 +843,8 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                                         annotationLikes[
                                                             annotation.id
                                                         ]
-                                                            ? "text-[#6D9773] font-medium"
-                                                            : "text-[#A0A0A0] group-hover:text-[#6D9773]"
+                                                            ? "text-[#5C5537] font-medium"
+                                                            : "text-[#5C5537]/70 group-hover:text-[#5C5537]"
                                                     }`}>
                                                     {annotationLikeCounts[
                                                         annotation.id
@@ -848,18 +852,15 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                                                 </span>
                                             </button>
                                         </div>
-                                        <p className="text-sm text-[#1F2C24] mb-3">
+                                        <p className="text-sm text-[#5C5537] mb-3">
                                             {annotation.text}
                                         </p>
                                         <div className="flex justify-between items-center text-xs">
-                                            <span className="text-[#A0A0A0]">
+                                            <span className="text-[#5C5537]/70">
                                                 {formatDate(
                                                     annotation.created_at
                                                 )}
                                             </span>
-                                            {/* <button className="text-[#6D9773] hover:text-[#5C8769]">
-                                                View annotation
-                                            </button> */}
                                         </div>
                                     </div>
                                 );
@@ -870,9 +871,9 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                     {showReviewForm && track && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center">
                             <div
-                                className="absolute inset-0 bg-black/50 bg-opacity-20"
+                                className="absolute inset-0 bg-[#5C5537]/20"
                                 onClick={() => setShowReviewForm(false)}></div>
-                            <div className="bg-[#FFFFF0] rounded-lg p-6 w-full max-w-2xl border border-[#D9D9D9] shadow-lg relative z-10">
+                            <div className="bg-[#FFFBEb] rounded-lg p-6 w-full max-w-2xl border border-[#5C5537]/20 shadow-lg relative z-10">
                                 <ReviewForm
                                     onClose={() => setShowReviewForm(false)}
                                     initialTrack={{
@@ -892,11 +893,11 @@ const TrackDetailsPage = ({ params }: { params: { song_id: string } }) => {
                     {showAnnotationForm && track && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center">
                             <div
-                                className="absolute inset-0 bg-black/50 bg-opacity-20"
+                                className="absolute inset-0 bg-[#5C5537]/20"
                                 onClick={() =>
                                     setShowAnnotationForm(false)
                                 }></div>
-                            <div className="bg-[#FFFFF0] rounded-lg p-6 w-full max-w-2xl border border-[#D9D9D9] shadow-lg relative z-10">
+                            <div className="bg-[#FFFBEb] rounded-lg p-6 w-full max-w-2xl border border-[#5C5537]/20 shadow-lg relative z-10">
                                 <AnnotationForm
                                     onClose={() => setShowAnnotationForm(false)}
                                     initialTrack={{

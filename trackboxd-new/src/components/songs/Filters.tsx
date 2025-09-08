@@ -75,10 +75,10 @@ const Filters: React.FC<FiltersProps> = ({
                 {/* Filters - Left-aligned */}
                 <div className="flex flex-wrap gap-3 flex-1">
                     <div>
-                        <h1 className="text-3xl font-bold text-[#0C3B2E]">
+                        <h1 className="text-3xl font-bold text-[#5C5537]">
                             Songs
                         </h1>
-                        <p className="text-[#0C3B2E]/70 mt-2">
+                        <p className="text-[#5C5537]/70 mt-2">
                             Discover global songs and artists, explore genres, moods, and more.
                         </p>
                     </div>
@@ -87,7 +87,7 @@ const Filters: React.FC<FiltersProps> = ({
                 {/* Search - Right-aligned */}
                 <div className="w-full lg:w-[320px]">
                     <div className="relative h-full/2">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#A0A0A0] w-5 h-5" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#5C5537]/70 w-5 h-5" />
                         <input
                             type="text"
                             placeholder="Search tracks, artists, albums..."
@@ -96,16 +96,16 @@ const Filters: React.FC<FiltersProps> = ({
                                 setSearchTerm(e.target.value);
                                 searchSpotify(e.target.value);
                             }}
-                            className="w-full h-full pl-10 pr-4 py-3 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773]"
+                            className="w-full h-full pl-10 pr-4 py-3 bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5C5537]/30"
                         />
                         {isSearching && (
                             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#6D9773]"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#5C5537]"></div>
                             </div>
                         )}
                     </div>
                     {searchError && (
-                        <p className="text-red-500 text-sm mt-1">
+                        <p className="text-[#5C5537] text-sm mt-1">
                             {searchError}
                         </p>
                     )}

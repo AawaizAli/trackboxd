@@ -65,14 +65,14 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
           <>
             <div className="flex items-center gap-2 mb-3">
               <img 
-                src={activity.user.image_url} 
+                src={activity.user.image_url || './default-avatar.jpg'} 
                 alt={activity.user.name}
                 className="w-6 h-6 rounded-full"
               />
-              <span className="text-sm text-[#A0A0A0]">
+              <span className="text-sm text-[#5C5537]/70">
                 {activity.user.name} reviewed
               </span>
-              <Music className="w-4 h-4 text-[#FFBA00]" />
+              <Music className="w-4 h-4 text-[#5C5537]" />
             </div>
             <div className="mb-3 flex items-start gap-3">
               {activity.cover_url ? (
@@ -82,15 +82,15 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
                   className="w-12 h-12 rounded-md"
                 />
               ) : (
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-12 h-12 flex items-center justify-center">
-                  <Music className="w-6 h-6 text-gray-400" />
+                <div className="bg-[#5C5537]/10 border-2 border-dashed rounded-xl w-12 h-12 flex items-center justify-center">
+                  <Music className="w-6 h-6 text-[#5C5537]/50" />
                 </div>
               )}
               <div>
-                <h4 className="font-medium text-[#1F2C24]">
+                <h4 className="font-medium text-[#5C5537]">
                   {activity.title}
                 </h4>
-                <p className="text-sm text-[#A0A0A0]">
+                <p className="text-sm text-[#5C5537]/70">
                   by {activity.artist}
                 </p>
               </div>
@@ -98,7 +98,7 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
             <div className="flex items-center gap-1 mb-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <div key={star} className="relative">
-                  <div className="w-4 h-4 text-[#D9D9D9]">★</div>
+                  <div className="w-4 h-4 text-[#5C5537]/30">★</div>
                   <div
                     className="absolute top-0 left-0 w-5 h-5 text-[#FFBA00] overflow-hidden"
                     style={{
@@ -108,10 +108,10 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
                   </div>
                 </div>
               ))}
-              <span className="text-sm text-[#1F2C24] ml-1">{activity.rating}</span>
+              <span className="text-sm text-[#5C5537] ml-1 mt-2">{activity.rating}</span>
             </div>
             {activity.content && (
-              <p className="text-sm text-[#1F2C24] mt-2 line-clamp-2">
+              <p className="text-sm text-[#5C5537] mt-2 line-clamp-2">
                 {activity.content}
               </p>
             )}
@@ -122,14 +122,14 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
           <>
             <div className="flex items-center gap-2 mb-3">
               <img 
-                src={activity.user.image_url || '/default-avatar.jpg' } 
+                src={activity.user.image_url || './default-avatar.jpg'} 
                 alt={activity.user.name}
                 className="w-6 h-6 rounded-full"
               />
-              <span className="text-sm text-[#A0A0A0]">
+              <span className="text-sm text-[#5C5537]/70">
                 {activity.user.name} annotated
               </span>
-              <Clock className="w-4 h-4 text-[#FFBA00]" />
+              <Clock className="w-4 h-4 text-[#5C5537]" />
             </div>
             <div className="mb-2 flex items-start gap-3">
               {activity.cover_url ? (
@@ -139,22 +139,22 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
                   className="w-12 h-12 rounded-md"
                 />
               ) : (
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-12 h-12 flex items-center justify-center">
-                  <Music className="w-6 h-6 text-gray-400" />
+                <div className="bg-[#5C5537]/10 border-2 border-dashed rounded-xl w-12 h-12 flex items-center justify-center">
+                  <Music className="w-6 h-6 text-[#5C5537]/50" />
                 </div>
               )}
               <div>
-                <h4 className="font-medium text-[#1F2C24]">
+                <h4 className="font-medium text-[#5C5537]">
                   {activity.title}
                 </h4>
-                <p className="text-sm text-[#A0A0A0]">
+                <p className="text-sm text-[#5C5537]/70">
                   by {activity.artist} {activity.timestamp !== undefined && 
                     `· at ${formatDuration(activity.timestamp)}`}
                 </p>
               </div>
             </div>
             {activity.content && (
-              <p className="text-sm text-[#1F2C24] mb-2">
+              <p className="text-sm text-[#5C5537] mb-2">
                 {activity.content}
               </p>
             )}
@@ -169,22 +169,21 @@ const ActivityItem = ({ activity, isLast = false }: ActivityItemProps) => {
     <div className="relative pl-3">
       {/* Timeline line */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#D9D9D9]"
+        className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#5C5537]/20"
         style={{ height: isLast ? "2.5rem" : "100%" }}
       />
       {/* Timeline dot */}
-      <div className="absolute left-4/5 top-0 transform -translate-x-4 w-3 h-3 rounded-full bg-[#FFBA00] border-2 border-[#F9F9F6]" />
+      <div className="absolute left-4/5 top-0 transform -translate-x-4 w-3 h-3 rounded-full bg-[#5C5537] border-2 border-[#FFFBEb]" />
 
       <div className="p-4 space-y-1">
         {renderContent()}
         <div className="flex items-center justify-between">
-          <span className="text-xs text-[#A0A0A0]">
+          <span className="text-xs text-[#5C5537]/70">
             {timeAgo}
           </span>
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-1 text-sm text-[#A0A0A0] hover:text-[#6D9773]">
+            <button className="flex items-center gap-1 text-sm text-[#5C5537]/70 hover:text-[#5C5537]">
               <span className="text-xs"></span>
-              
             </button>
           </div>
         </div>

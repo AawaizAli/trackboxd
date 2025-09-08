@@ -32,11 +32,11 @@ export default function ActivityPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FFFFF0]">
+      <div className="min-h-screen bg-[#FFFBEb]">
         <Header />
         <div className="max-w-5xl mx-auto px-4 py-8">
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6D9773]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5C5537]"></div>
           </div>
         </div>
         <Footer variant="light" />
@@ -45,22 +45,22 @@ export default function ActivityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFFF0]">
+    <div className="min-h-screen bg-[#FFFBEb]">
       <Header />
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-[#0C3B2E] mb-2">
+            <h1 className="text-3xl font-bold text-[#5C5537] mb-2">
               Activity
             </h1>
-            <p className="text-[#0C3B2E]/70">
+            <p className="text-[#5C5537]/70">
               See what you and your friends have been listening to
             </p>
           </div>
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold text-[#0C3B2E] mb-6">
+          <h2 className="text-2xl font-semibold text-[#5C5537] mb-6">
             Recent Activity
           </h2>
           <div className="space-y-0">
@@ -73,8 +73,8 @@ export default function ActivityPage() {
                 />
               ))
             ) : (
-              <div className="text-center py-8 text-[#A0A0A0]">
-                <Music className="w-12 h-12 mx-auto mb-2" />
+              <div className="text-center py-8 text-[#5C5537]">
+                <Music className="w-12 h-12 mx-auto mb-2 text-[#5C5537]/70" />
                 <p>No activity yet</p>
               </div>
             )}

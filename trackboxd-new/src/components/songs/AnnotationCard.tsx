@@ -48,9 +48,10 @@ const AnnotationCard: React.FC<AnnotationCardProps> = ({ annotation }) => {
     const timeAgo = formatTimeAgo(annotation.created_at);
     const trackName = annotation.track_details?.name || "Unknown Track";
     const artistNames = annotation.track_details?.artists?.map(a => a.name).join(", ") || "Unknown Artist";
-    const albumCover = annotation.track_details?.album?.images?.[0]?.url || "/default-album.png";
+    const albumCover = annotation.track_details?.album?.images?.[0]?.url || "./default-avatar.jpg";
     const albumName = annotation.track_details?.album?.name || "Unknown Album";
     const timestamp = formatDuration(annotation.timestamp || 0);
+    const userImage = annotation.users.image_url || "./default-avatar.jpg";
 
     // Check like status on component mount
     useEffect(() => {
@@ -115,45 +116,51 @@ const AnnotationCard: React.FC<AnnotationCardProps> = ({ annotation }) => {
     };
     
     return (
-        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
+        <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
             <div className="flex items-start gap-3">
-                <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
+                <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-[#5C5537]/10 flex-shrink-0">
                     <img
                         src={albumCover}
                         alt={`${trackName} cover`}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                            e.currentTarget.src = "./default-avatar.jpg";
+                        }}
                     />
                 </div>
                 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                         <img 
-                            src={annotation.users.image_url} 
+                            src={userImage} 
                             alt={annotation.users.name}
                             className="w-6 h-6 rounded-full"
+                            onError={(e) => {
+                                e.currentTarget.src = "./default-avatar.jpg";
+                            }}
                         />
-                        <div className="font-medium text-[#1F2C24]">
+                        <div className="font-medium text-[#5C5537]">
                             {annotation.users.name}
                         </div>
-                        <span className="text-xs text-[#A0A0A0]">
+                        <span className="text-xs text-[#5C5537]/70">
                             annotated
                         </span>
                     </div>
 
                     <div className="mb-2">
                         <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-[#1F2C24]">{trackName}</h3>
-                            <div className="flex items-center text-[#A0A0A0] text-sm">
+                            <h3 className="font-semibold text-[#5C5537]">{trackName}</h3>
+                            <div className="flex items-center text-[#5C5537]/70 text-sm">
                                 <Clock className="w-4 h-4 mr-1" />
                                 <span>{timestamp}</span>
                             </div>
                         </div>
-                        <p className="text-[#A0A0A0] text-sm">{artistNames}</p>
-                        <p className="text-[#A0A0A0] text-xs italic">{albumName}</p>
+                        <p className="text-[#5C5537]/70 text-sm">{artistNames}</p>
+                        <p className="text-[#5C5537]/70 text-xs italic">{albumName}</p>
                     </div>
                     
                     {annotation.text && (
-                        <div className="mt-2 bg-[#F9F9F9] rounded-md p-3 text-sm text-[#1F2C24]">
+                        <div className="mt-2 bg-[#5C5537]/10 rounded-md p-3 text-sm text-[#5C5537]">
                             <p className="line-clamp-3">
                                 {annotation.text}
                             </p>
@@ -173,36 +180,36 @@ const AnnotationCard: React.FC<AnnotationCardProps> = ({ annotation }) => {
                             >
                                 {initialLoad ? (
                                     <div className="w-4 h-4 flex items-center justify-center">
-                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#6D9773]"></div>
+                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#5C5537]"></div>
                                     </div>
                                 ) : (
                                     <Heart 
                                         className={`w-4 h-4 transition-all duration-200 ${
                                             isLiked 
-                                                ? 'text-[#6D9773] fill-[#6D9773]' 
+                                                ? 'text-[#5C5537] fill-[#5C5537]' 
                                                 : user 
-                                                    ? 'text-[#A0A0A0] group-hover:text-[#6D9773]' 
-                                                    : 'text-[#A0A0A0]'
+                                                    ? 'text-[#5C5537]/70 group-hover:text-[#5C5537]' 
+                                                    : 'text-[#5C5537]/70'
                                         }`}
                                     />
                                 )}
                                 <span className={`text-sm transition-colors duration-200 ${
                                     isLiked 
-                                        ? 'text-[#6D9773] font-medium' 
+                                        ? 'text-[#5C5537] font-medium' 
                                         : user 
-                                            ? 'text-[#A0A0A0] group-hover:text-[#6D9773]' 
-                                            : 'text-[#A0A0A0]'
+                                            ? 'text-[#5C5537]/70 group-hover:text-[#5C5537]' 
+                                            : 'text-[#5C5537]/70'
                                 }`}>
                                     {likeCount}
                                 </span>
                             </button>
-                            <span className="text-xs text-[#A0A0A0]">
+                            <span className="text-xs text-[#5C5537]/70">
                                 {timeAgo}
                             </span>
                         </div>
                         <Link
                             href={`/songs/${annotation.track_id}`}
-                            className="text-xs text-[#6D9773] hover:text-[#5C8769]"
+                            className="text-xs text-[#5C5537]/70 hover:text-[#5C5537]"
                         >
                             View track
                         </Link>

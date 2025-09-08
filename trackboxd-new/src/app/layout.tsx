@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Lora } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const merriweather = Lora({ subsets: ["latin"], weight: ["400", "700"] });
 
 export const metadata: Metadata = {
   title: "Trackboxd",
@@ -16,7 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-[#FFFFF0] text-[#1F2C24]`}>{children}</body>
+      <body className={`${merriweather.className} bg-[#FFFFF0] text-[#1F2C24]`}>
+        {children}
+      </body>
     </html>
   );
 }

@@ -21,10 +21,10 @@ const SpotifyTrackCard: React.FC<SpotifyTrackCardProps> = ({
     onAnnotationClick,
 }) => {
     return (
-        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+        <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
             <Link href={`/songs/${track.id}`}>
                 <div className="cursor-pointer">
-                    <div className="w-full h-48 relative overflow-hidden rounded-lg bg-gray-200">
+                    <div className="w-full h-48 relative overflow-hidden rounded-lg bg-[#5C5537]/10">
                         <img
                             src={
                                 track.album.images[0]?.url ||
@@ -32,18 +32,21 @@ const SpotifyTrackCard: React.FC<SpotifyTrackCardProps> = ({
                             }
                             alt={`${track.name} cover`}
                             className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                            onError={(e) => {
+                                e.currentTarget.src = "/default-album.png";
+                            }}
                         />
                     </div>
 
                     <div className="mt-3 p-4">
                         <div>
-                            <h3 className="font-semibold text-[#1F2C24] hover:text-[#6D9773] transition-colors">
+                            <h3 className="font-semibold text-[#5C5537] hover:text-[#5C5537]/80 transition-colors">
                                 {track.name}
                             </h3>
-                            <p className="text-[#A0A0A0] text-sm truncate">
+                            <p className="text-[#5C5537]/70 text-sm truncate">
                                 {track.artists.map((a) => a.name).join(", ")}
                             </p>
-                            <p className="text-[#A0A0A0] text-xs truncate">
+                            <p className="text-[#5C5537]/70 text-xs truncate">
                                 {track.album.name}
                             </p>
                         </div>
@@ -61,11 +64,11 @@ const SpotifyTrackCard: React.FC<SpotifyTrackCardProps> = ({
                         disabled={isLoading}
                         className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
                             isLiked
-                                ? "bg-[#FFBA00] text-[#1F2C24]"
-                                : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
+                                ? "bg-[#FFBA00] text-[#5C5537] border border-[#FFBA00]"
+                                : "bg-[#FFFBEb] text-[#5C5537] border border-[#5C5537]/30 hover:bg-[#5C5537]/10 hover:border-[#5C5537]/50"
                         }`}>
                         {isLoading ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#5C5537]"></div>
                         ) : (
                             <>
                                 <Heart className="w-3 h-3" />
@@ -78,7 +81,7 @@ const SpotifyTrackCard: React.FC<SpotifyTrackCardProps> = ({
                             e.preventDefault();
                             onReviewClick(track);
                         }}
-                        className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                        className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFBEb] text-[#5C5537] border border-[#5C5537]/30 hover:bg-[#5C5537]/10 hover:border-[#5C5537]/50 transition-colors">
                         <Star className="w-3 h-3" />
                         <span>Review</span>
                     </button>
@@ -87,7 +90,7 @@ const SpotifyTrackCard: React.FC<SpotifyTrackCardProps> = ({
                             e.preventDefault();
                             onAnnotationClick(track);
                         }}
-                        className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                        className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFBEb] text-[#5C5537] border border-[#5C5537]/30 hover:bg-[#5C5537]/10 hover:border-[#5C5537]/50 transition-colors">
                         <MessageCircle className="w-3 h-3" />
                         <span>Annotate</span>
                     </button>

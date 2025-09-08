@@ -1,5 +1,6 @@
 import { Heart } from "lucide-react";
 import { Album } from "@/app/albums/types";
+import Link from "next/link";
 
 interface AlbumListItemProps {
   album: Album;
@@ -17,9 +18,10 @@ export const AlbumListItem = ({
   isLoading = false,
 }: AlbumListItemProps) => {
   return (
+    <Link href={`/albums/${album.id}`} className="group">
     <div
-      className={`p-4 hover:bg-[#F9F9F6] transition-colors ${
-        !isLastItem ? "border-b border-[#D9D9D9]" : ""
+      className={`p-4 hover:bg-[#5C5537]/5 transition-colors ${
+        !isLastItem ? "border-b border-[#5C5537]/20" : ""
       }`}
     >
       <div className="flex gap-4">
@@ -28,16 +30,19 @@ export const AlbumListItem = ({
             src={album.cover_url}
             alt={album.name}
             className="w-16 h-16 rounded-lg object-cover"
+            onError={(e) => {
+                e.currentTarget.src = "/default-album.jpg";
+            }}
           />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="font-bold text-[#0C3B2E] truncate">
+              <h3 className="font-bold text-[#5C5537] truncate">
                 {album.name}
               </h3>
-              <p className="text-[#6D9773] text-sm truncate">
+              <p className="text-[#5C5537]/70 text-sm truncate">
                 by {album.creator}
               </p>
             </div>
@@ -51,30 +56,30 @@ export const AlbumListItem = ({
                   isLoading ? "cursor-not-allowed" : "cursor-pointer"
                 } ${
                   isLiked
-                    ? "text-[#6D9773]"
-                    : "text-[#A0A0A0] hover:text-[#6D9773]"
+                    ? "text-[#5C5537]"
+                    : "text-[#5C5537]/50 hover:text-[#5C5537]"
                 }`}
               >
                 {isLoading ? (
                   <div className="w-5 h-5 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#6D9773]"></div>
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#5C5537]"></div>
                   </div>
                 ) : (
                   <Heart
                     className={`w-5 h-5 ${
-                      isLiked ? "fill-[#6D9773]" : ""
+                      isLiked ? "fill-[#5C5537]" : ""
                     }`}
                   />
                 )}
               </button>
-              <span className={`text-sm ${isLiked ? 'text-[#6D9773] font-medium' : 'text-[#A0A0A0]'}`}>
+              <span className={`text-sm ${isLiked ? 'text-[#5C5537] font-medium' : 'text-[#5C5537]/70'}`}>
                 {album.like_count}
               </span>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-4 text-[#A0A0A0] text-xs mt-2">
+          <div className="flex items-center gap-4 text-[#5C5537]/70 text-xs mt-2">
             <div className="flex items-center gap-1">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -115,5 +120,6 @@ export const AlbumListItem = ({
         </div>
       </div>
     </div>
+    </Link>
   );
 };

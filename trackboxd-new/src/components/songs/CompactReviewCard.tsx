@@ -42,50 +42,48 @@ const CompactReviewCard: React.FC<CompactReviewCardProps> = ({ review }) => {
     : artists.map(a => a.name).join(", ") || "Unknown Artist";
   
   return (
-    <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-      <div className="p-3">
-        <div className="flex items-start gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                
-                <img 
-                            src={review.users.image_url} 
-                            alt={review.users.name}
-                            className="w-6 h-6 rounded-full"
-                        />
-                        <div className="font-medium text-[#1F2C24]">
-                            {review.users.name}
-                        </div>
-                <div className="flex items-center text-[#FFBA00] text-xs">
-                  <Star className="h-3 w-3 mr-0.5 inline" />
-                  <span>{review.rating}</span>
-                </div>
-              </div>
+    <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+          <img 
+              src={review.users.image_url || "./default-avatar.jpg"} 
+              alt={review.users.name}
+              className="w-6 h-6 rounded-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "./default-avatar.jpg";
+              }}
+            />
+            <div className="font-medium text-[#5C5537]">
+              {review.users.name}
             </div>
-            
-            <div className="mb-2">
-              <p className="text-[#1F2C24] text-sm font-medium">{trackName}</p>
-              <p className="text-[#A0A0A0] text-xs">{artistNames}</p>
+            <div className="flex items-center text-[#FFBA00] text-sm">
+              <Star className="h-4 w-4 mr-0.5 inline" />
+              <span>{review.rating}</span>
             </div>
+          </div>
+          
+          <div className="mb-2">
+            <h3 className="font-semibold text-[#5C5537] text-sm">{trackName}</h3>
+            <p className="text-[#5C5537]/70 text-xs">{artistNames}</p>
+          </div>
 
-            {review.text && (
-              <p className="text-[#1F2C24] text-sm line-clamp-2 mb-2">
-                {review.text}
-              </p>
-            )}
+          {review.text && (
+            <p className="text-[#5C5537] text-sm line-clamp-2 mb-2">
+              {review.text}
+            </p>
+          )}
 
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-[#A0A0A0]">
-                {timeAgo}
-              </span>
-              <Link 
-                href={`/songs/${review.item_id}`} 
-                className="text-xs text-[#6D9773] hover:text-[#5C8769]"
-              >
-                View track
-              </Link>
-            </div>
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-[#5C5537]/70">
+              {timeAgo}
+            </span>
+            <Link 
+              href={`/songs/${review.item_id}`} 
+              className="text-xs text-[#5C5537]/70 hover:text-[#5C5537]"
+            >
+              View track
+            </Link>
           </div>
         </div>
       </div>

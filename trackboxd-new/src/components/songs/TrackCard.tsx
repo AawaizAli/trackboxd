@@ -29,7 +29,7 @@ const TrackCard: React.FC<TrackCardProps> = ({
             <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                     <div key={star} className="relative">
-                        <div className="w-4 h-4 mb-2 text-[#D9D9D9]">★</div>
+                        <div className="w-4 h-4 mb-2 text-[#5C5537]/30">★</div>
                         <div
                             className="absolute top-0 left-0 w-5 h-5 text-[#FFBA00] overflow-hidden"
                             style={{
@@ -44,14 +44,14 @@ const TrackCard: React.FC<TrackCardProps> = ({
                         </div>
                     </div>
                 ))}
-                <span className="text-sm text-[#1F2C24] ml-1">{rating}</span>
+                <span className="text-sm text-[#5C5537] ml-1">{rating}</span>
             </div>
         );
     };
 
     return (
         <Link href={`/songs/${track.id}`}>
-            <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div
                     className={`p-4 ${
                         viewMode === "list" ? "flex items-center space-x-4" : ""
@@ -59,7 +59,7 @@ const TrackCard: React.FC<TrackCardProps> = ({
                     <div
                         className={`${
                             viewMode === "list" ? "w-16 h-16" : "w-full h-48"
-                        } relative overflow-hidden rounded-lg bg-gray-200`}>
+                        } relative overflow-hidden rounded-lg bg-[#5C5537]/10`}>
                         <img
                             src={track.coverArt}
                             alt={`${track.title} cover`}
@@ -81,47 +81,31 @@ const TrackCard: React.FC<TrackCardProps> = ({
                                 className={`${
                                     viewMode === "list" ? "flex-1" : ""
                                 }`}>
-                                <h3 className="font-semibold text-[#1F2C24] cursor-pointer hover:text-[#6D9773] transition-colors">
+                                <h3 className="font-semibold text-[#5C5537] cursor-pointer hover:text-[#5C5537]/70 transition-colors">
                                     {track.title}
                                 </h3>
-                                <p className="text-[#A0A0A0] text-sm truncate">
+                                <p className="text-[#5C5537]/70 text-sm truncate">
                                     {track.artist}
                                 </p>
-                                <p className="text-[#A0A0A0] text-xs truncate">
+                                <p className="text-[#5C5537]/70 text-xs truncate">
                                     {track.album}
                                 </p>
                             </div>
 
-                            {/* <div
-                                className={`${
-                                    viewMode === "list"
-                                        ? "flex items-center space-x-6"
-                                        : "mt-2"
-                                }`}>
-                                {renderStars(track.avgRating)}
-                                <div className="flex items-center space-x-1 text-[#A0A0A0]">
-                                    <Heart className="w-4 h-4" />
-                                    <span className="text-sm">
-                                        {track.saveCount}
-                                    </span>
-                                </div>
-                            </div> */}
-
-                            {/* Add to the card's stats section */}
                             <div className="flex items-center space-x-4 mt-2">
-                                <div className="flex items-center space-x-1 text-[#A0A0A0]">
+                                <div className="flex items-center space-x-1 text-[#5C5537]/70">
                                     <Heart className="w-4 h-4" />
                                     <span className="text-sm">
                                         {track.stats?.like_count || 0}
                                     </span>
                                 </div>
-                                <div className="flex items-center space-x-1 text-[#A0A0A0]">
+                                <div className="flex items-center space-x-1 text-[#5C5537]/70">
                                     <Star className="w-4 h-4" />
                                     <span className="text-sm">
                                         {track.stats?.review_count || 0}
                                     </span>
                                 </div>
-                                <div className="flex items-center space-x-1 text-[#A0A0A0]">
+                                <div className="flex items-center space-x-1 text-[#5C5537]/70">
                                     <MessageCircle className="w-4 h-4" />
                                     <span className="text-sm">
                                         {track.stats?.annotation_count || 0}
@@ -145,11 +129,11 @@ const TrackCard: React.FC<TrackCardProps> = ({
                             disabled={isLoading}
                             className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
                                 isLiked
-                                    ? "bg-[#FFBA00] text-[#1F2C24]"
-                                    : "bg-[#6D9773] text-[#F9F9F9] hover:bg-[#5C8769]"
+                                    ? "bg-[#5C5537] text-[#FFFBEb]"
+                                    : "bg-[#5C5537]/20 text-[#5C5537] hover:bg-[#5C5537]/30"
                             }`}>
                             {isLoading ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#5C5537]"></div>
                             ) : (
                                 <>
                                     <Heart className="w-3 h-3" />
@@ -162,7 +146,7 @@ const TrackCard: React.FC<TrackCardProps> = ({
                                 e.preventDefault();
                                 onReviewClick(track);
                             }}
-                            className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                            className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFBEb] text-[#5C5537] border border-[#5C5537]/20 hover:bg-[#5C5537]/10 transition-colors">
                             <Star className="w-3 h-3" />
                             <span>Review</span>
                         </button>
@@ -171,7 +155,7 @@ const TrackCard: React.FC<TrackCardProps> = ({
                                 e.preventDefault();
                                 onAnnotationClick(track);
                             }}
-                            className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFFF0] text-[#1F2C24] border border-[#D9D9D9] hover:bg-[#E2E3DF] transition-colors">
+                            className="flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-[#FFFBEb] text-[#5C5537] border border-[#5C5537]/20 hover:bg-[#5C5537]/10 transition-colors">
                             <MessageCircle className="w-3 h-3" />
                             <span>Annotate</span>
                         </button>

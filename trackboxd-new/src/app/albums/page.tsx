@@ -24,13 +24,13 @@ interface Album {
 }
 
 const SkeletonAlbumCard = () => (
-    <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl p-4">
+    <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-xl p-4">
         <div className="animate-pulse">
-            <div className="bg-gray-200 rounded-xl h-48 w-full mb-4"></div>
+            <div className="bg-[#5C5537]/10 rounded-xl h-48 w-full mb-4"></div>
             <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                <div className="h-4 bg-[#5C5537]/10 rounded w-3/4"></div>
+                <div className="h-3 bg-[#5C5537]/10 rounded w-1/2"></div>
+                <div className="h-3 bg-[#5C5537]/10 rounded w-1/3"></div>
             </div>
         </div>
     </div>
@@ -39,13 +39,13 @@ const SkeletonAlbumCard = () => (
 const SkeletonAlbumListItem = () => (
     <div className="flex items-center p-4">
         <div className="animate-pulse flex items-center w-full">
-            <div className="bg-gray-200 rounded-lg w-16 h-16"></div>
+            <div className="bg-[#5C5537]/10 rounded-lg w-16 h-16"></div>
             <div className="ml-4 flex-1">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-[#5C5537]/10 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-[#5C5537]/10 rounded w-1/2"></div>
             </div>
             <div className="w-20">
-                <div className="h-3 bg-gray-200 rounded w-full"></div>
+                <div className="h-3 bg-[#5C5537]/10 rounded w-full"></div>
             </div>
         </div>
     </div>
@@ -265,7 +265,7 @@ const AlbumsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FFFFF0]">
+        <div className="min-h-screen bg-[#FFFBEb]">
             <Header />
 
             <div className="max-w-5xl mx-auto px-4 py-8">
@@ -273,10 +273,10 @@ const AlbumsPage = () => {
                 <div className="mb-8">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-[#0C3B2E]">
+                            <h1 className="text-3xl font-bold text-[#5C5537]">
                                 Albums
                             </h1>
-                            <p className="text-[#0C3B2E]/70 mt-2">
+                            <p className="text-[#5C5537]/70 mt-2">
                                 Discover and explore music collections
                             </p>
                         </div>
@@ -284,7 +284,7 @@ const AlbumsPage = () => {
                         {/* Search Bar */}
                         <div className="w-full md:w-[320px]">
                             <div className="relative h-full">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#A0A0A0] w-5 h-5" />
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#5C5537]/50 w-5 h-5" />
                                 <input
                                     type="text"
                                     placeholder="Search albums..."
@@ -293,11 +293,11 @@ const AlbumsPage = () => {
                                         setSearchTerm(e.target.value);
                                         searchAlbums(e.target.value);
                                     }}
-                                    className="w-full h-full pl-10 pr-4 py-3 bg-[#FFFFF0] border border-[#D9D9D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6D9773]"
+                                    className="w-full h-full pl-10 pr-4 py-3 bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5C5537]/30 text-[#5C5537] placeholder-[#5C5537]/50"
                                 />
                                 {isSearching && (
                                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#6D9773]"></div>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#5C5537]"></div>
                                     </div>
                                 )}
                                 {searchTerm && !isSearching && (
@@ -306,7 +306,7 @@ const AlbumsPage = () => {
                                             setSearchTerm("");
                                             setShowSearchResults(false);
                                         }}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#A0A0A0] hover:text-[#6D9773]">
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#5C5537]/50 hover:text-[#5C5537]">
                                         <X className="w-5 h-5" />
                                     </button>
                                 )}
@@ -323,15 +323,15 @@ const AlbumsPage = () => {
                 {showSearchResults && (
                     <div className="mb-8">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-[#0C3B2E]">
+                            <h2 className="text-2xl font-bold text-[#5C5537]">
                                 Search Results for{" "}
-                                <span className="text-[#6D9773]">
+                                <span className="text-[#5C5537]">
                                     "{searchTerm}"
                                 </span>
                             </h2>
                             <button
                                 onClick={() => setShowSearchResults(false)}
-                                className="text-sm text-[#6D9773] hover:text-[#5C8769]">
+                                className="text-sm text-[#5C5537]/70 hover:text-[#5C5537]">
                                 Clear results
                             </button>
                         </div>
@@ -350,7 +350,7 @@ const AlbumsPage = () => {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-[#A0A0A0]">
+                            <p className="text-[#5C5537]/70">
                                 {isSearching
                                     ? "Searching..."
                                     : "No albums found"}
@@ -364,8 +364,8 @@ const AlbumsPage = () => {
                     <>
                         <div className="mb-12">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-[#0C3B2E]">
-                                    <span className="text-[#FFBA00]">
+                                <h2 className="text-2xl font-bold text-[#5C5537]">
+                                    <span className="text-[#5C5537]">
                                         Popular
                                     </span>{" "}
                                     This Week
@@ -403,13 +403,13 @@ const AlbumsPage = () => {
                         {/* Recently Liked Albums Section */}
                         <div className="mb-12">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-[#0C3B2E]">
+                                <h2 className="text-2xl font-bold text-[#5C5537]">
                                     Recently Liked Albums
                                 </h2>
                             </div>
 
                             {loadingLiked ? (
-                                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl overflow-hidden">
+                                <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-xl overflow-hidden">
                                     {[...Array(3)].map((_, i) => (
                                         <SkeletonAlbumListItem
                                             key={`skeleton-liked-${i}`}
@@ -417,7 +417,7 @@ const AlbumsPage = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl overflow-hidden">
+                                <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-xl overflow-hidden">
                                     {recentlyLikedAlbums.map(
                                         (album, index) => (
                                             <AlbumListItem
@@ -447,13 +447,13 @@ const AlbumsPage = () => {
                         {/* Recently Reviewed Albums Section */}
                         <div>
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-[#0C3B2E]">
+                                <h2 className="text-2xl font-bold text-[#5C5537]">
                                     Recently Reviewed Albums
                                 </h2>
                             </div>
 
                             {loadingReviewed ? (
-                                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl overflow-hidden">
+                                <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-xl overflow-hidden">
                                     {[...Array(3)].map((_, i) => (
                                         <SkeletonAlbumListItem
                                             key={`skeleton-reviewed-${i}`}
@@ -461,7 +461,7 @@ const AlbumsPage = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl overflow-hidden">
+                                <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-xl overflow-hidden">
                                     {recentlyReviewedAlbums.map(
                                         (album, index) => (
                                             <AlbumListItem

@@ -26,13 +26,16 @@ export const AlbumCard = ({
 
     return (
         <Link href={`/albums/${album.id}`} className="group">
-        <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200 h-full flex flex-col">
+        <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200 h-full flex flex-col">
             {/* Cover Art */}
             <div className="relative">
                 <img
                     src={album.cover_url}
                     alt={album.name}
                     className="w-full aspect-square object-cover"
+                    onError={(e) => {
+                        e.currentTarget.src = "/default-album.jpg";
+                    }}
                 />
             </div>
 
@@ -40,10 +43,10 @@ export const AlbumCard = ({
             <div className="p-4 flex flex-col flex-grow">
                 <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0 flex-grow">
-                        <h3 className="font-bold text-lg text-[#0C3B2E] truncate">
+                        <h3 className="font-bold text-lg text-[#5C5537] truncate">
                             {album.name}
                         </h3>
-                        <p className="text-[#6D9773] text-sm truncate mt-1">
+                        <p className="text-[#5C5537]/70 text-sm truncate mt-1">
                             by {album.creator}
                         </p>
                     </div>
@@ -55,19 +58,19 @@ export const AlbumCard = ({
                             disabled={isLoading}
                             className={`group flex-shrink-0 p-2 rounded-full transition-colors ${
                                 !isLoading
-                                    ? "hover:bg-[#6D9773]/10 cursor-pointer"
+                                    ? "hover:bg-[#5C5537]/10 cursor-pointer"
                                     : "cursor-not-allowed"
                             }`}>
                             {isLoading ? (
                                 <div className="w-5 h-5 flex items-center justify-center">
-                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#6D9773]"></div>
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#5C5537]"></div>
                                 </div>
                             ) : (
                                 <Heart
                                     className={`w-5 h-5 transition-colors ${
                                         isLiked
-                                            ? "text-[#6D9773] fill-[#6D9773]"
-                                            : "text-[#A0A0A0] group-hover:text-[#6D9773]"
+                                            ? "text-[#5C5537] fill-[#5C5537]"
+                                            : "text-[#5C5537]/50 group-hover:text-[#5C5537]"
                                     }`}
                                 />
                             )}
@@ -75,8 +78,8 @@ export const AlbumCard = ({
                         <span
                             className={`text-sm ${
                                 isLiked
-                                    ? "text-[#6D9773] font-medium"
-                                    : "text-[#A0A0A0]"
+                                    ? "text-[#5C5537] font-medium"
+                                    : "text-[#5C5537]/70"
                             }`}>
                             {album.like_count}
                         </span>
@@ -85,7 +88,7 @@ export const AlbumCard = ({
 
                 {/* Stats */}
                 <div className="flex justify-between items-center mt-auto">
-                    <div className="flex items-center gap-1 text-[#A0A0A0] text-sm">
+                    <div className="flex items-center gap-1 text-[#5C5537]/70 text-sm">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-4 w-4"
@@ -102,7 +105,7 @@ export const AlbumCard = ({
                         <span>{album.tracks} tracks</span>
                     </div>
                     {album.release_date && (
-                        <div className="text-[#A0A0A0] text-sm">
+                        <div className="text-[#5C5537]/70 text-sm">
                             {new Date(album.release_date).getFullYear()}
                         </div>
                     )}

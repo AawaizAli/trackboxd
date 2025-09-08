@@ -57,19 +57,17 @@ interface SearchResults {
 }
 
 const Header: React.FC<HeaderProps> = ({}) => {
-    const router = useRouter(); // Initialize router
+    const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
     const [isLogModalOpen, setIsLogModalOpen] = useState(false);
     const [spotifyUser, setSpotifyUser] = useState<SpotifyUser | null>(null);
-    const [trackDetails, setTrackDetails] = useState<any>(null);
     const searchRef = useRef<HTMLInputElement>(null);
 
     const pathname = usePathname();
 
-    // Add these states
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<SearchResults | null>(
         null
@@ -125,13 +123,13 @@ const Header: React.FC<HeaderProps> = ({}) => {
 
             if (isSearchExpanded && clickedOutsideDesktop) {
                 setIsSearchExpanded(false);
-                setSearchQuery(""); // Clear search when closing
+                setSearchQuery("");
                 setShowResults(false);
             }
 
             if (isMobileSearchExpanded && clickedOutsideMobile) {
                 setIsMobileSearchExpanded(false);
-                setSearchQuery(""); // Clear search when closing
+                setSearchQuery("");
                 setShowResults(false);
             }
         };
@@ -173,7 +171,6 @@ const Header: React.FC<HeaderProps> = ({}) => {
                 if (!res.ok) throw new Error("Failed to fetch user");
                 const data = await res.json();
                 setSpotifyUser(data);
-                console.log("Spotify user data:", data);
             } catch (error) {
                 console.error("Error fetching Spotify user:", error);
             }
@@ -264,13 +261,13 @@ const Header: React.FC<HeaderProps> = ({}) => {
             label: "My Reviews",
             href: "/my-reviews",
             icon: MessageSquare,
-            link: true, // Add this flag to indicate it should use Link
+            link: true,
         },
         {
             label: "My Annotations",
             href: "/my-annotations",
             icon: FileText,
-            link: true, // Add this flag to indicate it should use Link
+            link: true,
         },
         { type: "divider" },
         { label: "Logout", onClick: handleLogout, icon: LogOut },
@@ -286,7 +283,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
 
         return (
             <div
-                className="flex items-center gap-3 p-3 hover:bg-[#FFFFD5] rounded-lg cursor-pointer"
+                className="flex items-center gap-3 p-3 hover:bg-[#5C5537]/10 rounded-lg cursor-pointer"
                 onClick={() => handleResultClick(item.type, item.id)}>
                 <div className="relative">
                     {imageUrl ? (
@@ -296,31 +293,31 @@ const Header: React.FC<HeaderProps> = ({}) => {
                             className="w-12 h-12 rounded-lg object-cover"
                         />
                     ) : (
-                        <div className="bg-gray-200 border-2 border-dashed rounded-xl w-12 h-12 flex items-center justify-center">
-                            <Music className="text-gray-400 w-5 h-5" />
+                        <div className="bg-[#5C5537]/10 border-2 border-dashed rounded-xl w-12 h-12 flex items-center justify-center">
+                            <Music className="text-[#5C5537]/50 w-5 h-5" />
                         </div>
                     )}
-                    <div className="absolute bottom-1 right-1 bg-black/70 rounded-full p-1">
+                    <div className="absolute bottom-1 right-1 bg-[#5C5537]/70 rounded-full p-1">
                         {item.type === "track" ? (
-                            <Disc className="w-3 h-3 text-white" />
+                            <Disc className="w-3 h-3 text-[#FFFBEb]" />
                         ) : item.type === "album" ? (
-                            <Disc3 className="w-3 h-3 text-white" />
+                            <Disc3 className="w-3 h-3 text-[#FFFBEb]" />
                         ) : (
-                            <Users className="w-3 h-3 text-white" />
+                            <Users className="w-3 h-3 text-[#FFFBEb]" />
                         )}
                     </div>
                 </div>
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <h4 className="font-medium text-[#1F2C24] truncate">
+                        <h4 className="font-medium text-[#5C5537] truncate">
                             {item.name}
                         </h4>
-                        <span className="text-xs px-2 py-1 rounded-full bg-[#0C3B2E]/10 text-[#0C3B2E]">
+                        <span className="text-xs px-2 py-1 rounded-full bg-[#5C5537]/10 text-[#5C5537]">
                             {item.type.toUpperCase()}
                         </span>
                     </div>
-                    <p className="text-sm text-[#A0A0A0] truncate">
+                    <p className="text-sm text-[#5C5537]/70 truncate">
                         {subtitle}
                     </p>
                 </div>
@@ -331,13 +328,13 @@ const Header: React.FC<HeaderProps> = ({}) => {
     const ClearSearchButton = ({ onClick }: { onClick: () => void }) => (
         <button
             onClick={onClick}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-[#FFFFD5]">
-            <X className="w-4 h-4 text-[#1F2C24]" />
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-[#5C5537]/10">
+            <X className="w-4 h-4 text-[#5C5537]" />
         </button>
     );
 
     return (
-        <header className="bg-[#FFFFE7] border-b border-[#D9D9D9] sticky top-0 z-50">
+        <header className="bg-[#FFFBEb] border-b border-[#5C5537]/20 sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Left - Logo and Title */}
@@ -352,7 +349,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                     className="h-full w-auto"
                                 />
                             </div>
-                            <h1 className="text-2xl font-bold text-[#1F2C24] tracking-tight">
+                            <h1 className="text-2xl font-roboto font-bold text-[#5C5537] tracking-tight">
                                 Trackboxd
                             </h1>
                         </div>
@@ -366,8 +363,8 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                 href={item.href}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                                     item.active
-                                        ? "bg-[#0C3B2E] text-[#F9F9F9]"
-                                        : "text-[#1F2C24] hover:bg-[#FFFFD5] hover:text-[#1F2C24]"
+                                        ? "bg-[#5C5537] text-[#FFFBEb]"
+                                        : "text-[#5C5537] hover:bg-[#5C5537]/10"
                                 }`}>
                                 {item.label}
                             </a>
@@ -389,17 +386,17 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                         e.target.value
                                                     )
                                                 }
-                                                className="w-full border border-[#1F2C24] text-[#1F2C24] rounded-lg pl-3 pr-8 py-2 h-10 bg-[#FFFFE7] focus:outline-none" // Removed focus ring
+                                                className="w-full border border-[#5C5537]/30 text-[#5C5537] rounded-lg pl-3 pr-8 py-2 h-10 bg-[#FFFBEb] focus:outline-none"
                                                 onFocus={() =>
                                                     setShowResults(true)
                                                 }
-                                                autoFocus // Auto-focus when expanded
+                                                autoFocus
                                             />
                                         </div>
                                     ) : (
                                         <button
                                             onClick={toggleSearch}
-                                            className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200">
+                                            className="p-2 rounded-lg text-[#5C5537] hover:bg-[#5C5537]/10 transition-colors duration-200">
                                             <Search className="w-5 h-5" />
                                         </button>
                                     )}
@@ -416,20 +413,19 @@ const Header: React.FC<HeaderProps> = ({}) => {
 
                                 {/* Search Results Dropdown */}
                                 {showResults &&
-                                    (isSearching || searchQuery) && ( // Add this condition
-                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 bg-[#FFFFE7] border border-[#D9D9D9] rounded-lg shadow-lg z-50 max-h-[700px] overflow-y-auto min-w-[400px] max-w-[600px]">
+                                    (isSearching || searchQuery) && (
+                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg shadow-lg z-50 max-h-[700px] overflow-y-auto min-w-[400px] max-w-[600px]">
                                             {isSearching ? (
-                                                <div className="p-4 text-center text-[#A0A0A0]">
+                                                <div className="p-4 text-center text-[#5C5537]/70">
                                                     Searching...
                                                 </div>
                                             ) : searchResults ? (
                                                 <div className="py-2">
-                                                    {/* Filter out null items before mapping */}
                                                     {searchResults.tracks.filter(
                                                         Boolean
                                                     ).length > 0 && (
                                                         <>
-                                                            <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                            <div className="px-4 py-2 text-xs font-semibold text-[#5C5537]/70 uppercase tracking-wider">
                                                                 Tracks
                                                             </div>
                                                             <div className="mb-2">
@@ -457,8 +453,8 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                         Boolean
                                                     ).length > 0 && (
                                                         <>
-                                                            <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
-                                                            <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                            <div className="h-px bg-[#5C5537]/20 mx-4 my-1" />
+                                                            <div className="px-4 py-2 text-xs font-semibold text-[#5C5537]/70 uppercase tracking-wider">
                                                                 Albums
                                                             </div>
                                                             <div className="mb-2">
@@ -486,8 +482,8 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                         Boolean
                                                     ).length > 0 && (
                                                         <>
-                                                            <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
-                                                            <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                            <div className="h-px bg-[#5C5537]/20 mx-4 my-1" />
+                                                            <div className="px-4 py-2 text-xs font-semibold text-[#5C5537]/70 uppercase tracking-wider">
                                                                 Playlists
                                                             </div>
                                                             <div className="mb-2">
@@ -511,7 +507,6 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                         </>
                                                     )}
 
-                                                    {/* Updated no results condition */}
                                                     {searchResults.tracks.filter(
                                                         Boolean
                                                     ).length === 0 &&
@@ -521,13 +516,13 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                         searchResults.playlists.filter(
                                                             Boolean
                                                         ).length === 0 && (
-                                                            <div className="px-4 py-8 text-center text-[#A0A0A0]">
+                                                            <div className="px-4 py-8 text-center text-[#5C5537]/70">
                                                                 No results found
                                                             </div>
                                                         )}
                                                 </div>
                                             ) : searchQuery ? (
-                                                <div className="px-4 py-8 text-center text-[#A0A0A0]">
+                                                <div className="px-4 py-8 text-center text-[#5C5537]/70">
                                                     No results found
                                                 </div>
                                             ) : null}
@@ -541,7 +536,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setIsLogModalOpen(true)}
-                            className="hidden md:flex items-center gap-1.5 bg-[#FFBA00] text-[#1F2C24] py-2 px-4 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] shadow-sm">
+                            className="hidden md:flex items-center gap-1.5 font-roboto bg-[#5C5537] text-[#FFFBEb] py-2 px-4 rounded-lg transition-all duration-200 ease-in-out transform hover:bg-[#5C5537]/90 shadow-sm">
                             <Plus className="w-4 h-4" />
                             <span className="font-medium text-sm">Log</span>
                         </button>
@@ -550,9 +545,9 @@ const Header: React.FC<HeaderProps> = ({}) => {
                         <div className="hidden md:block relative">
                             <button
                                 onClick={toggleDropdown}
-                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#FFFFD5] transition-colors duration-200">
+                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#5C5537]/10 transition-colors duration-200">
                                 <div className="relative">
-                                    <div className="w-8 h-8 rounded-full bg-[#0C3B2E] flex items-center justify-center ring-2 ring-[#FFBA00]">
+                                    <div className="w-8 h-8 rounded-full bg-[#5C5537] flex items-center justify-center ring-2 ring-[#5C5537]">
                                         {user.avatar ? (
                                             <img
                                                 src={user.avatar}
@@ -560,7 +555,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                 className="w-full h-full rounded-full object-cover"
                                             />
                                         ) : (
-                                            <span className="text-[#F9F9F9] text-sm font-semibold">
+                                            <span className="text-[#FFFBEb] text-sm font-semibold">
                                                 {getInitials(
                                                     spotifyUser?.display_name ||
                                                         "Guest User"
@@ -570,12 +565,12 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                     </div>
                                 </div>
 
-                                <span className="text-sm font-medium text-[#1F2C24]">
+                                <span className="text-sm font-medium text-[#5C5537]">
                                     {spotifyUser?.display_name || "Guest User"}
                                 </span>
 
                                 <ChevronDown
-                                    className={`w-4 h-4 text-[#A0A0A0] transition-transform duration-200 ${
+                                    className={`w-4 h-4 text-[#5C5537]/70 transition-transform duration-200 ${
                                         isDropdownOpen ? "rotate-180" : ""
                                     }`}
                                 />
@@ -588,23 +583,23 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                         onClick={() => setIsDropdownOpen(false)}
                                     />
 
-                                    <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-1/25 top-full mt-2 w-56 bg-[#FFFFF0] rounded-xl shadow-lg border border-[#D9D9D9] py-2 z-20">
+                                    <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-1/25 top-full mt-2 w-56 bg-[#FFFBEb] rounded-xl shadow-lg border border-[#5C5537]/20 py-2 z-20">
                                         {dropdownItems.map((item, index) =>
                                             item.type === "divider" ? (
                                                 <div
                                                     key={index}
-                                                    className="h-px bg-[#D9D9D9] my-2"
+                                                    className="h-px bg-[#5C5537]/20 my-2"
                                                 />
                                             ) : item.link ? (
                                                 <Link
                                                     key={item.label}
                                                     href={item.href || "#"}
-                                                    className="flex items-center gap-3 w-full px-4 py-3 text-sm text-left text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200"
+                                                    className="flex items-center gap-3 w-full px-4 py-3 text-sm text-left text-[#5C5537] hover:bg-[#5C5537]/10 transition-colors duration-200"
                                                     onClick={() =>
                                                         setIsDropdownOpen(false)
                                                     }>
                                                     {item.icon && (
-                                                        <item.icon className="w-4 h-4 text-[#A0A0A0]" />
+                                                        <item.icon className="w-4 h-4 text-[#5C5537]/70" />
                                                     )}
                                                     {item.label}
                                                 </Link>
@@ -615,13 +610,13 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                         item.onClick ||
                                                         (() => {})
                                                     }
-                                                    className={`flex items-center gap-3 w-full px-4 py-3 text-sm text-left text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 rounded-lg ${
+                                                    className={`flex items-center gap-3 w-full px-4 py-3 text-sm text-left text-[#5C5537] hover:bg-[#5C5537]/10 transition-colors duration-200 rounded-lg ${
                                                         item.onClick
                                                             ? "cursor-pointer"
                                                             : ""
                                                     }`}>
                                                     {item.icon && (
-                                                        <item.icon className="w-4 h-4 text-[#A0A0A0]" />
+                                                        <item.icon className="w-4 h-4 text-[#5C5537]/70" />
                                                     )}
                                                     {item.label}
                                                 </button>
@@ -638,7 +633,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                         {/* Log + Button - Mobile (always visible) */}
                         <button
                             onClick={() => setIsLogModalOpen(true)}
-                            className="flex md:hidden ml-2 mr-2 items-center gap-1 bg-[#FFBA00] text-[#1F2C24] p-2 rounded-lg transition-all duration-200 ease-in-out">
+                            className="flex md:hidden ml-2 mr-2 items-center gap-1 bg-[#5C5537] text-[#FFFBEb] p-2 rounded-lg transition-all duration-200 ease-in-out">
                             <Plus className="w-4 h-4" />
                         </button>
 
@@ -647,7 +642,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                 className={`flex items-center transition-all duration-300 ${
                                     isMobileSearchExpanded ? "w-40" : "w-10"
                                 }`}
-                                ref={mobileSearchContainerRef} // Added ref
+                                ref={mobileSearchContainerRef}
                             >
                                 {isMobileSearchExpanded ? (
                                     <div className="w-full">
@@ -658,18 +653,17 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                             onChange={(e) =>
                                                 setSearchQuery(e.target.value)
                                             }
-                                            className="w-full border border-[#1F2C24] text-[#1F2C24] rounded-lg pl-3 pr-8 py-2 h-10 bg-[#FFFFE7] focus:outline-none" // Removed focus ring
+                                            className="w-full border border-[#5C5537]/30 text-[#5C5537] rounded-lg pl-3 pr-8 py-2 h-10 bg-[#FFFBEb] focus:outline-none"
                                             onFocus={() => setShowResults(true)}
-                                            autoFocus // Auto-focus when expanded
+                                            autoFocus
                                         />
 
-                                        {/* Mobile search results dropdown - ADDED */}
+                                        {/* Mobile search results dropdown */}
                                         {showResults &&
-                                            (isSearching || searchQuery) && ( // Add this condition
-                                                <div className="fixed top-16 left-0 right-0 mx-auto bg-[#FFFFE7] border border-[#D9D9D9] rounded-lg shadow-lg z-50 max-h-[70vh] overflow-y-auto w-[90vw]">
-                                                    {/* Added width */}
+                                            (isSearching || searchQuery) && (
+                                                <div className="fixed top-16 left-0 right-0 mx-auto bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg shadow-lg z-50 max-h-[70vh] overflow-y-auto w-[90vw]">
                                                     {isSearching ? (
-                                                        <div className="p-4 text-center text-[#A0A0A0]">
+                                                        <div className="p-4 text-center text-[#5C5537]/70">
                                                             Searching...
                                                         </div>
                                                     ) : searchResults ? (
@@ -678,7 +672,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                                 Boolean
                                                             ).length > 0 && (
                                                                 <>
-                                                                    <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                                    <div className="px-4 py-2 text-xs font-semibold text-[#5C5537]/70 uppercase tracking-wider">
                                                                         Tracks
                                                                     </div>
                                                                     <div className="mb-2">
@@ -706,8 +700,8 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                                 Boolean
                                                             ).length > 0 && (
                                                                 <>
-                                                                    <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
-                                                                    <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                                    <div className="h-px bg-[#5C5537]/20 mx-4 my-1" />
+                                                                    <div className="px-4 py-2 text-xs font-semibold text-[#5C5537]/70 uppercase tracking-wider">
                                                                         Albums
                                                                     </div>
                                                                     <div className="mb-2">
@@ -735,8 +729,8 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                                 Boolean
                                                             ).length > 0 && (
                                                                 <>
-                                                                    <div className="h-px bg-[#D9D9D9] mx-4 my-1" />
-                                                                    <div className="px-4 py-2 text-xs font-semibold text-[#A0A0A0] uppercase tracking-wider">
+                                                                    <div className="h-px bg-[#5C5537]/20 mx-4 my-1" />
+                                                                    <div className="px-4 py-2 text-xs font-semibold text-[#5C5537]/70 uppercase tracking-wider">
                                                                         Playlists
                                                                     </div>
                                                                     <div className="mb-2">
@@ -771,7 +765,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                                     Boolean
                                                                 ).length ===
                                                                     0 && (
-                                                                    <div className="px-4 py-8 text-center text-[#A0A0A0]">
+                                                                    <div className="px-4 py-8 text-center text-[#5C5537]/70">
                                                                         No
                                                                         results
                                                                         found
@@ -779,7 +773,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                                                 )}
                                                         </div>
                                                     ) : searchQuery ? (
-                                                        <div className="px-4 py-8 text-center text-[#A0A0A0]">
+                                                        <div className="px-4 py-8 text-center text-[#5C5537]/70">
                                                             No results found
                                                         </div>
                                                     ) : null}
@@ -789,7 +783,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                 ) : (
                                     <button
                                         onClick={toggleMobileSearch}
-                                        className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200">
+                                        className="p-2 rounded-lg text-[#5C5537] hover:bg-[#5C5537]/10 transition-colors duration-200">
                                         <Search className="w-5 h-5" />
                                     </button>
                                 )}
@@ -808,7 +802,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
 
                         <button
                             onClick={toggleMobileMenu}
-                            className="p-2 rounded-lg text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200">
+                            className="p-2 rounded-lg text-[#5C5537] hover:bg-[#5C5537]/10 transition-colors duration-200">
                             {isMobileMenuOpen ? (
                                 <X className="w-5 h-5" />
                             ) : (
@@ -831,8 +825,8 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                     href={item.href}
                                     className={`px-3 py-3 rounded-lg text-base font-medium transition-colors duration-200 ${
                                         item.active
-                                            ? "bg-[#0C3B2E] text-[#F9F9F9]"
-                                            : "text-[#1F2C24] hover:bg-[#FFFFD5]"
+                                            ? "bg-[#5C5537] text-[#FFFBEb]"
+                                            : "text-[#5C5537] hover:bg-[#5C5537]/10"
                                     }`}>
                                     {item.label}
                                 </a>
@@ -841,10 +835,10 @@ const Header: React.FC<HeaderProps> = ({}) => {
                     </div>
 
                     {/* User Section */}
-                    <div className="border-t border-[#D9D9D9] px-4 py-3">
+                    <div className="border-t border-[#5C5537]/20 px-4 py-3">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="relative">
-                                <div className="w-10 h-10 rounded-full bg-[#0C3B2E] flex items-center justify-center ring-2 ring-[#FFBA00]">
+                                <div className="w-10 h-10 rounded-full bg-[#5C5537] flex items-center justify-center ring-2 ring-[#5C5537]">
                                     {user.avatar ? (
                                         <img
                                             src={user.avatar}
@@ -852,7 +846,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                             className="w-full h-full rounded-full object-cover"
                                         />
                                     ) : (
-                                        <span className="text-[#F9F9F9] text-base font-semibold">
+                                        <span className="text-[#FFFBEb] text-base font-semibold">
                                             {getInitials(
                                                 spotifyUser?.display_name ||
                                                     "Guest User"
@@ -862,10 +856,10 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                 </div>
                             </div>
                             <div>
-                                <div className="font-medium text-[#1F2C24]">
+                                <div className="font-medium text-[#5C5537]">
                                     {spotifyUser?.display_name || "Guest User"}
                                 </div>
-                                <div className="text-sm text-[#A0A0A0]">
+                                <div className="text-sm text-[#5C5537]/70">
                                     {spotifyUser?.email || "guest@example.com"}
                                 </div>
                             </div>
@@ -877,18 +871,18 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                 item.type === "divider" ? (
                                     <div
                                         key={index}
-                                        className="h-px bg-[#D9D9D9] my-2"
+                                        className="h-px bg-[#5C5537]/20 my-2"
                                     />
                                 ) : item.link ? (
                                     <Link
                                         key={item.label}
                                         href={item.href || "#"}
-                                        className="flex items-center gap-3 px-3 py-3 text-base text-left text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 rounded-lg"
+                                        className="flex items-center gap-3 px-3 py-3 text-base text-left text-[#5C5537] hover:bg-[#5C5537]/10 transition-colors duration-200 rounded-lg"
                                         onClick={() =>
                                             setIsMobileMenuOpen(false)
                                         }>
                                         {item.icon && (
-                                            <item.icon className="w-5 h-5 text-[#A0A0A0]" />
+                                            <item.icon className="w-5 h-5 text-[#5C5537]/70" />
                                         )}
                                         {item.label}
                                     </Link>
@@ -896,11 +890,11 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                     <button
                                         key={item.label}
                                         onClick={item.onClick || (() => {})}
-                                        className={`flex items-center gap-3 px-3 py-3 text-base text-left text-[#1F2C24] hover:bg-[#FFFFD5] transition-colors duration-200 rounded-lg ${
+                                        className={`flex items-center gap-3 px-3 py-3 text-base text-left text-[#5C5537] hover:bg-[#5C5537]/10 transition-colors duration-200 rounded-lg ${
                                             item.onClick ? "cursor-pointer" : ""
                                         }`}>
                                         {item.icon && (
-                                            <item.icon className="w-5 h-5 text-[#A0A0A0]" />
+                                            <item.icon className="w-5 h-5 text-[#5C5537]/70" />
                                         )}
                                         {item.label}
                                     </button>

@@ -97,7 +97,6 @@ const Songs = () => {
             }
             const data = await res.json();
             setRecentlyAnnotatedTracks(data);
-            console.log("Recently annotated tracks:", data);
         } catch (error) {
             console.error("Error fetching recently annotated tracks:", error);
             setRecentlyAnnotatedError(
@@ -123,7 +122,6 @@ const Songs = () => {
             }
             const data = await res.json();
             setPopularAnnotations(data);
-            console.log("Popular annotations:", data);
         } catch (error) {
             console.error("Error fetching popular annotations:", error);
             setPopularAnnotationsError("Failed to load popular annotations");
@@ -149,7 +147,6 @@ const Songs = () => {
             }
             const data = await res.json();
             setPopularReviews(data);
-            console.log("Popular reviews:", data);
         } catch (error) {
             console.error("Error fetching popular reviews:", error);
             setPopularReviewsError("Failed to load popular reviews");
@@ -175,7 +172,6 @@ const Songs = () => {
             }
             const data = await res.json();
             setRecentlyReviewedTracks(data);
-            console.log("Recently reviewed tracks:", data);
         } catch (error) {
             console.error("Error fetching recently reviewed tracks:", error);
             setRecentlyReviewedError("Failed to load recently reviewed tracks");
@@ -190,7 +186,6 @@ const Songs = () => {
 
     const handleLikeClick = async (trackId: string) => {
         if (!user) {
-            // Redirect to landing page if not logged in
             window.location.href = "/";
             return;
         }
@@ -237,7 +232,6 @@ const Songs = () => {
             if (!user) return;
 
             try {
-                // Remove fetchedTracks check
                 const likeStatuses = await Promise.all(
                     trackIds.map((trackId) =>
                         fetch(
@@ -263,7 +257,7 @@ const Songs = () => {
                 console.error("Failed to fetch like statuses:", error);
             }
         },
-        [user] // Remove fetchedTracks dependency
+        [user]
     );
 
     useEffect(() => {
@@ -275,11 +269,9 @@ const Songs = () => {
                     throw new Error("Failed to fetch global top tracks");
                 }
                 const data = (await res.json()) as SpotifyPlaylistTrack[];
-                // Extract the actual track objects from playlist items
                 const tracks = data.map(item => item.track);
                 setGlobalTopTracks(tracks);
-                console.log("Global top tracks:", tracks);
-    
+
                 if (user && tracks.length > 0) {
                     const trackIds = tracks
                         .map((track) => track.id)
@@ -299,12 +291,9 @@ const Songs = () => {
 
     useEffect(() => {
         if (user && globalTopTracks.length > 0) {
-            console.log("Global top tracks changed, fetching likes...");
-            // Now globalTopTracks contains direct track objects
             const trackIds = globalTopTracks
                 .map((track) => track.id)
                 .filter(Boolean);
-            console.log("Fetching likes for track IDs:", trackIds);
             fetchLikeStatuses(trackIds);
         }
     }, [globalTopTracks, user, fetchLikeStatuses]);
@@ -314,7 +303,7 @@ const Songs = () => {
             <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                     <div key={star} className="relative">
-                        <div className="w-4 h-4 mb-2 text-[#D9D9D9]">★</div>
+                        <div className="w-4 h-4 mb-2 text-[#5C5537]/30">★</div>
                         <div
                             className="absolute top-0 left-0 w-5 h-5 text-[#FFBA00] overflow-hidden"
                             style={{
@@ -324,7 +313,7 @@ const Songs = () => {
                         </div>
                     </div>
                 ))}
-                <span className="text-sm text-[#1F2C24] ml-1">{rating}</span>
+                <span className="text-sm text-[#5C5537] ml-1">{rating}</span>
             </div>
         );
     };
@@ -347,7 +336,6 @@ const Songs = () => {
                 throw new Error("Failed to search");
             }
 
-
             const data = await res.json();
             setSearchResults(data.tracks?.items || []);
             setShowSearchResults(true);
@@ -366,7 +354,7 @@ const Songs = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FFFFF0]">
+        <div className="min-h-screen bg-[#FFFBEb]">
             <Header />
 
             <div className="max-w-5xl mx-auto px-4 py-8">
@@ -391,15 +379,15 @@ const Songs = () => {
                 {showSearchResults && (
                     <div className="mb-8">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-[#0C3B2E]">
+                            <h2 className="text-2xl font-bold text-[#5C5537]">
                                 Search Results for{" "}
-                                <span className="text-[#6D9773]">
+                                <span className="text-[#5C5537]">
                                     "{searchTerm}"
                                 </span>
                             </h2>
                             <button
                                 onClick={() => setShowSearchResults(false)}
-                                className="text-sm text-[#6D9773] hover:text-[#5C8769]">
+                                className="text-sm text-[#5C5537]/70 hover:text-[#5C5537]">
                                 Clear results
                             </button>
                         </div>
@@ -430,7 +418,7 @@ const Songs = () => {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-[#A0A0A0]">No results found</p>
+                            <p className="text-[#5C5537]/70">No results found</p>
                         )}
                     </div>
                 )}
@@ -439,16 +427,16 @@ const Songs = () => {
                 {!showSearchResults && (
                     <>
                         <div className="mb-8">
-                            <h2 className="text-2xl font-bold text-[#0C3B2E] mb-6">
-                                <span className="text-[#FFBA00]">Trending</span>{" "}
+                            <h2 className="text-2xl font-bold text-[#5C5537] mb-6">
+                                <span className="text-[#5C5537]">Trending</span>{" "}
                                 This Week
                             </h2>
                             {isLoadingTopTracks ? (
                                 <div className="flex justify-center items-center h-48">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6D9773]"></div>
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5C5537]"></div>
                                 </div>
                             ) : topTracksError ? (
-                                <p className="text-red-500">{topTracksError}</p>
+                                <p className="text-[#5C5537]">{topTracksError}</p>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                                     {trendingTracks.map((track) => (
@@ -481,7 +469,7 @@ const Songs = () => {
                             {/* Recently Reviewed */}
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-[#0C3B2E]">
+                                    <h2 className="text-xl font-bold text-[#5C5537]">
                                         Recently Reviewed
                                     </h2>
                                 </div>
@@ -495,16 +483,16 @@ const Songs = () => {
 
                             <div>
                                 <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-[#0C3B2E]">
+                                    <h2 className="text-xl font-bold text-[#5C5537]">
                                         Recently Annotated
                                     </h2>
                                 </div>
                                 {isLoadingRecentlyAnnotated ? (
                                     <div className="flex justify-center items-center h-32">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6D9773]"></div>
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5C5537]"></div>
                                     </div>
                                 ) : recentlyAnnotatedError ? (
-                                    <p className="text-red-500">
+                                    <p className="text-[#5C5537]">
                                         {recentlyAnnotatedError}
                                     </p>
                                 ) : recentlyAnnotatedTracks.length > 0 ? (
@@ -519,7 +507,7 @@ const Songs = () => {
                                         )}
                                     </div>
                                 ) : (
-                                    <p className="text-[#A0A0A0]">
+                                    <p className="text-[#5C5537]/70">
                                         No recently annotated tracks
                                     </p>
                                 )}
@@ -529,17 +517,17 @@ const Songs = () => {
                         {/* Popular Reviews This Week */}
                         <div className="mb-8">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-[#0C3B2E]">
+                                <h2 className="text-2xl font-bold text-[#5C5537]">
                                     Popular Reviews This Week
                                 </h2>
                             </div>
 
                             {isLoadingPopularReviews ? (
                                 <div className="flex justify-center items-center h-32">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6D9773]"></div>
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5C5537]"></div>
                                 </div>
                             ) : popularReviewsError ? (
-                                <p className="text-red-500">
+                                <p className="text-[#5C5537]">
                                     {popularReviewsError}
                                 </p>
                             ) : popularReviews.length > 0 ? (
@@ -552,7 +540,7 @@ const Songs = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-[#A0A0A0]">
+                                <p className="text-[#5C5537]/70">
                                     No popular reviews yet
                                 </p>
                             )}
@@ -561,17 +549,17 @@ const Songs = () => {
                         {/* Popular Annotations This Week */}
                         <div className="mb-8">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-[#0C3B2E]">
+                                <h2 className="text-2xl font-bold text-[#5C5537]">
                                     Popular Annotations This Week
                                 </h2>
                             </div>
 
                             {isLoadingPopularAnnotations ? (
                                 <div className="flex justify-center items-center h-32">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6D9773]"></div>
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5C5537]"></div>
                                 </div>
                             ) : popularAnnotationsError ? (
-                                <p className="text-red-500">
+                                <p className="text-[#5C5537]">
                                     {popularAnnotationsError}
                                 </p>
                             ) : popularAnnotations.length > 0 ? (
@@ -584,7 +572,7 @@ const Songs = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-[#A0A0A0]">
+                                <p className="text-[#5C5537]/70">
                                     No popular annotations yet
                                 </p>
                             )}
@@ -597,13 +585,13 @@ const Songs = () => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center">
                         {/* Darkened background overlay */}
                         <div
-                            className="absolute inset-0 bg-black/50 bg-opacity-20"
+                            className="absolute inset-0 bg-[#5C5537]/20"
                             onClick={() =>
                                 setShowReviewForm(false)
                             }></div>
 
                         {/* Popup container */}
-                        <div className="bg-[#FFFFF0] rounded-lg p-6 w-full max-w-2xl border border-[#D9D9D9] shadow-lg relative z-10">
+                        <div className="bg-[#FFFBEb] rounded-lg p-6 w-full max-w-2xl border border-[#5C5537]/20 shadow-lg relative z-10">
                             {/* Review Form */}
                             <ReviewForm
                                 onClose={() => {
@@ -631,13 +619,13 @@ const Songs = () => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center">
                         {/* Darkened background overlay */}
                         <div
-                            className="absolute inset-0 bg-black/50 bg-opacity-20"
+                            className="absolute inset-0 bg-[#5C5537]/20"
                             onClick={() =>
                                 setShowAnnotationForm(false)
                             }></div>
 
                         {/* Popup container */}
-                        <div className="bg-[#FFFFF0] rounded-lg p-6 w-full max-w-2xl border border-[#D9D9D9] shadow-lg relative z-10">
+                        <div className="bg-[#FFFBEb] rounded-lg p-6 w-full max-w-2xl border border-[#5C5537]/20 shadow-lg relative z-10">
                             {/* Annotation Form */}
                             <AnnotationForm
                                 onClose={() => {
