@@ -1,3 +1,4 @@
+// ReviewForm.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -40,8 +41,8 @@ interface ReviewFormProps {
     onClose: () => void;
     initialTrack?: SimplifiedTrack;
     initialAlbum?: SimplifiedAlbum;
-    initialReview?: InitialReview; // Add this
-    onSave?: (review: InitialReview) => void; // Add this
+    initialReview?: InitialReview;
+    onSave?: (review: InitialReview) => void;
 }
 
 interface SpotifyItem {
@@ -326,33 +327,33 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         <form onSubmit={handleSubmit} className="space-y-6">
             {!selectedItem ? (
                 <div className="space-y-4">
-                    <h3 className="font-medium text-[#1F2C24]">
+                    <h3 className="font-medium text-[#5C5537]">
                         Search for a track or album to review
                     </h3>
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A0A0A0]" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#5C5537]/50" />
                         <Input
                             type="search"
                             placeholder="Search tracks or albums..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 pr-10 py-6 rounded-xl bg-[#FFFFE7] border border-[#D9D9D9]"
+                            className="pl-10 pr-10 py-3 rounded-md bg-white border border-[#5C5537]/20 text-[#5C5537]"
                         />
                         {searchQuery && (
                             <button
                                 type="button"
                                 onClick={() => setSearchQuery("")}
                                 className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                <X className="w-5 h-5 text-[#A0A0A0]" />
+                                <X className="w-5 h-5 text-[#5C5537]/50" />
                             </button>
                         )}
                     </div>
 
                     {/* Search Results - Scrollable container */}
-                    <div className="border rounded-lg p-4 bg-[#FFFFE7] border-[#D9D9D9] max-h-96 overflow-y-auto">
+                    <div className="border rounded-lg p-4 bg-white border-[#5C5537]/20 max-h-96 overflow-y-auto">
                         {isSearching ? (
                             <div className="flex justify-center py-4">
-                                <p className="text-[#A0A0A0]">Searching...</p>
+                                <p className="text-[#5C5537]/50">Searching...</p>
                             </div>
                         ) : searchError ? (
                             <div className="text-center py-4 text-red-500">
@@ -363,7 +364,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                 {searchResults.map((item) => (
                                     <div
                                         key={item.id}
-                                        className="flex items-center gap-3 p-3 hover:bg-[#FFFFD5] rounded-lg cursor-pointer group"
+                                        className="flex items-center gap-3 p-3 hover:bg-[#FFFBEb] rounded-lg cursor-pointer group"
                                         onClick={() => setSelectedItem(item)}>
                                         <div className="relative">
                                             {getImageUrl(item) ? (
@@ -373,11 +374,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                                     className="w-16 h-16 rounded-lg object-cover"
                                                 />
                                             ) : (
-                                                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 flex items-center justify-center">
+                                                <div className="bg-gray-200 border-2 border-dashed rounded-md w-16 h-16 flex items-center justify-center">
                                                     <Music className="text-gray-400 w-6 h-6" />
                                                 </div>
                                             )}
-                                            <div className="absolute bottom-1 right-1 bg-black/70 rounded-full p-1">
+                                            <div className="absolute bottom-1 right-1 bg-[#5C5537]/70 rounded-full p-1">
                                                 {item.type === "track" ? (
                                                     <Disc className="w-3 h-3 text-white" />
                                                 ) : (
@@ -388,16 +389,16 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <h4 className="font-medium text-[#1F2C24] truncate">
+                                                <h4 className="font-medium text-[#5C5537] truncate">
                                                     {item.name}
                                                 </h4>
-                                                <span className="text-xs px-2 py-1 rounded-full bg-[#0C3B2E]/10 text-[#0C3B2E]">
+                                                <span className="text-xs px-2 py-1 rounded-full bg-[#5C5537]/10 text-[#5C5537]">
                                                     {item.type === "track"
                                                         ? "TRACK"
                                                         : "ALBUM"}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-[#A0A0A0] truncate">
+                                            <p className="text-sm text-[#5C5537]/70 truncate">
                                                 {getArtists(item)}
                                                 {item.album &&
                                                     ` • ${getAlbumName(item)}`}
@@ -407,25 +408,25 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                 ))}
                             </div>
                         ) : searchQuery ? (
-                            <div className="text-center py-4 text-[#A0A0A0]">
+                            <div className="text-center py-4 text-[#5C5537]/50">
                                 No results found for "{searchQuery}"
                             </div>
                         ) : (
                             // Show trending tracks when no search query
                             <>
-                                <h4 className="text-sm font-medium text-[#1F2C24] mb-3">
+                                <h4 className="text-sm font-medium text-[#5C5537] mb-3">
                                     Trending This Week
                                 </h4>
                                 {isLoadingTrending ? (
                                     <div className="flex justify-center items-center h-32">
-                                        <div className="w-4 h-4 border-2 border-[#0C3B2E] border-t-transparent rounded-full animate-spin" />
+                                        <div className="w-4 h-4 border-2 border-[#5C5537] border-t-transparent rounded-full animate-spin" />
                                     </div>
                                 ) : trendingTracks.length > 0 ? (
                                     <div className="space-y-3">
                                         {trendingTracks.map((track) => (
                                             <div
                                                 key={`trending-${track.id}`}
-                                                className="flex items-center gap-3 p-3 hover:bg-[#FFFFD5] rounded-lg cursor-pointer"
+                                                className="flex items-center gap-3 p-3 hover:bg-[#FFFBEb] rounded-lg cursor-pointer"
                                                 onClick={() =>
                                                     setSelectedItem({
                                                         id: track.id,
@@ -456,10 +457,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                                     />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <h4 className="font-medium text-[#1F2C24] truncate">
+                                                    <h4 className="font-medium text-[#5C5537] truncate">
                                                         {track.name}
                                                     </h4>
-                                                    <p className="text-sm text-[#A0A0A0] truncate">
+                                                    <p className="text-sm text-[#5C5537]/70 truncate">
                                                         {track.artist}
                                                     </p>
                                                 </div>
@@ -467,7 +468,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-8 text-[#A0A0A0]">
+                                    <div className="text-center py-8 text-[#5C5537]/50">
                                         <Music className="w-12 h-12 mx-auto mb-2" />
                                         <p>No trending tracks available</p>
                                     </div>
@@ -479,7 +480,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             ) : (
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-[#1F2C24]">
+                        <h3 className="font-medium text-[#5C5537]">
                             Reviewing:{" "}
                             <span className="font-bold">
                                 {selectedItem.name}
@@ -488,12 +489,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                         <button
                             type="button"
                             onClick={() => setSelectedItem(null)}
-                            className="text-[#A0A0A0] hover:text-[#1F2C24]">
+                            className="text-[#5C5537]/50 hover:text-[#5C5537]">
                             <X className="w-5 h-5" />
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-4 p-4 bg-[#FFFFE7] rounded-lg border border-[#D9D9D9]">
+                    <div className="flex items-center gap-4 p-4 bg-white rounded-lg border border-[#5C5537]/20">
                         <div className="relative">
                             {getImageUrl(selectedItem) ? (
                                 <img
@@ -502,11 +503,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                     className="w-16 h-16 rounded-lg object-cover"
                                 />
                             ) : (
-                                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 flex items-center justify-center">
+                                <div className="bg-gray-200 border-2 border-dashed rounded-md w-16 h-16 flex items-center justify-center">
                                     <Music className="text-gray-400 w-6 h-6" />
                                 </div>
                             )}
-                            <div className="absolute bottom-1 right-1 bg-black/70 rounded-full p-1">
+                            <div className="absolute bottom-1 right-1 bg-[#5C5537]/70 rounded-full p-1">
                                 {selectedItem.type === "track" ? (
                                     <Disc className="w-3 h-3 text-white" />
                                 ) : (
@@ -516,16 +517,16 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h4 className="font-bold text-[#1F2C24]">
+                                <h4 className="font-bold text-[#5C5537]">
                                     {selectedItem.name}
                                 </h4>
-                                <span className="text-xs px-2 py-1 rounded-full bg-[#0C3B2E]/10 text-[#0C3B2E]">
+                                <span className="text-xs px-2 py-1 rounded-full bg-[#5C5537]/10 text-[#5C5537]">
                                     {selectedItem.type === "track"
                                         ? "TRACK"
                                         : "ALBUM"}
                                 </span>
                             </div>
-                            <p className="text-sm text-[#A0A0A0]">
+                            <p className="text-sm text-[#5C5537]/70">
                                 {getArtists(selectedItem)}
                                 {selectedItem.album &&
                                     ` • ${getAlbumName(selectedItem)}`}
@@ -535,7 +536,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
                     <div className="space-y-4">
                         <div className="flex flex-col gap-2">
-                            <label className="block text-sm font-medium text-[#1F2C24]">
+                            <label className="block text-sm font-medium text-[#5C5537]">
                                 Rating
                             </label>
                             <div className="flex items-center gap-4">
@@ -558,7 +559,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                     }
                                     icon={
                                         <StarIcon
-                                            className="text-[#FFBA00]"
+                                            className="text-[#5C5537]"
                                             fontSize="inherit"
                                         />
                                     }
@@ -567,19 +568,19 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-[#1F2C24]">
+                            <label className="block text-sm font-medium text-[#5C5537]">
                                 Review
                             </label>
                             <textarea
                                 value={reviewText}
                                 onChange={(e) => setReviewText(e.target.value)}
                                 placeholder="Share your thoughts..."
-                                className="w-full p-4 rounded-lg border border-[#D9D9D9] bg-[#FFFFE7] min-h-[120px] focus:outline-none focus:ring-2 focus:ring-[#0C3B2E]"
+                                className="w-full p-3 rounded-md border border-[#5C5537]/20 bg-white text-[#5C5537] min-h-[120px] focus:outline-none focus:ring-1 focus:ring-[#5C5537]"
                             />
                         </div>
 
                         <div className="pt-2">
-                            <label className="block text-sm font-small text-[#1F2C24] mb-2">
+                            <label className="block text-sm font-medium text-[#5C5537] mb-2">
                                 Visibility
                             </label>
                             <ToggleButtonGroup
@@ -593,10 +594,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                 className="w-full">
                                 <ToggleButton
                                     value="public"
-                                    className={`flex-1 py-3 ${
+                                    className={`flex-1 py-2 ${
                                         visibility === "public"
-                                            ? "bg-[#0C3B2E] text-white"
-                                            : "bg-[#FFFFE7] text-[#1F2C24]"
+                                            ? "bg-[#5C5537] text-white"
+                                            : "bg-white text-[#5C5537] border border-[#5C5537]/20"
                                     }`}>
                                     <div className="flex items-center gap-2">
                                         <PublicIcon fontSize="small" />
@@ -605,10 +606,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                 </ToggleButton>
                                 <ToggleButton
                                     value="private"
-                                    className={`flex-1 py-3 ${
+                                    className={`flex-1 py-2 ${
                                         visibility === "private"
-                                            ? "bg-[#0C3B2E] text-white"
-                                            : "bg-[#FFFFE7] text-[#1F2C24]"
+                                            ? "bg-[#5C5537] text-white"
+                                            : "bg-white text-[#5C5537] border border-[#5C5537]/20"
                                     }`}>
                                     <div className="flex items-center gap-2">
                                         <LockIcon fontSize="small" />
@@ -629,14 +630,14 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="border-[#D9D9D9] text-[#1F2C24] hover:bg-[#FFFFD5]"
+                                className="border-[#5C5537]/20 text-[#5C5537] hover:bg-[#FFFBEb]"
                                 onClick={onClose}
                                 disabled={isSubmitting}>
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
-                                className="bg-[#0C3B2E] hover:bg-[#0a3328] text-[#F9F9F9]"
+                                className="bg-[#5C5537] hover:bg-[#3E3725] text-white"
                                 disabled={!rating || isSubmitting}>
                                 {isSubmitting ? (
                                     <div className="flex items-center gap-2">

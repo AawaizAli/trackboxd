@@ -1,3 +1,4 @@
+// AnnotationForm.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -29,8 +30,8 @@ interface SimplifiedTrack {
 interface AnnotationFormProps {
   onClose: () => void;
   initialTrack?: SimplifiedTrack;
-  initialAnnotation?: InitialAnnotation; // Add this
-  onSave?: (annotation: InitialAnnotation) => void; // Add this
+  initialAnnotation?: InitialAnnotation;
+  onSave?: (annotation: InitialAnnotation) => void;
 }
 
 const AnnotationForm: React.FC<AnnotationFormProps> = ({ 
@@ -242,21 +243,21 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       {!selectedTrack ? (
         <div className="space-y-4">
-          <h3 className="font-medium text-[#1F2C24]">
+          <h3 className="font-medium text-[#5C5537]">
             Search for a track to annotate
           </h3>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A0A0A0]" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#5C5537]/50" />
             <Input
               type="search"
               placeholder="Search tracks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10 py-6 rounded-xl bg-[#FFFFE7] border border-[#D9D9D9]"
+              className="pl-10 pr-10 py-3 rounded-md bg-white border border-[#5C5537]/20 text-[#5C5537]"
             />
             {isSearching && (
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <Loader2 className="w-5 h-5 text-[#6D9773] animate-spin" />
+                <Loader2 className="w-5 h-5 text-[#5C5537] animate-spin" />
               </div>
             )}
             {searchQuery && !isSearching && (
@@ -265,7 +266,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
                 onClick={() => setSearchQuery("")}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2"
               >
-                <X className="w-5 h-5 text-[#A0A0A0]" />
+                <X className="w-5 h-5 text-[#5C5537]/50" />
               </button>
             )}
           </div>
@@ -275,7 +276,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
           )}
 
           {/* Content Area */}
-          <div className="border rounded-lg p-4 bg-[#FFFFE7] border-[#D9D9D9]">
+          <div className="border rounded-lg p-4 bg-white border-[#5C5537]/20">
             {searchQuery ? (
               // Search Results
               searchResults.length > 0 ? (
@@ -283,7 +284,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
                   {searchResults.map((track) => (
                     <div
                       key={track.id}
-                      className="flex items-center gap-3 p-3 hover:bg-[#FFFFD5] rounded-lg cursor-pointer"
+                      className="flex items-center gap-3 p-3 hover:bg-[#FFFBEb] rounded-lg cursor-pointer"
                       onClick={() => setSelectedTrack(track)}
                     >
                       <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
@@ -294,13 +295,13 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
                         />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-medium text-[#1F2C24] truncate">
+                        <h4 className="font-medium text-[#5C5537] truncate">
                           {track.name}
                         </h4>
-                        <p className="text-sm text-[#A0A0A0] truncate">
+                        <p className="text-sm text-[#5C5537]/70 truncate">
                           {track.artist}
                         </p>
-                        <p className="text-xs text-[#A0A0A0] truncate">
+                        <p className="text-xs text-[#5C5537]/50 truncate">
                           {track.album}
                         </p>
                       </div>
@@ -308,7 +309,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-[#A0A0A0]">
+                <div className="text-center py-8 text-[#5C5537]/50">
                   <Music className="w-12 h-12 mx-auto mb-2" />
                   <p>No results found for "{searchQuery}"</p>
                 </div>
@@ -316,19 +317,19 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
             ) : (
               // Trending Tracks
               <>
-                <h4 className="text-sm font-medium text-[#1F2C24] mb-3">
+                <h4 className="text-sm font-medium text-[#5C5537] mb-3">
                   Trending This Week
                 </h4>
                 {isLoadingTrending ? (
                   <div className="flex justify-center items-center h-32">
-                    <Loader2 className="w-8 h-8 text-[#6D9773] animate-spin" />
+                    <Loader2 className="w-8 h-8 text-[#5C5537] animate-spin" />
                   </div>
                 ) : trendingTracks.length > 0 ? (
                   <div className="space-y-3">
                     {trendingTracks.map((track) => (
                       <div
                         key={`trending-${track.id}`}
-                        className="flex items-center gap-3 p-3 hover:bg-[#FFFFD5] rounded-lg cursor-pointer"
+                        className="flex items-center gap-3 p-3 hover:bg-[#FFFBEb] rounded-lg cursor-pointer"
                         onClick={() => setSelectedTrack(track)}
                       >
                         <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
@@ -339,10 +340,10 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
                           />
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-medium text-[#1F2C24] truncate">
+                          <h4 className="font-medium text-[#5C5537] truncate">
                             {track.name}
                           </h4>
-                          <p className="text-sm text-[#A0A0A0] truncate">
+                          <p className="text-sm text-[#5C5537]/70 truncate">
                             {track.artist}
                           </p>
                         </div>
@@ -350,7 +351,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-[#A0A0A0]">
+                  <div className="text-center py-8 text-[#5C5537]/50">
                     <Music className="w-12 h-12 mx-auto mb-2" />
                     <p>No trending tracks available</p>
                   </div>
@@ -362,19 +363,19 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
       ) : (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="font-medium text-[#1F2C24]">
+            <h3 className="font-medium text-[#5C5537]">
               Annotating: <span className="font-bold">{selectedTrack.name}</span>
             </h3>
             <button
               type="button"
               onClick={() => setSelectedTrack(null)}
-              className="text-[#A0A0A0] hover:text-[#1F2C24]"
+              className="text-[#5C5537]/50 hover:text-[#5C5537]"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="flex items-center gap-4 p-4 bg-[#FFFFE7] rounded-lg border border-[#D9D9D9]">
+          <div className="flex items-center gap-4 p-4 bg-white rounded-lg border border-[#5C5537]/20">
             <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
               <img
                 src={selectedTrack.coverArt}
@@ -383,13 +384,13 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
               />
             </div>
             <div className="min-w-0">
-              <h4 className="font-bold text-[#1F2C24] truncate">
+              <h4 className="font-bold text-[#5C5537] truncate">
                 {selectedTrack.name}
               </h4>
-              <p className="text-sm text-[#A0A0A0] truncate">
+              <p className="text-sm text-[#5C5537]/70 truncate">
                 {selectedTrack.artist}
               </p>
-              <p className="text-xs text-[#A0A0A0] truncate">
+              <p className="text-xs text-[#5C5537]/50 truncate">
                 {selectedTrack.album}
               </p>
             </div>
@@ -397,7 +398,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#1F2C24] mb-2">
+              <label className="block text-sm font-medium text-[#5C5537] mb-2">
                 Timestamp (mm:ss or ss)
               </label>
               <Input
@@ -405,28 +406,28 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
                 value={timestamp}
                 onChange={(e) => setTimestamp(e.target.value)}
                 placeholder="e.g., 1:23 or 83"
-                className="w-32"
+                className="w-32 border-[#5C5537]/20 text-[#5C5537]"
               />
-              <p className="text-xs text-[#A0A0A0] mt-1">
+              <p className="text-xs text-[#5C5537]/50 mt-1">
                 Enter the time where your annotation applies
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1F2C24] mb-2">
+              <label className="block text-sm font-medium text-[#5C5537] mb-2">
                 Annotation
               </label>
               <textarea
                 value={annotationText}
                 onChange={(e) => setAnnotationText(e.target.value)}
                 placeholder="Add your annotation..."
-                className="w-full p-4 rounded-lg border border-[#D9D9D9] bg-[#FFFFE7] min-h-[120px] focus:outline-none focus:ring-2 focus:ring-[#0C3B2E]"
+                className="w-full p-3 rounded-md border border-[#5C5537]/20 bg-white text-[#5C5537] min-h-[120px] focus:outline-none focus:ring-1 focus:ring-[#5C5537]"
               />
             </div>
 
             {/* Visibility Toggle */}
             <div className="pt-2">
-              <label className="block text-sm font-small text-[#1F2C24] mb-2">
+              <label className="block text-sm font-medium text-[#5C5537] mb-2">
                 Visibility
               </label>
               <ToggleButtonGroup
@@ -440,7 +441,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
               >
                 <ToggleButton
                   value="public"
-                  className={`flex-1 py-3 ${visibility === 'public' ? 'bg-[#0C3B2E] text-white' : 'bg-[#FFFFE7] text-[#1F2C24]'}`}
+                  className={`flex-1 py-2 ${visibility === 'public' ? 'bg-[#5C5537] text-white' : 'bg-white text-[#5C5537] border border-[#5C5537]/20'}`}
                 >
                   <div className="flex items-center gap-2">
                     <PublicIcon fontSize="small" />
@@ -449,7 +450,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
                 </ToggleButton>
                 <ToggleButton
                   value="private"
-                  className={`flex-1 py-3 ${visibility === 'private' ? 'bg-[#0C3B2E] text-white' : 'bg-[#FFFFE7] text-[#1F2C24]'}`}
+                  className={`flex-1 py-2 ${visibility === 'private' ? 'bg-[#5C5537] text-white' : 'bg-white text-[#5C5537] border border-[#5C5537]/20'}`}
                 >
                   <div className="flex items-center gap-2">
                     <LockIcon fontSize="small" />
@@ -468,7 +469,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
               <Button
                 type="button"
                 variant="outline"
-                className="border-[#D9D9D9] text-[#1F2C24] hover:bg-[#FFFFD5]"
+                className="border-[#5C5537]/20 text-[#5C5537] hover:bg-[#FFFBEb]"
                 onClick={onClose}
                 disabled={isSubmitting}
               >
@@ -476,7 +477,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
               </Button>
               <Button
                 type="submit"
-                className="bg-[#0C3B2E] hover:bg-[#0a3328] text-[#F9F9F9]"
+                className="bg-[#5C5537] hover:bg-[#3E3725] text-white"
                 disabled={!timestamp || !annotationText || isSubmitting}
               >
                 {isSubmitting ? (

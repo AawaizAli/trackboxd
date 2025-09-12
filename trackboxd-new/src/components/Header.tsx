@@ -349,7 +349,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                                     className="h-full w-auto"
                                 />
                             </div>
-                            <h1 className="text-2xl font-roboto font-bold text-[#5C5537] tracking-tight">
+                            <h1 className="text-2xl font-bold text-[#5C5537] tracking-tight">
                                 Trackboxd
                             </h1>
                         </div>
@@ -536,7 +536,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setIsLogModalOpen(true)}
-                            className="hidden md:flex items-center gap-1.5 font-roboto bg-[#5C5537] text-[#FFFBEb] py-2 px-4 rounded-lg transition-all duration-200 ease-in-out transform hover:bg-[#5C5537]/90 shadow-sm">
+                            className="hidden md:flex items-center gap-1.5 bg-[#5C5537] text-[#FFFBEb] py-2 px-4 rounded-lg transition-all duration-200 ease-in-out transform hover:bg-[#5C5537]/90 shadow-sm">
                             <Plus className="w-4 h-4" />
                             <span className="font-medium text-sm">Log</span>
                         </button>
