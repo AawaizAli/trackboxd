@@ -1,5 +1,6 @@
+// EditableReviewCard.tsx
 import React, { useState } from "react";
-import { Edit, Trash } from "lucide-react";
+import { Edit, Trash, Star, MessageCircle, Heart } from "lucide-react";
 import { Review } from "@/app/songs/types";
 import ReviewForm from "@/components/log/forms/ReviewForm";
 
@@ -21,7 +22,7 @@ const EditableReviewCard: React.FC<EditableReviewCardProps> = ({
       <div className="flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <div key={star} className="relative">
-            <div className="w-4 h-4 mb-2 text-[#D9D9D9]">★</div>
+            <div className="w-4 h-4 text-[#5C5537]/30">★</div>
             <div
               className="absolute top-0 left-0 w-5 h-5 text-[#FFBA00] overflow-hidden"
               style={{
@@ -31,7 +32,7 @@ const EditableReviewCard: React.FC<EditableReviewCardProps> = ({
             </div>
           </div>
         ))}
-        <span className="text-sm text-[#1F2C24] ml-1">{rating}</span>
+        <span className="text-sm text-[#5C5537] ml-1">{rating}</span>
       </div>
     );
   };
@@ -44,9 +45,9 @@ const EditableReviewCard: React.FC<EditableReviewCardProps> = ({
     setIsEditMode(false);
   };
 
-  return (
-    <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg p-4 mb-4 relative">
-      {isEditMode ? (
+  if (isEditMode) {
+    return (
+      <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg p-4 mb-4">
         <ReviewForm 
           onClose={() => setIsEditMode(false)}
           onSave={handleSave}
@@ -64,55 +65,63 @@ const EditableReviewCard: React.FC<EditableReviewCardProps> = ({
             }
           }}
         />
-      ) : (
-        <>
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-10 h-10 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
-                <img
-                  src={review.item.cover_url || "/default-album.png"}
-                  alt={`${review.item.name} cover`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <div className="font-semibold text-[#1F2C24]">
-                  {review.item.name}
-                </div>
-                <div className="text-[#A0A0A0] text-xs">
-                  {review.item.artist} • {review.item.type}
-                </div>
-              </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200 mb-4">
+      <div className="p-4 flex items-start gap-4">
+        <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-[#5C5537]/10 flex-shrink-0">
+          <img
+            src={review.item.cover_url || "/default-album.png"}
+            alt={`${review.item.name} cover`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <h3 className="font-semibold text-[#5C5537]">
+                {review.item.name}
+              </h3>
+              <p className="text-[#5C5537]/70 text-sm truncate">
+                {review.item.artist}
+              </p>
+              <p className="text-[#5C5537]/70 text-xs truncate">
+                {review.item.album}
+              </p>
             </div>
             
             <div className="flex gap-2">
               <button 
                 onClick={() => setIsEditMode(true)}
-                className="p-1 text-[#6D9773] hover:text-[#5C8769]"
+                className="p-2 text-[#5C5537] hover:bg-[#5C5537]/10 rounded-full transition-colors"
               >
                 <Edit size={16} />
               </button>
               <button 
                 onClick={() => onDelete(review.id)}
-                className="p-1 text-red-500 hover:text-red-700"
+                className="p-2 text-red-500 hover:bg-red-100 rounded-full transition-colors"
               >
                 <Trash size={16} />
               </button>
             </div>
           </div>
 
-          <div className="mb-2">
+          <div className="mb-3">
             {renderStars(review.rating)}
           </div>
           
           {review.text && (
-            <p className="text-[#1F2C24] text-sm mb-3">
+            <p className="text-[#5C5537] text-sm mb-3">
               {review.text}
             </p>
           )}
           
           <div className="flex justify-between items-center text-xs">
-            <div className="flex items-center gap-1 text-[#A0A0A0]">
+            <div className="flex items-center gap-2 text-[#5C5537]/70">
               <span className={`px-2 py-1 rounded-full ${
                 review.is_public 
                   ? "bg-green-100 text-green-800" 
@@ -120,13 +129,19 @@ const EditableReviewCard: React.FC<EditableReviewCardProps> = ({
               }`}>
                 {review.is_public ? "Public" : "Private"}
               </span>
+              <span>{new Date(review.created_at).toLocaleDateString()}</span>
             </div>
-            <div className="text-[#A0A0A0]">
-              {new Date(review.created_at).toLocaleDateString()}
+            
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-1 text-[#5C5537]/70">
+                <Heart className="w-3 h-3" />
+                <span className="text-xs">{review.like_count || 0}</span>
+              </div>
+              
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 };
