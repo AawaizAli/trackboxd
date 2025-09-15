@@ -241,7 +241,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {!selectedTrack ? (
+     {!initialAnnotation && !selectedTrack ? (
         <div className="space-y-4">
           <h3 className="font-medium text-[#5C5537]">
             Search for a track to annotate
@@ -360,7 +360,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
             )}
           </div>
         </div>
-      ) : (
+      ) : selectedTrack ? ( // Add explicit null check here
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-[#5C5537]">
@@ -490,7 +490,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({
             </div>
           </div>
         </div>
-      )}
+      ) : null} 
     </form>
   );
 };

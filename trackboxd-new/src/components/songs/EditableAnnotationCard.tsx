@@ -1,5 +1,6 @@
+// EditableAnnotationCard.tsx
 import React, { useState } from "react";
-import { Edit, Trash, Clock } from "lucide-react";
+import { Edit, Trash, Clock, Heart, MessageCircle } from "lucide-react";
 import { Annotation } from "@/app/songs/types";
 import AnnotationForm from "@/components/log/forms/AnnotationForm";
 
@@ -30,9 +31,9 @@ const EditableAnnotationCard: React.FC<EditableAnnotationCardProps> = ({
     setIsEditMode(false);
   };
 
-  return (
-    <div className="bg-[#FFFFF5] border border-[#D9D9D9] rounded-lg p-4 mb-4 relative">
-      {isEditMode ? (
+  if (isEditMode) {
+    return (
+      <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg p-4 mb-4">
         <AnnotationForm 
           onClose={() => setIsEditMode(false)}
           onSave={handleSave}
@@ -50,56 +51,64 @@ const EditableAnnotationCard: React.FC<EditableAnnotationCardProps> = ({
             }
           }}
         />
-      ) : (
-        <>
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-10 h-10 relative overflow-hidden rounded-lg bg-gray-200 flex-shrink-0">
-                <img
-                  src={annotation.item.cover_url || "/default-album.png"}
-                  alt={`${annotation.item.name} cover`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <div className="font-semibold text-[#1F2C24]">
-                  {annotation.item.name}
-                </div>
-                <div className="text-[#A0A0A0] text-xs">
-                  {annotation.item.artist} • {formatDuration(annotation.timestamp)}
-                </div>
-              </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#FFFBEb] border border-[#5C5537]/20 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200 mb-4">
+      <div className="p-4 flex items-start gap-4">
+        <div className="w-16 h-16 relative overflow-hidden rounded-lg bg-[#5C5537]/10 flex-shrink-0">
+          <img
+            src={annotation.item.cover_url || "/default-album.png"}
+            alt={`${annotation.item.name} cover`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <h3 className="font-semibold text-[#5C5537]">
+                {annotation.item.name}
+              </h3>
+              <p className="text-[#5C5537]/70 text-sm truncate">
+                {annotation.item.artist}
+              </p>
+              <p className="text-[#5C5537]/70 text-xs truncate">
+                {annotation.item.album}
+              </p>
             </div>
             
             <div className="flex gap-2">
               <button 
                 onClick={() => setIsEditMode(true)}
-                className="p-1 text-[#6D9773] hover:text-[#5C8769]"
+                className="p-2 text-[#5C5537] hover:bg-[#5C5537]/10 rounded-full transition-colors"
               >
                 <Edit size={16} />
               </button>
               <button 
                 onClick={() => onDelete(annotation.id)}
-                className="p-1 text-red-500 hover:text-red-700"
+                className="p-2 text-red-500 hover:bg-red-100 rounded-full transition-colors"
               >
                 <Trash size={16} />
               </button>
             </div>
           </div>
 
-          <div className="mb-2 flex items-center gap-1 text-[#A0A0A0] text-sm">
+          <div className="mb-3 flex items-center gap-1 text-[#5C5537]/70 text-sm">
             <Clock size={14} />
             <span>{formatDuration(annotation.timestamp)}</span>
           </div>
           
           {annotation.text && (
-            <p className="text-[#1F2C24] text-sm mb-3 bg-[#F9F9F9] rounded-md p-3">
+            <p className="text-[#5C5537] text-sm mb-3 bg-[#FFFBEb] rounded-md p-3 border border-[#5C5537]/10">
               {annotation.text}
             </p>
           )}
           
           <div className="flex justify-between items-center text-xs">
-            <div className="flex items-center gap-1 text-[#A0A0A0]">
+            <div className="flex items-center gap-2 text-[#5C5537]/70">
               <span className={`px-2 py-1 rounded-full ${
                 annotation.is_public 
                   ? "bg-green-100 text-green-800" 
@@ -107,13 +116,22 @@ const EditableAnnotationCard: React.FC<EditableAnnotationCardProps> = ({
               }`}>
                 {annotation.is_public ? "Public" : "Private"}
               </span>
+              <span>{new Date(annotation.created_at).toLocaleDateString()}</span>
             </div>
-            <div className="text-[#A0A0A0]">
-              {new Date(annotation.created_at).toLocaleDateString()}
+            
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-1 text-[#5C5537]/70">
+                <Heart className="w-3 h-3" />
+                <span className="text-xs">{annotation.like_count || 0}</span>
+              </div>
+              {/* <div className="flex items-center space-x-1 text-[#5C5537]/70">
+                <MessageCircle className="w-3 h-3" />
+                <span className="text-xs">{annotation.comment_count || 0}</span>
+              </div> */}
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 };
